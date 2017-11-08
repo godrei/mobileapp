@@ -218,6 +218,12 @@
     <Compile Include="Sync\States\Pull\PersistWorkspaceFeaturesStateTests.cs" />
     <Compile Include="Sync\States\Push\CheckServerStatusStateTests.cs" />
     <Compile Include="Sync\States\Pull\PersistTagsStateTests.cs" />
+    <Compile Include="Sync\States\Push\Projects\CreateProjectStateTests.cs" />
+    <Compile Include="Sync\States\Push\Projects\PushProjectStateTests.cs" />
+    <Compile Include="Sync\States\Push\Projects\UnsyncableProjectStateTests.cs" />
+    <Compile Include="Sync\States\Push\Clients\CreateClientTests.cs" />
+    <Compile Include="Sync\States\Push\Clients\PushClientsStateTests.cs" />
+    <Compile Include="Sync\States\Push\Clients\UnsyncableClientStateTests.cs" />
     <Compile Include="Sync\StateTreeTests.cs" />
     <Compile Include="Sync\SyncManagerTests.cs" />
     <Compile Include="Sync\SyncStateQueueTests.cs" />
@@ -308,12 +314,7 @@
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.2\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Sync\States\Push\" />
-    <Folder Include="Sync\States\Push\BaseStates\" />
-    <Folder Include="Sync\States\Push\TimeEntries\" />
-    <Folder Include="Sync\States\Push\Tags\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

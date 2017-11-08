@@ -26,7 +26,7 @@ namespace Toggl.Foundation.DataSources
             Tags = new TagsDataSource(database.Tags);
             Tasks = new TasksDataSource(database.Tasks);
             Workspaces = new WorkspacesDataSource(database);
-            Projects = new ProjectsDataSource(database.Projects);
+            Projects = new ProjectsDataSource(database.IdProvider, database.Projects, timeService);
             TimeEntries = new TimeEntriesDataSource(database.IdProvider, database.TimeEntries, timeService);
 
             AutocompleteProvider = new AutocompleteProvider(database);
