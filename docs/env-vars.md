@@ -15,10 +15,6 @@ Below is a list of all the environment variables you need to configure before bu
 `TOGGL_STORAGE_BUCKET`
 `TOGGL_GOOGLE_APP_ID`
 
-- Running the UI tests past login :key:
-`TOGGL_UI_TEST_USERNAME`
-`TOGGL_UI_TEST_PASSWORD`
-
 # new 'puter who dis? :computer:
 
 To configure this on a macOS:
@@ -30,8 +26,6 @@ $ open ~/.bash_profile
 
 Then add the following lines to `.bash_profile`:
 ```
-export TOGGL_UI_TEST_USERNAME=""
-export TOGGL_UI_TEST_PASSWORD=""
 export TOGGL_AD_UNIT_ID_FOR_BANNER_TEST=""
 export TOGGL_AD_UNIT_ID_FOR_INTERSTITIAL_TEST=""
 export TOGGL_CLIENT_ID=""

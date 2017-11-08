@@ -274,6 +274,7 @@
     <Compile Include="Sync\States\Push\Tags\UnsyncableTagStateTests.cs" />
     <Compile Include="Sync\States\Push\TimeEntries\DeleteTimeEntryStateTests.cs" />
     <Compile Include="Sync\States\Push\TimeEntries\UpdateTimeEntryStateTests.cs" />
+    <Compile Include="MvvmCross\ViewModels\SelectColorViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MvvmCross\ViewModels\StartTimeEntryViewModelTests.cs" />

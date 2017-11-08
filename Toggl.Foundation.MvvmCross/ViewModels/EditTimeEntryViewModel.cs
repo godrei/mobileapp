@@ -12,6 +12,7 @@ using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
+using System.Globalization;
 using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -19,6 +20,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class EditTimeEntryViewModel : MvxViewModel<long>
     {
+        private const int maxTagLength = 30;
+
         private readonly ITogglDataSource dataSource;
         private readonly IMvxNavigationService navigationService;
         private readonly ITimeService timeService;
@@ -69,7 +72,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        public List<string> Tags { get; private set; }
+        public List<string> Tags { get; private set; } = new List<string>();
 
         [DependsOn(nameof(Tags))]
         public bool HasTags => Tags?.Any() ?? false;
@@ -132,7 +135,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StartTime = timeEntry.Start;
             StopTime = timeEntry.IsRunning() ? (DateTimeOffset?)null : timeEntry.Start.AddSeconds(timeEntry.Duration.Value);
             Billable = timeEntry.Billable;
-            Tags = timeEntry.Tags?.Select(tag => tag.Name).ToList() ?? new List<string>();
             Project = timeEntry.Project?.Name;
             ProjectColor = timeEntry.Project?.Color;
             Task = timeEntry.Task?.Name;
@@ -141,6 +143,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             SyncErrorMessage = timeEntry.LastSyncErrorMessage;
             workspaceId = timeEntry.WorkspaceId;
             SyncErrorMessageVisible = !string.IsNullOrEmpty(SyncErrorMessage);
+
+            onTags(timeEntry.Tags);
             foreach (var tagId in timeEntry.TagIds)
                 tagIds.Add(tagId);
 
@@ -274,8 +278,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void onTags(IEnumerable<IDatabaseTag> tags)
         {
+            if (tags == null)
+                return;
+
             tags.Select(tag => tag.Name)
-                   .ForEach(Tags.Add);
+               .Select(trimTag)
+               .ForEach(Tags.Add);
             RaisePropertyChanged(nameof(Tags));
             RaisePropertyChanged(nameof(HasTags));
         }
@@ -296,6 +304,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             tagIds.Clear();
             RaisePropertyChanged(nameof(Tags));
             RaisePropertyChanged(nameof(HasTags));
+        }
+
+        private string trimTag(string tag)
+        {
+            var tagLength = new StringInfo(tag).LengthInTextElements;
+            if (tagLength <= maxTagLength)
+                return tag;
+
+            return $"{tag.UnicodeSafeSubstring(0, maxTagLength)}...";
         }
     }
 }

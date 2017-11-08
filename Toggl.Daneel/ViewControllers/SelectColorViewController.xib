@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SelectColorViewController">
+            <connections>
+                <outlet property="CloseButton" destination="8iM-ju-8R3" id="F3g-J1-or7"/>
+                <outlet property="ColorCollectionView" destination="oPC-Yw-XVk" id="jk8-WH-74f"/>
+                <outlet property="SaveButton" destination="fvg-dp-el4" id="h8E-GK-Zgi"/>
+                <outlet property="view" destination="2" id="RRd-Eg-VrN"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="2">
+            <rect key="frame" x="0.0" y="0.0" width="288" height="233"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Project color" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pIl-6Q-q30">
+                    <rect key="frame" x="102.5" y="12" width="84.5" height="17"/>
+                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fvg-dp-el4">
+                    <rect key="frame" x="240" y="12" width="32" height="16"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="16" id="3hT-4c-O2K"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
+                    <state key="normal" title="Save">
+                        <color key="titleColor" red="0.29803921570000003" green="0.85098039219999999" blue="0.3921568627" alpha="1" colorSpace="calibratedRGB"/>
+                    </state>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8iM-ju-8R3">
+                    <rect key="frame" x="0.0" y="0.0" width="40" height="40"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="40" id="7JB-d1-pm7"/>
+                        <constraint firstAttribute="height" constant="40" id="s0n-Fx-04x"/>
+                    </constraints>
+                    <state key="normal" image="icClose"/>
+                </button>
+                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="oPC-Yw-XVk">
+                    <rect key="frame" x="0.0" y="59" width="288" height="144"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="rg1-jd-EHY">
+                        <size key="itemSize" width="50" height="50"/>
+                        <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                        <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                        <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                    </collectionViewFlowLayout>
+                </collectionView>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="8iM-ju-8R3" firstAttribute="leading" secondItem="2" secondAttribute="leading" id="1dp-r0-3O7"/>
+                <constraint firstItem="oPC-Yw-XVk" firstAttribute="leading" secondItem="2" secondAttribute="leading" id="1ih-nI-lu4"/>
+                <constraint firstAttribute="trailing" secondItem="oPC-Yw-XVk" secondAttribute="trailing" id="5dU-9Q-OPM"/>
+                <constraint firstItem="oPC-Yw-XVk" firstAttribute="top" secondItem="pIl-6Q-q30" secondAttribute="bottom" constant="30" id="AHE-BY-3pr"/>
+                <constraint firstAttribute="trailing" secondItem="fvg-dp-el4" secondAttribute="trailing" constant="16" id="LeM-BJ-FUG"/>
+                <constraint firstAttribute="bottom" secondItem="oPC-Yw-XVk" secondAttribute="bottom" constant="30" id="T3D-yW-r9B"/>
+                <constraint firstItem="fvg-dp-el4" firstAttribute="top" secondItem="2" secondAttribute="top" constant="12" id="c3l-Js-zbN"/>
+                <constraint firstItem="pIl-6Q-q30" firstAttribute="top" secondItem="2" secondAttribute="top" constant="12" id="cC8-mg-Zb9"/>
+                <constraint firstItem="pIl-6Q-q30" firstAttribute="centerX" secondItem="2" secondAttribute="centerX" id="crd-40-gPz"/>
+                <constraint firstItem="8iM-ju-8R3" firstAttribute="top" secondItem="2" secondAttribute="top" id="vQt-v4-4J8"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="55" y="47"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="icClose" width="10" height="10"/>
+    </resources>
+</document>

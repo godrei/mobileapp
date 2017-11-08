@@ -1,4 +1,5 @@
-﻿using MvvmCross.Platform.UI;
+﻿using System.Linq;
+using MvvmCross.Platform.UI;
 
 namespace Toggl.Foundation.MvvmCross.Helper
 {
@@ -70,6 +71,8 @@ namespace Toggl.Foundation.MvvmCross.Helper
             public static readonly MvxColor SeparatorColor = new MvxColor(181, 188, 192);
 
             public static readonly MvxColor ProjectTokenBorder = new MvxColor(232, 232, 232);
+
+            public static readonly MvxColor AddIconColor = new MvxColor(75, 200, 0);
         }
 
         public static class EditTimeEntry
@@ -92,5 +95,8 @@ namespace Toggl.Foundation.MvvmCross.Helper
             public static readonly MvxColor SignOutButtonDisabled = new MvxColor(226, 5, 5, 61);
             public static readonly MvxColor SyncStatusText = new MvxColor(144, 146, 147);
         }
+
+        public static readonly MvxColor[] DefaultProjectColors = 
+            Foundation.Helper.Color.DefaultProjectColors.Select(MvxColor.ParseHexString).ToArray();
     }
 }

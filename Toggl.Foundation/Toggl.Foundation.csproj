@@ -164,6 +164,7 @@
     <Compile Include="Sync\States\Push\Tags\PushTagsState.cs" />
     <Compile Include="Sync\States\Push\Tags\UnsyncableTagState.cs" />
     <Compile Include="Helper\Constants.cs" />
+    <Compile Include="Helper\Color.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

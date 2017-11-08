@@ -114,26 +114,9 @@ private TemporaryFileTransformation GetIntegrationTestsConfigurationTransformati
     };
 }
 
-private TemporaryFileTransformation GetUITestsFileTransformation()
-{   
-    const string path = "Toggl.Daneel.Tests.UI/Credentials.cs";
-    var username = EnvironmentVariable("TOGGL_UI_TEST_USERNAME");
-    var password = EnvironmentVariable("TOGGL_UI_TEST_PASSWORD"); 
-    var filePath = GetFiles(path).Single();
-    var file = TransformTextFile(filePath).ToString();
-
-    return new TemporaryFileTransformation
-    { 
-        Path = path, 
-        Original = file,
-        Temporary = file.Replace("{TOGGL_UI_TEST_USERNAME}", username).Replace("{TOGGL_UI_TEST_PASSWORD}", password)
-    };
-}
-
 var transformations = new List<TemporaryFileTransformation> 
 {
     GetIntegrationTestsConfigurationTransformation(),
-    GetUITestsFileTransformation(),
     GetIosAnalyticsServicesConfigurationTransformation()
 };
 

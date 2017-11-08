@@ -1,4 +1,6 @@
-﻿using Xamarin.UITest;
+﻿using System;
+using Xamarin.UITest;
+using Toggl.Daneel.Tests.UI.Helpers;
 
 namespace Toggl.Daneel.Tests.UI.Extensions
 {
@@ -6,12 +8,18 @@ namespace Toggl.Daneel.Tests.UI.Extensions
     {
         public static void WaitForMainScreen(this IApp app)
         {
+            var email = $"{Guid.NewGuid().ToString()}@toggl.space";
+            var task = User.Create(email);
+
             app.WaitForLoginScreen();
 
-            app.EnterText(Credentials.Username);
+            app.EnterText(email);
             app.GoToPasswordScreen();
 
-            app.EnterText(Credentials.Password);
+            task.Wait();
+            var password = task.Result;
+
+            app.EnterText(password);
             app.LoginSuccesfully();
         }
 

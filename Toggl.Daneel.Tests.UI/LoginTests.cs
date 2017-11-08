@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using Toggl.Daneel.Tests.UI.Helpers;
 using Xamarin.UITest.iOS;
 using static Toggl.Daneel.Tests.UI.Extensions.LoginExtensions;
 
@@ -49,27 +52,34 @@ namespace Toggl.Daneel.Tests.UI
         }
 
         [Test]
-        public void TheNextButtonAfterInputtingAnInvalidPasswordShowsTheErrorLabel()
+        public async Task TheNextButtonAfterInputtingAnInvalidPasswordShowsTheErrorLabel()
         {
-            app.EnterText(Credentials.Username);
+            var email = randomEmail();
+            var password = await User.Create(email);
+            app.EnterText(validEmail);
             app.GoToPasswordScreen();
 
-            app.EnterText($"{Credentials.Password}123456");
+            app.EnterText($"{password}123456");
             app.TryLoginAndFail();
 
             app.Screenshot("Login email page.");
         }
 
         [Test]
-        public void TheNextButtonAfterInputtingAValidPasswordShowsTheMainScreen()
+        public async Task TheNextButtonAfterInputtingAValidPasswordShowsTheMainScreen()
         {
-            app.EnterText(Credentials.Username);
+            var email = randomEmail();
+            var password = await User.Create(email);
+            app.EnterText(validEmail);
             app.GoToPasswordScreen();
 
-            app.EnterText(Credentials.Password);
+            app.EnterText(password);
             app.LoginSuccesfully();
 
             app.Screenshot("Login email page.");
         }
+
+        private string randomEmail()
+            => $"{Guid.NewGuid().ToString()}@toggl.space";
     }
 }

@@ -73,6 +73,8 @@
     <Compile Include="Parameters\SelectProjectParameter.cs" />
     <Compile Include="ViewModels\BrowserViewModel.cs" />
     <Compile Include="Parameters\BrowserParameters.cs" />
+    <Compile Include="ViewModels\SelectColorViewModel.cs" />
+    <Compile Include="ViewModels\SelectableColorViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Interfaces">

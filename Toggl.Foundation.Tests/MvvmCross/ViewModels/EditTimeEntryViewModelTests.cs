@@ -17,6 +17,8 @@ using Toggl.PrimeRadiant.Models;
 using Xunit;
 using static Toggl.Foundation.Helper.Constants;
 using Task = System.Threading.Tasks.Task;
+using System.Text;
+using System.Globalization;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -689,6 +691,61 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.Tags.Should().HaveCount(0);
             }
+        }
+
+        public sealed class TheTagsProperty : EditTimeEntryViewModelTest
+        {
+            [Theory]
+            [InlineData(31, "a")]
+            [InlineData(31, "💵")]
+            [InlineData(50, "b")]
+            [InlineData(50, "🚕")]
+            public async Task CutsLongTagNames(int tagLength, string tagGrapheme)
+            {
+                await prepareTest(tagLength, tagGrapheme);
+
+                ViewModel.Tags.Should()
+                    .OnlyContain(tag => lengthInGraphemes(tag) == 33 && tag.EndsWith("..."));
+            }
+
+            [Theory]
+            [InlineData(30, "a")]
+            [InlineData(30, "🐕")]
+            [InlineData(29, "b")]
+            [InlineData(29, "🐛")]
+            [InlineData(10, "c")]
+            [InlineData(10, "❄️")]
+            public async Task DoesNotCutShortTagNames(int tagLength, string tagGrapheme)
+            {
+                await prepareTest(tagLength, tagGrapheme);
+
+                ViewModel.Tags.Should().OnlyContain(tag => lengthInGraphemes(tag) == tagLength);
+            }
+
+            private async Task prepareTest(int tagLength, string tagGrapheme)
+            {
+                var tag = Substitute.For<IDatabaseTag>();
+                tag.Name.Returns(getLongTagName(tagLength, tagGrapheme));
+                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+
+                timeEntry.Id.Returns(13);
+                timeEntry.Tags.Returns(new IDatabaseTag[] { tag });
+
+                DataSource.TimeEntries.GetById(Arg.Is(timeEntry.Id))
+                    .Returns(Observable.Return(timeEntry));
+                
+                ViewModel.Prepare(timeEntry.Id);
+                await ViewModel.Initialize();
+            }
+
+            private string getLongTagName(int length, string tagGrapheme)
+                => Enumerable
+                    .Range(0, length)
+                    .Aggregate(new StringBuilder(), (builder, _) => builder.Append(tagGrapheme))
+                    .ToString();
+
+            private int lengthInGraphemes(string str)
+                => new StringInfo(str).LengthInTextElements;
         }
     }
 }
