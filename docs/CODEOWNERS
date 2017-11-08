@@ -1,0 +1,18 @@
+# MvvmCross specific files
+App.cs        @willsb
+Presentation/ @willsb
+Startup/      @willsb
+Combiners/    @willsb @arturs105
+Binding/      @willsb @arturs105
+
+#Realm stuff
+/Toggl.PrimeRadiant.Realm/*.cs @simonrozsival @willsb
+
+# Sync algorythm
+Toggl.Foundation/Sync/ @amulware @simonrozsival
+
+#Ze docs
+/docs/ @amulware
+
+# This file has too many specifics, so I'd better always review it
+/Toggl.Daneel/Views/TimeEntryTagsTextView.cs @willsb
