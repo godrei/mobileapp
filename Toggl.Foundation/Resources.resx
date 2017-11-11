@@ -150,4 +150,16 @@ time entries will appear here.</value>
     <data name="TermsOfService">
         <value>Terms of Service</value>
     </data>
+    <data name="NewProject">
+        <value>New Project</value>
+    </data>
+    <data name="Create">
+        <value>Create</value>
+    </data>
+    <data name="AddClient">
+        <value>Add client</value>
+    </data>
+    <data name="NoClient">
+        <value>No client</value>
+    </data>
 </root>

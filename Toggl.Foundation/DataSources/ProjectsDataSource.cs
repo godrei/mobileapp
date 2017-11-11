@@ -38,7 +38,8 @@ namespace Toggl.Foundation.DataSources
                 .SetAt(timeService.CurrentDateTime)
                 .SetSyncStatus(SyncStatus.SyncNeeded)
                 .Build()
-                .Apply(repository.Create);
+                .Apply(repository.Create)
+                .Select(Project.From);
 
         public IObservable<IEnumerable<IDatabaseProject>> GetAll()
             => repository.GetAll();

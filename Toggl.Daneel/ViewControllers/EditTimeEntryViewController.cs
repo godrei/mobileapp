@@ -56,6 +56,7 @@ namespace Toggl.Daneel.ViewControllers
             var dateConverter = new DateToTitleStringValueConverter();
             var timeConverter = new DateTimeToTimeConverter();
             var visibilityConverter = new MvxVisibilityValueConverter();
+            var invertedBoolConverter = new BoolToConstantValueConverter<bool>(false, true);
             var inverterVisibilityConverter = new MvxInvertedVisibilityValueConverter();
             var projectTaskClientCombiner = new ProjectTaskClientValueCombiner(
                 ProjectTaskClientLabel.Font.CapHeight,
@@ -171,6 +172,17 @@ namespace Toggl.Daneel.ViewControllers
                       .To(vm => vm.HasTags)
                       .WithConversion(inverterVisibilityConverter);
 
+            //Confirm button enabled
+            bindingSet.Bind(ConfirmButton)
+                      .For(v => v.Enabled)
+                      .To(vm => vm.DescriptionLimitExceeded)
+                      .WithConversion(invertedBoolConverter);
+
+            bindingSet.Bind(ConfirmButton)
+                      .For(v => v.Alpha)
+                      .To(vm => vm.DescriptionLimitExceeded)
+                      .WithConversion(new BoolToConstantValueConverter<nfloat>(0.5f, 1));
+
             bindingSet.Apply();
         }
 
@@ -190,14 +202,8 @@ namespace Toggl.Daneel.ViewControllers
             DurationLabel.Font = DurationLabel.Font.GetMonospacedDigitFont();
             PreferredContentSize = View.Frame.Size;
             DescriptionTextView.Delegate = this;
-            resizeSwitch();
+            BillableSwitch.Resize(switchHeight);
             prepareDescriptionField();
-        }
-
-        private void resizeSwitch()
-        {
-            var scale = switchHeight / BillableSwitch.Frame.Height;
-            BillableSwitch.Transform = CGAffineTransform.MakeScale(scale, scale);
         }
 
         private void prepareDescriptionField()

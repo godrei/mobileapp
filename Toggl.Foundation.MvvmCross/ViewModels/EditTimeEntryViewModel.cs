@@ -14,6 +14,7 @@ using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
 using System.Globalization;
 using static Toggl.Foundation.Helper.Constants;
+using System.Text;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -37,6 +38,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private long workspaceId;
 
         public long Id { get; set; }
+
+        private int descriptionByteCount
+            => Encoding.UTF8.GetByteCount(Description);
+
+        public bool DescriptionLimitExceeded
+            => descriptionByteCount > MaxTimeEntryDescriptionLengthInBytes;
 
         public string Description { get; set; }
 

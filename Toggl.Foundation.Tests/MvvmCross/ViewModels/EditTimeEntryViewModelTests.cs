@@ -747,5 +747,41 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             private int lengthInGraphemes(string str)
                 => new StringInfo(str).LengthInTextElements;
         }
+
+        public sealed class TheDescriptionLimitExceededProperty : EditTimeEntryViewModelTest
+        {
+            [Theory]
+            [InlineData("a", MaxTimeEntryDescriptionLengthInBytes - 1)]
+            [InlineData("c", MaxTimeEntryDescriptionLengthInBytes)]
+            [InlineData("ॷ", MaxTimeEntryDescriptionLengthInBytes / 3)] //This symbol is 3 bytes long
+            [InlineData("Љ", MaxTimeEntryDescriptionLengthInBytes / 2)] //This symbol is 2 bytes long
+            public void IsFalseWhenDescriptionIsShorterThanMaxLimit(
+                string character, int count)
+            {
+                ViewModel.Description = createLongString(character, count);
+
+                ViewModel.DescriptionLimitExceeded.Should().BeFalse();
+            }
+
+            [Theory]
+            [InlineData("A", MaxTimeEntryDescriptionLengthInBytes + 1)]
+            [InlineData("ॷ", MaxTimeEntryDescriptionLengthInBytes / 3 + 1)] //This symbol is 3 bytes long
+            [InlineData("Љ", MaxTimeEntryDescriptionLengthInBytes / 2 + 1)] //This symbol is 2 bytes long
+            public void IsTrueWhenDescriptionIsLongerThanMaxLimit(
+                string character, int count)
+            {
+                ViewModel.Description = createLongString(character, count);
+
+                ViewModel.DescriptionLimitExceeded.Should().BeTrue();
+            }
+
+            private string createLongString(string character, int count)
+                => Enumerable
+                    .Range(0, count)
+                    .Aggregate(
+                        new StringBuilder(),
+                        (builder, _) => builder.Append(character))
+                    .ToString();
+        }
     }
 }

@@ -304,5 +304,29 @@ namespace Toggl.Foundation {
                 return ResourceManager.GetString("TermsOfService", resourceCulture);
             }
         }
+        
+        public static string NewProject {
+            get {
+                return ResourceManager.GetString("NewProject", resourceCulture);
+            }
+        }
+        
+        public static string Create {
+            get {
+                return ResourceManager.GetString("Create", resourceCulture);
+            }
+        }
+        
+        public static string AddClient {
+            get {
+                return ResourceManager.GetString("AddClient", resourceCulture);
+            }
+        }
+        
+        public static string NoClient {
+            get {
+                return ResourceManager.GetString("NoClient", resourceCulture);
+            }
+        }
     }
 }

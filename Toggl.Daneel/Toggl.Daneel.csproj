@@ -391,8 +391,12 @@
     <InterfaceDefinition Include="Views\Onboarding\TrackPage.xib" />
     <InterfaceDefinition Include="Views\Onboarding\LogPage.xib" />
     <InterfaceDefinition Include="Views\Onboarding\SummaryPage.xib" />
+    <InterfaceDefinition Include="ViewControllers\EditProjectViewController.xib" />
     <InterfaceDefinition Include="ViewControllers\SelectColorViewController.xib" />
     <InterfaceDefinition Include="Views\ColorSelectionViewCell.xib" />
+    <InterfaceDefinition Include="Views\CreateEntityViewCell.xib" />
+    <InterfaceDefinition Include="Views\ClientViewCell.xib" />
+    <InterfaceDefinition Include="ViewControllers\SelectClientViewController.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -575,6 +579,12 @@
     <Compile Include="Views\Interfaces\IHeaderViewCellWithHideableTopSeparator.cs" />
     <Compile Include="Binding\NavigationItemHidesBackButtonTargetBinding.cs" />
     <Compile Include="ViewControllers\BrowserViewController.cs" />
+    <Compile Include="ViewControllers\EditProjectViewController.cs" />
+    <Compile Include="ViewControllers\EditProjectViewController.designer.cs">
+      <DependentUpon>EditProjectViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Converters\AddNewAttributedStringConverter.cs" />
+    <Compile Include="Extensions\ViewExtensions.cs" />
     <Compile Include="Combiners\ProjectSelectedColorValueCombiner.cs" />
     <Compile Include="Extensions\TableViewExtensions.cs" />
     <Compile Include="ViewControllers\SelectColorViewController.cs" />
@@ -585,6 +595,19 @@
     <Compile Include="Views\ColorSelectionViewCell.cs" />
     <Compile Include="Views\ColorSelectionViewCell.designer.cs">
       <DependentUpon>ColorSelectionViewCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CreateEntityViewCell.cs" />
+    <Compile Include="Views\CreateEntityViewCell.designer.cs">
+      <DependentUpon>CreateEntityViewCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewSources\ClientTableViewSource.cs" />
+    <Compile Include="Views\ClientViewCell.cs" />
+    <Compile Include="Views\ClientViewCell.designer.cs">
+      <DependentUpon>ClientViewCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewControllers\SelectClientViewController.cs" />
+    <Compile Include="ViewControllers\SelectClientViewController.designer.cs">
+      <DependentUpon>SelectClientViewController.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
