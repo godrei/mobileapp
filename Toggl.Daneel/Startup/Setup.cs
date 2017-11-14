@@ -59,11 +59,6 @@ namespace Toggl.Daneel
         {
             base.InitializeApp(pluginManager, app);
 
-#if !USE_PRODUCTION_API
-            System.Net.ServicePointManager.ServerCertificateValidationCallback
-                  += (sender, certificate, chain, sslPolicyErrors) => true;
-#endif
-
             var database = new Database();
             var timeService = new TimeService(Scheduler.Default);
             var version = NSBundle.MainBundle.InfoDictionary["CFBundleShortVersionString"];
