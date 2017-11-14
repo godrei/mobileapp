@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class EditProjectViewModel : MvxViewModel<string, long?>
     {
+        private readonly Random random = new Random();
         private readonly ITogglDataSource dataSource;
         private readonly IMvxNavigationService navigationService;
 
@@ -69,12 +71,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public override void Prepare(string parameter)
         {
             Name = parameter;
-
-            var random = new Random();
-            var randomColorIndex = random.Next(0, Helper.Color.DefaultProjectColors.Length);
             Title = Resources.NewProject;
             DoneButtonText = Resources.Create;
-            Color = Helper.Color.DefaultProjectColors[randomColorIndex];
+            pickRandomColor();
         }
 
         public override async Task Initialize()
@@ -97,7 +96,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 await dataSource.Workspaces
                     .WorkspaceHasFeature(workspaceId, WorkspaceFeatureId.Pro)
                     .SelectMany(isPro =>
-                        isPro ? dataSource.Workspaces.GetDefault() : Observable.Return(default(IDatabaseWorkspace)))
+                        isPro ? dataSource.Workspaces.GetById(workspaceId) : Observable.Return(default(IDatabaseWorkspace)))
                     .Select(workspace => workspace?.ProjectsBillableByDefault);
 
             var createdProject = await dataSource.Projects.Create(new CreateProjectDTO
@@ -116,9 +115,24 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private Task close()
             => navigationService.Close(this, null);
 
-        private Task pickWorkspace()
-            => throw new NotImplementedException();
+        private async Task pickWorkspace()
+        {
+            var selectedWorkspaceId = await navigationService.Navigate<SelectWorkspaceViewModel, long?>();
+            if (selectedWorkspaceId == null || selectedWorkspaceId.Value == workspaceId) return;
 
+            var workspace = await dataSource.Workspaces.GetById(selectedWorkspaceId.Value);
+
+            clientId = null;
+            ClientName = "";
+            workspaceId = selectedWorkspaceId.Value;
+            WorkspaceName = workspace.Name;
+
+            var workspaceIsPro = await dataSource.Workspaces.WorkspaceHasFeature(workspaceId, WorkspaceFeatureId.Pro);
+            if (workspaceIsPro || Array.IndexOf(Helper.Color.DefaultProjectColors, Color) >= 0) return;
+
+            pickRandomColor();
+        }
+        
         private async Task pickClient()
         {
             var selectedClientId = await navigationService.Navigate<SelectClientViewModel, long, long?>(workspaceId);
@@ -134,6 +148,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var client = await dataSource.Clients.GetById(selectedClientId.Value);
             clientId = client.Id;
             ClientName = client.Name;
+        }
+        
+        private void pickRandomColor()
+        {
+            var randomColorIndex = random.Next(0, Helper.Color.DefaultProjectColors.Length);
+            Color = Helper.Color.DefaultProjectColors[randomColorIndex];
         }
     }
 }

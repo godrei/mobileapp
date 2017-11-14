@@ -14,6 +14,7 @@ using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
 using System.Globalization;
 using static Toggl.Foundation.Helper.Constants;
+using Toggl.Foundation.MvvmCross.Services;
 using System.Text;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -23,9 +24,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     {
         private const int maxTagLength = 30;
 
-        private readonly ITogglDataSource dataSource;
-        private readonly IMvxNavigationService navigationService;
         private readonly ITimeService timeService;
+        private readonly ITogglDataSource dataSource;
+        private readonly IDialogService dialogService;
+        private readonly IMvxNavigationService navigationService;
 
         private readonly HashSet<long> tagIds = new HashSet<long>();
 
@@ -90,11 +92,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public bool SyncErrorMessageVisible { get; private set; }
 
-        public IMvxCommand DeleteCommand { get; }
-
         public IMvxCommand ConfirmCommand { get; }
 
         public IMvxCommand DismissSyncErrorMessageCommand { get; }
+
+        public IMvxAsyncCommand DeleteCommand { get; }
 
         public IMvxAsyncCommand CloseCommand { get; }
 
@@ -108,17 +110,23 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand ToggleBillableCommand { get; }
 
-        public EditTimeEntryViewModel(ITogglDataSource dataSource, IMvxNavigationService navigationService, ITimeService timeService)
+        public EditTimeEntryViewModel(
+            ITogglDataSource dataSource,
+            IMvxNavigationService navigationService,
+            ITimeService timeService,
+            IDialogService dialogService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
+            Ensure.Argument.IsNotNull(dialogService, nameof(dialogService));
 
             this.dataSource = dataSource;
             this.navigationService = navigationService;
             this.timeService = timeService;
+            this.dialogService = dialogService;
 
-            DeleteCommand = new MvxCommand(delete);
+            DeleteCommand = new MvxAsyncCommand(delete);
             ConfirmCommand = new MvxCommand(confirm);
             CloseCommand = new MvxAsyncCommand(close);
             EditDurationCommand = new MvxAsyncCommand(editDuration);
@@ -166,8 +174,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Subscribe(_ => RaisePropertyChanged(nameof(Duration)));
         }
 
-        private void delete()
+        private async Task delete()
         {
+            var result = await dialogService.ShowMultipleChoiceDialog(
+                Resources.Cancel,
+                new MultipleChoiceDialogAction(Resources.Delete, true)
+            );
+
+            if (result != Resources.Delete)
+                return;
+
             deleteDisposable = dataSource.TimeEntries
                 .Delete(Id)
                 .Subscribe(onDeleteError, onDeleteCompleted);

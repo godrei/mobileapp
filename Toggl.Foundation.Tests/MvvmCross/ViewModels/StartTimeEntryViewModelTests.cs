@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -110,19 +111,98 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
         }
 
+        public sealed class TheSuggestCreationProperty : StartTimeEntryViewModelTest
+        {
+            private const string name = "My project";
+
+            public TheSuggestCreationProperty()
+            {
+                var project = Substitute.For<IDatabaseProject>();
+                project.Id.Returns(10);
+                project.Name.Returns(name);
+                var suggestion = new ProjectSuggestion(project);
+
+                DataSource.AutocompleteProvider
+                    .Query(Arg.Is<QueryInfo>(info => info.SuggestionType == AutocompleteSuggestionType.Projects))
+                          .Returns(Observable.Return(new List<ProjectSuggestion> { suggestion }));
+
+                DataSource.AutocompleteProvider
+                    .ParseFieldInfo(Arg.Is<TextFieldInfo>(info => info.Text.Contains("@")))
+                          .Returns(x => new QueryInfo(x.Arg<TextFieldInfo>().Text.Replace("@", ""), AutocompleteSuggestionType.Projects));
+
+                DataSource.AutocompleteProvider
+                    .ParseFieldInfo(Arg.Is<TextFieldInfo>(info => !info.Text.Contains("@")))
+                    .Returns(x => new QueryInfo(x.Arg<TextFieldInfo>().Text, AutocompleteSuggestionType.TimeEntries));
+
+                ViewModel.Prepare(DateTimeOffset.Now);
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfNotSuggestingProjects()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("", 1);
+
+                ViewModel.SuggestCreation.Should().BeFalse();
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfTheCurrentQueryIsEmpty()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("@", 1);
+
+                ViewModel.SuggestCreation.Should().BeFalse();
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfTheCurrentQueryIsOnlyWhitespace()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("@    ", 1);
+
+                ViewModel.SuggestCreation.Should().BeFalse();
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfTheCurrentQueryIsLongerThanTwoHundredAndFiftyCharacters()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("@Some absurdly long project name created solely for making sure that the SuggestCreation property returns false when the project name is longer than the previously specified threshold so that the mobile apps behave and avoid crashes in backend and even bigger problems.", 1);
+
+                ViewModel.SuggestCreation.Should().BeFalse();
+            }
+        }
+
+
         public sealed class TheCreateProjectCommand : StartTimeEntryViewModelTest
         {
             private const string currentQuery = "My awesome Toggl project";
 
             public TheCreateProjectCommand()
             {
-                ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor($"Something @{currentQuery}", 15);
+                DataSource.AutocompleteProvider
+                    .ParseFieldInfo(Arg.Is<TextFieldInfo>(info => info.Text.Contains("@")))
+                          .Returns(x => new QueryInfo(x.Arg<TextFieldInfo>().Text.Replace("@", ""), AutocompleteSuggestionType.Projects));
+
+                var project = Substitute.For<IDatabaseProject>();
+                project.Id.Returns(10);
+                DataSource.Projects.GetById(Arg.Any<long>()).Returns(Observable.Return(project));
+                ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor($"@{currentQuery}", 15);
+
+                ViewModel.Prepare(DateTimeOffset.UtcNow);
             }
 
             [Fact]
             public async Task CallsTheCreateProjectViewModel()
             {
-                await ViewModel.CreateProjectCommand.ExecuteAsync(currentQuery);
+                await ViewModel.Initialize();
+                
+                await ViewModel.CreateProjectCommand.ExecuteAsync();
 
                 await NavigationService.Received()
                     .Navigate<string, long?>(typeof(EditProjectViewModel), Arg.Any<string>());
@@ -131,7 +211,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact]
             public async Task UsesTheCurrentQueryAsTheParameterForTheCreateProjectViewModel()
             {
-                await ViewModel.CreateProjectCommand.ExecuteAsync(currentQuery);
+                await ViewModel.Initialize();
+
+                await ViewModel.CreateProjectCommand.ExecuteAsync();
 
                 await NavigationService.Received()
                     .Navigate<string, long?>(typeof(EditProjectViewModel), currentQuery);

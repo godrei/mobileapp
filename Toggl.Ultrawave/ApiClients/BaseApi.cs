@@ -58,6 +58,15 @@ namespace Toggl.Ultrawave.ApiClients
             => CreateObservable<T>(endpoint, new[] { header }, body);
 
         protected IObservable<T> CreateObservable<T>(Endpoint endpoint, IEnumerable<HttpHeader> headers, string body = "")
+            => createObservable(endpoint, headers, body, async (rawData) =>
+                !string.IsNullOrEmpty(rawData)
+                    ? await Task.Run(() => serializer.Deserialize<T>(rawData)).ConfigureAwait(false)
+                    : default(T));
+
+        protected IObservable<string> CreateObservable(Endpoint endpoint, IEnumerable<HttpHeader> headers, string body = "")
+            => createObservable(endpoint, headers, body, (rawData) => Task.FromResult(rawData));
+
+        private IObservable<T> createObservable<T>(Endpoint endpoint, IEnumerable<HttpHeader> headers, string body, Func<string, Task<T>> process)
         {
             var request = new Request(body, endpoint.Url, headers, endpoint.Method);
             return Observable.Create<T>(async observer =>
@@ -67,9 +76,7 @@ namespace Toggl.Ultrawave.ApiClients
                 {
                     try
                     {
-                        var data = !string.IsNullOrEmpty(response.RawData)
-                            ? await Task.Run(() => serializer.Deserialize<T>(response.RawData)).ConfigureAwait(false)
-                            : default(T);
+                        var data = await process(response.RawData);
                         observer.OnNext(data);
                         observer.OnCompleted();
                     }

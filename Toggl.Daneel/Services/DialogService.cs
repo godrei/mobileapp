@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Toggl.Foundation.MvvmCross.Services;
 using UIKit;
+using static Toggl.Multivac.Extensions.FunctionalExtensions;
 
 namespace Toggl.Daneel.Services
 {
@@ -23,6 +25,33 @@ namespace Toggl.Daneel.Services
             alert.PreferredAction = confirm;
 
             getPresentationController().PresentViewController(alert, true, null);
+
+            return tcs.Task;
+        }
+
+        public Task<string> ShowMultipleChoiceDialog(
+            string cancelText,
+            params MultipleChoiceDialogAction[] actions)
+        {
+            var tcs = new TaskCompletionSource<string>();
+            var actionSheet = UIAlertController.Create(
+                title: null,
+                message: null,
+                preferredStyle: UIAlertControllerStyle.ActionSheet
+            );
+
+            var cancelAction = UIAlertAction.Create(cancelText, UIAlertActionStyle.Cancel, _ => tcs.SetResult(cancelText));
+            actionSheet.AddAction(cancelAction);
+
+            actions
+                .Select(
+                    action => UIAlertAction.Create(
+                        action.Text,
+                        action.Destructive ? UIAlertActionStyle.Destructive : UIAlertActionStyle.Default,
+                        _ => tcs.SetResult(action.Text)))
+                .ForEach(actionSheet.AddAction);
+
+            getPresentationController().PresentViewController(actionSheet, true, null);
 
             return tcs.Task;
         }

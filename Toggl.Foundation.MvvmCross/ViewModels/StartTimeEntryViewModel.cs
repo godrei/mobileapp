@@ -47,6 +47,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public bool DescriptionLengthExceeded
             => DescriptionByteCount > MaxTimeEntryDescriptionLengthInBytes;
 
+        public bool SuggestCreation
+        {
+            get
+            {
+                if (!IsSuggestingProjects) return false;
+
+                var text = CurrentQuery.Trim();
+                return !string.IsNullOrEmpty(text)
+                    && !Suggestions.Any(c => c.Any(s => s is ProjectSuggestion pS && pS.ProjectName == text))
+                    && Encoding.UTF8.GetByteCount(text) <= MaxProjectNameLengthInBytes;
+            }
+        }
+
         public bool UseGrouping { get; set; }
 
         public string CurrentQuery { get; private set; }
@@ -88,11 +101,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand ToggleBillableCommand { get; }
 
+        public IMvxAsyncCommand CreateProjectCommand { get; }
+        
         public IMvxCommand ToggleTagSuggestionsCommand { get; }
 
         public IMvxCommand ToggleProjectSuggestionsCommand { get; }
-
-        public IMvxAsyncCommand<string> CreateProjectCommand { get; }
 
         public IMvxAsyncCommand<AutocompleteSuggestion> SelectSuggestionCommand { get; }
 
@@ -117,9 +130,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             BackCommand = new MvxAsyncCommand(back);
             DoneCommand = new MvxAsyncCommand(done);
             ToggleBillableCommand = new MvxCommand(toggleBillable);
+            CreateProjectCommand = new MvxAsyncCommand(createProject);
             ChangeDurationCommand = new MvxAsyncCommand(changeDuration);
             ChangeStartTimeCommand = new MvxAsyncCommand(changeStartTime);
-            CreateProjectCommand = new MvxAsyncCommand<string>(createProject);
             ToggleTagSuggestionsCommand = new MvxCommand(toggleTagSuggestions);
             ToggleProjectSuggestionsCommand = new MvxCommand(toggleProjectSuggestions);
             SelectSuggestionCommand = new MvxAsyncCommand<AutocompleteSuggestion>(selectSuggestion);
@@ -212,9 +225,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        private async Task createProject(string projectName)
+        private async Task createProject()
         {
-            var projectId = await navigationService.Navigate<EditProjectViewModel, string, long?>(projectName);
+            var projectId = await navigationService.Navigate<EditProjectViewModel, string, long?>(CurrentQuery.Trim());
             if (projectId == null) return;
 
             var project = await dataSource.Projects.GetById(projectId.Value);

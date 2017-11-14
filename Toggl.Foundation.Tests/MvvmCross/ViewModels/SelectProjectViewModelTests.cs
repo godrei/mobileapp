@@ -308,6 +308,97 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
         }
 
+        public sealed class TheSuggestCreationProperty : SelectProjectViewModelTest
+        {
+            private const string name = "My project";
+
+            public TheSuggestCreationProperty()
+            {
+                var project = Substitute.For<IDatabaseProject>();
+                project.Name.Returns(name);
+                var suggestion = new ProjectSuggestion(project);
+                DataSource.AutocompleteProvider
+                    .Query(Arg.Is<QueryInfo>(info => info.SuggestionType == AutocompleteSuggestionType.Projects))
+                    .Returns(Observable.Return(new List<ProjectSuggestion> { suggestion }));
+
+                ViewModel.Prepare();
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfTheTextIsEmpty()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.Text = "";
+
+                ViewModel.SuggestCreation.Should().BeFalse();
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfTheTextIsOnlyWhitespace()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.Text = "       ";
+
+                ViewModel.SuggestCreation.Should().BeFalse();
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfTheTextIsLongerThanTwoHundredAndFiftyCharacters()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.Text = "Some absurdly long project name created solely for making sure that the SuggestCreation property returns false when the project name is longer than the previously specified threshold so that the mobile apps behave and avoid crashes in backend and even bigger problems.";
+
+                ViewModel.SuggestCreation.Should().BeFalse();
+            }
+        }
+
+        public sealed class TheCreateProjectCommand : SelectProjectViewModelTest
+        {
+            [Fact]
+            public async Task DoesNotCloseTheViewModelIfTheProjectIsNotCreated()
+            {
+                setupProjectCreationResult(null);
+                ViewModel.Prepare(SelectProjectParameter.WithIds(null, null, 10));
+                await ViewModel.Initialize();
+                ViewModel.Text = "New project name";
+
+                await ViewModel.CreateProjectCommand.ExecuteAsync();
+
+                await NavigationService.DidNotReceive().Close(ViewModel, Arg.Any<SelectProjectParameter>());
+            }
+
+            [Fact]
+            public async Task ClosesTheViewModelReturningTheCreatedIdIfTheProjectIsCreated()
+            {
+                const long projectId = 10;
+                setupProjectCreationResult(projectId);
+                ViewModel.Prepare(SelectProjectParameter.WithIds(null, null, 10));
+                await ViewModel.Initialize();
+                ViewModel.Text = "New project name";
+
+                await ViewModel.CreateProjectCommand.ExecuteAsync();
+
+                await NavigationService.Received()
+                    .Close(ViewModel, Arg.Is<SelectProjectParameter>(p => p.ProjectId == projectId));
+            }
+
+            private void setupProjectCreationResult(long? returnedId)
+            {
+                NavigationService
+                    .Navigate<string, long?>(typeof(EditProjectViewModel), Arg.Any<string>())
+                    .Returns(Task.FromResult(returnedId));
+
+                if (returnedId == null) return;
+
+                var project = Substitute.For<IDatabaseProject>();
+                project.Id.Returns(returnedId.Value);
+                DataSource.Projects.GetById(returnedId.Value).Returns(Observable.Return(project));
+            }
+        }
+
         public sealed class TheSuggestionsProperty : SelectProjectViewModelTest
         {
             private IEnumerable<ProjectSuggestion> getProjectSuggestions(int count, int workspaceId)

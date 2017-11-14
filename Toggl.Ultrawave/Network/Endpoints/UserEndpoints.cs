@@ -16,5 +16,7 @@ namespace Toggl.Ultrawave.Network
         public Endpoint Post => Endpoint.Post(baseUrl, "signup");
 
         public Endpoint Put => Endpoint.Put(baseUrl, "me");
+
+        public Endpoint ResetPassword => Endpoint.Post(baseUrl, "me/lost_passwords");
     }
 }

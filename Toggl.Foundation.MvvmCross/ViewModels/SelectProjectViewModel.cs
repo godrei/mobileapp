@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
@@ -15,6 +16,7 @@ using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
+using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -26,15 +28,29 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IMvxNavigationService navigationService;
         private readonly IDialogService dialogService;
         private readonly Subject<string> infoSubject = new Subject<string>();
-        private long workspaceId;
-        private long? projectId;
+
         private long? taskId;
+        private long? projectId;
+        private long workspaceId;
 
         public string Text { get; set; } = "";
 
-        public IMvxCommand<ProjectSuggestion> ToggleTaskSuggestionsCommand { get; }
+        public bool SuggestCreation
+        {
+            get
+            {
+                var text = Text.Trim();
+                return !string.IsNullOrEmpty(text)
+                    && !Suggestions.Any(c => c.Any(s => s is ProjectSuggestion pS && pS.ProjectName == text))
+                    && Encoding.UTF8.GetByteCount(text) <= MaxProjectNameLengthInBytes;
+            }
+        }
 
         public IMvxAsyncCommand CloseCommand { get; }
+
+        public IMvxAsyncCommand CreateProjectCommand { get; }
+
+        public IMvxCommand<ProjectSuggestion> ToggleTaskSuggestionsCommand { get; }
 
         public IMvxAsyncCommand<AutocompleteSuggestion> SelectProjectCommand { get; }
 
@@ -53,8 +69,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.dialogService = dialogService;
 
             CloseCommand = new MvxAsyncCommand(close);
-            ToggleTaskSuggestionsCommand = new MvxCommand<ProjectSuggestion>(toggleTaskSuggestions);
+            CreateProjectCommand = new MvxAsyncCommand(createProject);
             SelectProjectCommand = new MvxAsyncCommand<AutocompleteSuggestion>(selectProject);
+            ToggleTaskSuggestionsCommand = new MvxCommand<ProjectSuggestion>(toggleTaskSuggestions);
         }
 
         public override void Prepare(SelectProjectParameter parameter)
@@ -91,6 +108,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             suggestions
                 .GroupByWorkspaceAddingNoProject()
                 .ForEach(Suggestions.Add);
+        }
+
+        private async Task createProject()
+        {
+            if (!SuggestCreation) return;
+            
+            var createdProjectId = await navigationService.Navigate<EditProjectViewModel, string, long?>(Text.Trim());
+            if (createdProjectId == null) return;
+            
+            var project = await dataSource.Projects.GetById(createdProjectId.Value);
+            var parameter = SelectProjectParameter.WithIds(project.Id, null, project.WorkspaceId);
+            await navigationService.Close(this, parameter);
         }
 
         private Task close()

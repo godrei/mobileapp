@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Mail;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ using Toggl.Foundation.Tests.Generators;
 using Toggl.Multivac.Models;
 using Microsoft.Reactive.Testing;
 using System.Reactive.Concurrency;
+using FsCheck.Xunit;
 
 namespace Toggl.Foundation.Tests.Login
 {
@@ -137,6 +139,41 @@ namespace Toggl.Foundation.Tests.Login
                 await LoginManager
                         .Login(Email, Password)
                         .SingleAsync();
+            }
+        }
+
+        public sealed class TheResetPasswordMethod : LoginManagerTest
+        {
+            [Fact]
+            public void ThrowsWhenEmailIsInvalid()
+            {
+                Action tryingToResetWithInvalidEmail = () => LoginManager.ResetPassword(Email.Invalid).Wait();
+
+                tryingToResetWithInvalidEmail.ShouldThrow<ArgumentException>();
+            }
+
+            [Fact]
+            public async Task UsesApiWithoutCredentials()
+            {
+                await LoginManager.ResetPassword(Email.FromString("some@email.com"));
+
+                ApiFactory.Received().CreateApiWith(Arg.Is<Credentials>(
+                    arg => arg.Header.Name == null
+                        && arg.Header.Value == null
+                        && arg.Header.Type == HttpHeader.HeaderType.None));
+            }
+
+            [Theory]
+            [InlineData("example@email.com")]
+            [InlineData("john.smith@gmail.com")]
+            [InlineData("h4cker123@domain.ru")]
+            public async Task CallsApiClientWithThePassedEmailAddress(string address)
+            {
+                var email = address.ToEmail();
+
+                await LoginManager.ResetPassword(email);
+
+                await Api.User.Received().ResetPassword(Arg.Is(email));
             }
         }
 

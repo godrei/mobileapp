@@ -9,5 +9,9 @@ namespace Toggl.Foundation.MvvmCross.Services
             string message,
             string confirmButtonText,
             string dismissButtonText);
+
+        Task<string> ShowMultipleChoiceDialog(
+            string cancelText,
+            params MultipleChoiceDialogAction[] actions);
     }
 }

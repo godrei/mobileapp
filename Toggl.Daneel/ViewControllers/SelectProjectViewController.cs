@@ -23,13 +23,23 @@ namespace Toggl.Daneel.ViewControllers
             
             var source = new SelectProjectTableViewSource(ProjectsTableView);
             ProjectsTableView.Source = source;
-            ProjectsTableView.TableFooterView = new UIView();
             source.ToggleTasksCommand = new MvxCommand<ProjectSuggestion>(toggleTaskSuggestions);
             
             var bindingSet = this.CreateBindingSet<SelectProjectViewController, SelectProjectViewModel>();
 
             //Table view
             bindingSet.Bind(source).To(vm => vm.Suggestions);
+            bindingSet.Bind(source)
+                      .For(v => v.CreateCommand)
+                      .To(vm => vm.CreateProjectCommand);
+
+            bindingSet.Bind(source)
+                      .For(v => v.SuggestCreation)
+                      .To(vm => vm.SuggestCreation);
+
+            bindingSet.Bind(source)
+                      .For(v => v.Text)
+                      .To(vm => vm.Text);
             
             //Text
             bindingSet.Bind(TextField).To(vm => vm.Text);

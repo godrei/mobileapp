@@ -162,6 +162,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .GetDefault()
                     .Returns(Observable.Return(Workspace));
 
+                DataSource.Workspaces
+                    .GetById(Arg.Any<long>())
+                    .Returns(Observable.Return(Workspace));
+
                 DataSource.Projects
                     .Create(Arg.Any<CreateProjectDTO>())
                     .Returns(Observable.Return(project));
@@ -217,7 +221,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact]
-            public async Task SetsBillableToNullIfTheDefaultWorkspaceIfNotPro()
+            public async Task SetsBillableToNullIfTheWorkspaceIfNotPro()
             {
                 Workspace.Id.Returns(WorkspaceId);
                 ViewModel.Prepare("Some name");
@@ -232,7 +236,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Theory]
             [InlineData(true)]
             [InlineData(false)]
-            public async Task SetsBillableToTheValueOfTheProjectsBillableByDefaultPropertyIfTheDefaultWorkspaceIsPro(
+            public async Task SetsBillableToTheValueOfTheProjectsBillableByDefaultPropertyIfTheWorkspaceIsPro(
                 bool billableByDefault)
             {
                 Workspace.Id.Returns(proWorkspaceId);
@@ -274,6 +278,81 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await ViewModel.PickColorCommand.ExecuteAsync();
 
                 ViewModel.Color.ARGB.Should().Be(expectedColor.ARGB);
+            }
+        }
+
+        public sealed class ThePickWorkspaceCommand : EditProjectViewModelTest
+        {
+            private const long workspaceId = 10;
+            private const long defaultWorkspaceId = 11;
+            private const string workspaceName = "My custom workspace";
+            private readonly IDatabaseWorkspace workspace = Substitute.For<IDatabaseWorkspace>();
+            private readonly IDatabaseWorkspace defaultWorkspace = Substitute.For<IDatabaseWorkspace>();
+
+            public ThePickWorkspaceCommand()
+            {
+                workspace.Id.Returns(workspaceId);
+                workspace.Name.Returns(workspaceName);
+                defaultWorkspace.Id.Returns(defaultWorkspaceId);
+
+                DataSource.Workspaces.GetDefault()
+                    .Returns(Observable.Return(defaultWorkspace));
+                
+                DataSource.Workspaces.GetById(workspaceId)
+                    .Returns(Observable.Return(workspace));
+
+                ViewModel.Prepare();
+            }
+
+            [Fact]
+            public async Task CallsTheSelectWorkspaceViewModel()
+            {
+                await ViewModel.PickWorkspaceCommand.ExecuteAsync();
+
+                await NavigationService.Received()
+                    .Navigate<long?>(typeof(SelectWorkspaceViewModel));
+            }
+
+            [Fact]
+            public async Task SetsTheReturnedWorkspaceNameAsTheWorkspaceNameProperty()
+            {
+                NavigationService
+                    .Navigate<long?>(typeof(SelectWorkspaceViewModel))
+                    .Returns(Task.FromResult<long?>(workspaceId));
+
+                await ViewModel.PickWorkspaceCommand.ExecuteAsync();
+
+                ViewModel.WorkspaceName.Should().Be(workspaceName);
+            }
+
+            [Fact]
+            public async Task ResetsTheClientNameWhenTheWorkspaceChanges()
+            {
+                NavigationService
+                    .Navigate<long?>(typeof(SelectWorkspaceViewModel))
+                    .Returns(Task.FromResult<long?>(workspaceId));
+
+                await ViewModel.PickWorkspaceCommand.ExecuteAsync();
+
+                ViewModel.ClientName.Should().BeNullOrEmpty();
+            }
+
+            [Fact]
+            public async Task PicksADefaultColorIfTheSelectedColorIsCustomAndTheWorkspaceIsNotPro()
+            {
+                NavigationService
+                    .Navigate<MvxColor, MvxColor>(typeof(SelectColorViewModel), Arg.Any<MvxColor>())
+                    .Returns(Task.FromResult(MvxColors.Azure));
+                NavigationService
+                    .Navigate<long?>(typeof(SelectWorkspaceViewModel))
+                    .Returns(Task.FromResult<long?>(workspaceId));
+                DataSource.Workspaces.WorkspaceHasFeature(workspaceId, WorkspaceFeatureId.Pro)
+                    .Returns(Observable.Return(false));
+                await ViewModel.PickColorCommand.ExecuteAsync();
+
+                await ViewModel.PickWorkspaceCommand.ExecuteAsync();
+
+                ViewModel.Color.Should().NotBe(MvxColors.Azure);
             }
         }
 

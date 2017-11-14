@@ -361,6 +361,10 @@
     <ImageAsset Include="Resources\Images.xcassets\icUnsynced.imageset\icUnsynced%402x.png" />
     <ImageAsset Include="Resources\Images.xcassets\icUnsynced.imageset\icUnsynced%403x.png" />
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\toggl-app-icon-1024x1024.png" />
+    <ImageAsset Include="Resources\Images.xcassets\search.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\search.imageset\search.png" />
+    <ImageAsset Include="Resources\Images.xcassets\search.imageset\search%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\search.imageset\search%403x.png" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
@@ -394,6 +398,8 @@
     <InterfaceDefinition Include="ViewControllers\EditProjectViewController.xib" />
     <InterfaceDefinition Include="ViewControllers\SelectColorViewController.xib" />
     <InterfaceDefinition Include="Views\ColorSelectionViewCell.xib" />
+    <InterfaceDefinition Include="ViewControllers\SelectWorkspaceViewController.xib" />
+    <InterfaceDefinition Include="Views\WorkspaceViewCell.xib" />
     <InterfaceDefinition Include="Views\CreateEntityViewCell.xib" />
     <InterfaceDefinition Include="Views\ClientViewCell.xib" />
     <InterfaceDefinition Include="ViewControllers\SelectClientViewController.xib" />
@@ -596,6 +602,15 @@
     <Compile Include="Views\ColorSelectionViewCell.designer.cs">
       <DependentUpon>ColorSelectionViewCell.cs</DependentUpon>
     </Compile>
+    <Compile Include="ViewControllers\SelectWorkspaceViewController.cs" />
+    <Compile Include="ViewControllers\SelectWorkspaceViewController.designer.cs">
+      <DependentUpon>SelectWorkspaceViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewSources\WorkspaceTableViewSource.cs" />
+    <Compile Include="Views\WorkspaceViewCell.cs" />
+    <Compile Include="Views\WorkspaceViewCell.designer.cs">
+      <DependentUpon>WorkspaceViewCell.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\CreateEntityViewCell.cs" />
     <Compile Include="Views\CreateEntityViewCell.designer.cs">
       <DependentUpon>CreateEntityViewCell.cs</DependentUpon>
@@ -609,6 +624,7 @@
     <Compile Include="ViewControllers\SelectClientViewController.designer.cs">
       <DependentUpon>SelectClientViewController.cs</DependentUpon>
     </Compile>
+    <Compile Include="ViewSources\CreateSuggestionGroupedTableViewSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">
@@ -647,6 +663,7 @@
     <Folder Include="Resources\Images.xcassets\icCheckBoxUnchecked.imageset\" />
     <Folder Include="Views\Onboarding\" />
     <Folder Include="Views\Interfaces\" />
+    <Folder Include="Resources\Images.xcassets\search.imageset\" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.2\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />

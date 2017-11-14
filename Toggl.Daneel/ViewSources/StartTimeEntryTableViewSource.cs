@@ -11,23 +11,18 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class StartTimeEntryTableViewSource : GroupedCollectionTableViewSource<AutocompleteSuggestion>
+    public sealed class StartTimeEntryTableViewSource : CreateSuggestionGroupedTableViewSource<AutocompleteSuggestion>
     {
         private const string tagCellIdentifier = nameof(TagSuggestionViewCell);
         private const string taskCellIdentifier = nameof(TaskSuggestionViewCell);
         private const string headerCellIdentifier = nameof(WorkspaceHeaderViewCell);
         private const string timeEntryCellIdentifier = nameof(StartTimeEntryViewCell);
         private const string projectCellIdentifier = nameof(ProjectSuggestionViewCell);
-        private const string createEntityCellIdentifier = nameof(CreateEntityViewCell);
         private const string emptySuggestionIdentifier = nameof(StartTimeEntryEmptyViewCell);
 
         public bool UseGrouping { get; set; }
 
-        public string CurrentQuery { get; set; }
-
         public bool IsSuggestingProjects { get; set; }
-
-        public IMvxCommand<string> CreateProjectCommand { get; set; }
 
         public IMvxCommand<ProjectSuggestion> ToggleTasksCommand { get; set; }
 
@@ -40,7 +35,6 @@ namespace Toggl.Daneel.ViewSources
             tableView.RegisterNibForCellReuse(TagSuggestionViewCell.Nib, tagCellIdentifier);
             tableView.RegisterNibForCellReuse(TaskSuggestionViewCell.Nib, taskCellIdentifier);
             tableView.RegisterNibForCellReuse(StartTimeEntryViewCell.Nib, timeEntryCellIdentifier);
-            tableView.RegisterNibForCellReuse(CreateEntityViewCell.Nib, createEntityCellIdentifier);
             tableView.RegisterNibForCellReuse(ProjectSuggestionViewCell.Nib, projectCellIdentifier);
             tableView.RegisterNibForCellReuse(StartTimeEntryEmptyViewCell.Nib, emptySuggestionIdentifier);
             tableView.RegisterNibForHeaderFooterViewReuse(WorkspaceHeaderViewCell.Nib, headerCellIdentifier);
@@ -63,7 +57,7 @@ namespace Toggl.Daneel.ViewSources
             if (cell is ProjectSuggestionViewCell projectCell)
             {
                 projectCell.ToggleTasksCommand = ToggleTasksCommand;
-                
+
                 var previousItemPath = NSIndexPath.FromItemSection(indexPath.Item - 1, indexPath.Section);
                 var previous = GetItemAt(previousItemPath);
                 var previousIsTask = previous is TaskSuggestion;
@@ -75,20 +69,28 @@ namespace Toggl.Daneel.ViewSources
 
         public override nint RowsInSection(UITableView tableview, nint section)
         {
-            var rows = base.RowsInSection(tableview, section);
-            return rows == 0 && IsSuggestingProjects ? 1 : rows;
+            if (UseGrouping) return base.RowsInSection(tableview, section);
+
+            return GetGroupAt(section).Count() + (SuggestCreation ? 1 : 0);
         }
 
         public override nint NumberOfSections(UITableView tableView)
         {
-            var sections = base.NumberOfSections(tableView);
-            return sections == 0 && IsSuggestingProjects ? 1 : sections;
+            if (!UseGrouping) return 1;
+
+            return base.NumberOfSections(tableView);
         }
 
         protected override object GetItemAt(NSIndexPath indexPath)
         {
-            if (ItemsSource.Count() == 0 && IsSuggestingProjects)
-                return $"Create project \"{CurrentQuery}\"";
+            if (!UseGrouping && SuggestCreation)
+            {
+                var index = (int)indexPath.Item - 1;
+                if (index < 0) return GetCreateSuggestionItem();
+
+                var newIndexPath = NSIndexPath.FromRowSection(indexPath.Section, index);
+                return GroupedItems.ElementAtOrDefault(indexPath.Section)?.ElementAtOrDefault(index);
+            }
 
             return base.GetItemAt(indexPath);
         }
@@ -99,26 +101,15 @@ namespace Toggl.Daneel.ViewSources
         protected override UITableViewCell GetOrCreateCellFor(UITableView tableView, NSIndexPath indexPath, object item)
             => tableView.DequeueReusableCell(getIdentifier(item), indexPath);
 
-        public override nfloat GetHeightForHeader(UITableView tableView, nint section) 
-            => UseGrouping ? 40 : 0;
+        public override nfloat GetHeightForHeader(UITableView tableView, nint section)
+            => !UseGrouping ? 0 : base.GetHeightForHeader(tableView, section);
 
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => 48;
-
-        public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
-        {
-            if (ItemsSource.Count() == 0)
-            {
-                CreateProjectCommand.Execute(CurrentQuery);
-                return;
-            }
-
-            base.RowSelected(tableView, indexPath);
-        }
 
         private string getIdentifier(object item)
         {
             if (item is string)
-                return createEntityCellIdentifier;
+                return CreateEntityCellIdentifier;
 
             if (item is ProjectSuggestion)
                 return projectCellIdentifier;
@@ -128,11 +119,13 @@ namespace Toggl.Daneel.ViewSources
 
             if (item is TagSuggestion)
                 return tagCellIdentifier;
-            
+
             if (item is TaskSuggestion)
                 return taskCellIdentifier;
 
             return timeEntryCellIdentifier;
         }
+
+        protected override object GetCreateSuggestionItem() => $"Create project \"{Text}\"";
     }
 }

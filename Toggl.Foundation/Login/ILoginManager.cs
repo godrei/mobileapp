@@ -8,5 +8,6 @@ namespace Toggl.Foundation.Login
     {
         ITogglDataSource GetDataSourceIfLoggedIn();
         IObservable<ITogglDataSource> Login(Email email, string password);
+        IObservable<string> ResetPassword(Email email);
     }
 }

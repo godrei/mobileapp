@@ -76,6 +76,8 @@
     <Compile Include="ViewModels\EditProjectViewModel.cs" />
     <Compile Include="ViewModels\SelectColorViewModel.cs" />
     <Compile Include="ViewModels\SelectableColorViewModel.cs" />
+    <Compile Include="ViewModels\SelectWorkspaceViewModel.cs" />
+    <Compile Include="Services\MultipleChoiceDialogAction.cs" />
     <Compile Include="ViewModels\SelectClientViewModel.cs" />
   </ItemGroup>
   <ItemGroup>

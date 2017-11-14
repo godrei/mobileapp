@@ -51,6 +51,15 @@ namespace Toggl.Foundation.Login
                     });
         }
 
+        public IObservable<string> ResetPassword(Email email)
+        {
+            if (!email.IsValid)
+                throw new ArgumentException("A valid email must be provided when trying to reset forgotten password.");
+
+            var api = apiFactory.CreateApiWith(Credentials.None);
+            return api.User.ResetPassword(email);
+        }
+
         public ITogglDataSource GetDataSourceIfLoggedIn()
         {
             return database.User

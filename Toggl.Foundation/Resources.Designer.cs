@@ -305,6 +305,12 @@ namespace Toggl.Foundation {
             }
         }
         
+        public static string Delete {
+            get {
+                return ResourceManager.GetString("Delete", resourceCulture);
+            }
+        }
+                
         public static string NewProject {
             get {
                 return ResourceManager.GetString("NewProject", resourceCulture);

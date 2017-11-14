@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Foundation;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Plugins.Color.iOS;
@@ -9,7 +10,7 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class SelectProjectTableViewSource : GroupedCollectionTableViewSource<AutocompleteSuggestion>
+    public sealed class SelectProjectTableViewSource : CreateSuggestionGroupedTableViewSource<AutocompleteSuggestion>
     {
         private const string taskCellIdentifier = nameof(TaskSuggestionViewCell);
         private const string headerCellIdentifier = nameof(WorkspaceHeaderViewCell);
@@ -23,8 +24,8 @@ namespace Toggl.Daneel.ViewSources
             tableView.TableFooterView = new UIView();
             tableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
             tableView.SeparatorColor = Color.StartTimeEntry.SeparatorColor.ToNativeColor();
-            tableView.RegisterNibForCellReuse(ProjectSuggestionViewCell.Nib, projectCellIdentifier);
             tableView.RegisterNibForCellReuse(TaskSuggestionViewCell.Nib, taskCellIdentifier);
+            tableView.RegisterNibForCellReuse(ProjectSuggestionViewCell.Nib, projectCellIdentifier);
             tableView.RegisterNibForHeaderFooterViewReuse(WorkspaceHeaderViewCell.Nib, headerCellIdentifier);
         }
 
@@ -50,13 +51,14 @@ namespace Toggl.Daneel.ViewSources
 
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => 48;
 
-        public override nfloat GetHeightForHeader(UITableView tableView, nint section) => 40;
-
         protected override UITableViewCell GetOrCreateCellFor(UITableView tableView, NSIndexPath indexPath, object item)
             => tableView.DequeueReusableCell(getIdentifier(item), indexPath);
 
         private string getIdentifier(object item)
         {
+            if (item is string)
+                return CreateEntityCellIdentifier;
+
             if (item is ProjectSuggestion)
                 return projectCellIdentifier;
             
@@ -65,5 +67,7 @@ namespace Toggl.Daneel.ViewSources
 
             throw new ArgumentException($"{nameof(item)} must be either of type {nameof(ProjectSuggestion)} or {nameof(TaskSuggestion)}.");
         }
+
+        protected override object GetCreateSuggestionItem() => $"Create project \"{Text}\"";
     }
 }
