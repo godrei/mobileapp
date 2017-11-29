@@ -61,7 +61,7 @@ namespace Toggl.Daneel.ViewSources
 
         public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
         {
-            if (SuggestCreation && indexPath.Section == 0)
+            if (SuggestCreation && indexPath.Section == 0 && indexPath.Row == 0)
             {
                 CreateCommand.Execute();
                 return;

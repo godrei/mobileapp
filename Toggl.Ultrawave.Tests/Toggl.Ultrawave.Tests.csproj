@@ -150,6 +150,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiClients\ProjectsSummaryReportsApiTests.cs" />
     <Compile Include="Models\TimeEntryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\UserTests.cs" />
@@ -170,6 +171,8 @@
     <Compile Include="Exceptions\ApiErrorResponsesTests.cs" />
     <Compile Include="Models\WorkspaceFeaturesTests.cs" />
     <Compile Include="Serialization\RequiresFeatureAttributeSerializaitonTests.cs" />
+    <Compile Include="Models\Reports\ProjectSummaryTests.cs" />
+    <Compile Include="Models\Reports\ProjectsSummaryTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Ultrawave\Toggl.Ultrawave.csproj">
@@ -179,6 +182,10 @@
     <ProjectReference Include="..\Toggl.Multivac\Toggl.Multivac.csproj">
       <Project>{4A9CF7CD-8EB4-435D-958B-98A9FFC14876}</Project>
       <Name>Toggl.Multivac</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Toggl.Multivac.Tests\Toggl.Multivac.Tests.csproj">
+      <Project>{DEAB771F-ED46-4A27-AD25-F26723820F93}</Project>
+      <Name>Toggl.Multivac.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

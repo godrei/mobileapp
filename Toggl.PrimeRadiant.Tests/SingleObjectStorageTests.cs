@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using NSubstitute;
 using Toggl.PrimeRadiant.Exceptions;
 using Xunit;
 
@@ -22,7 +25,7 @@ namespace Toggl.PrimeRadiant.Tests
 
         protected abstract ISingleObjectStorage<TTestModel> Storage { get; }
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public void TheSingleMethodThrowsIfThereIsNoDataInTheRepository()
         {
             Func<Task> callingGetLastInAnEmptyRepository =
@@ -32,7 +35,7 @@ namespace Toggl.PrimeRadiant.Tests
                 .ShouldThrow<EntityNotFoundException>();
         }
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public async Task TheSingleMethodAlwaysReturnsASingleElement()
         {
             var testEntity = new TTestModel();
@@ -42,7 +45,7 @@ namespace Toggl.PrimeRadiant.Tests
             element.Should().Be(testEntity);
         }
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public async Task TheCreateModelThrowsIfAnItemAlreadyExistsRegardlessOfId()
         {
             var testEntity = new TTestModel();
@@ -54,5 +57,21 @@ namespace Toggl.PrimeRadiant.Tests
             callingCreateASecondTime
                 .ShouldThrow<EntityAlreadyExistsException>();
         }
+
+        [Theory, LogIfTooSlow]
+        [InlineData(2)]
+        [InlineData(5)]
+        [InlineData(100)]
+        public void TheBatchUpdateMehtodThrowsWhenThereIsMoreThanEntityToUpdate(int entitiesToUpdate)
+        {
+            var batch = Enumerable.Range(0, entitiesToUpdate).Select(id => ((long)id, new TTestModel()));
+
+            Func<Task> callingBatchUpdate = async () => await callBatchUpdate(batch);
+
+            callingBatchUpdate.ShouldThrow<ArgumentException>();
+        }
+
+        private IObservable<IEnumerable<IConflictResolutionResult<TTestModel>>> callBatchUpdate(IEnumerable<(long, TTestModel)> batch)
+            => Storage.BatchUpdate(batch, (a, b) => ConflictResolutionMode.Ignore, Substitute.For<IRivalsResolver<TTestModel>>());
     }
 }

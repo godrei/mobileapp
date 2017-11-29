@@ -1,4 +1,5 @@
-﻿using MvvmCross.Binding.BindingContext;
+﻿using System;
+using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.iOS.Views;
 using MvvmCross.Plugins.Color;
@@ -13,7 +14,7 @@ namespace Toggl.Daneel.ViewControllers
     [ModalCardPresentation]
     public sealed partial class EditProjectViewController : MvxViewController<EditProjectViewModel>
     {
-        private const int switchHeight = 24;
+        private const float nameAlreadyTakenHeight = 16;
 
         public EditProjectViewController() 
             : base(nameof(EditProjectViewController), null)
@@ -25,6 +26,8 @@ namespace Toggl.Daneel.ViewControllers
             base.ViewDidLoad();
 
             prepareViews();
+
+            var heightConverter = new BoolToConstantValueConverter<nfloat>(nameAlreadyTakenHeight, 0);
 
             var bindingSet = this.CreateBindingSet<EditProjectViewController, EditProjectViewModel>();
 
@@ -43,6 +46,11 @@ namespace Toggl.Daneel.ViewControllers
                       .For(v => v.BindTap())
                       .To(vm => vm.PickWorkspaceCommand);
 
+            bindingSet.Bind(ProjectNameUsedErrorTextHeight)
+                      .For(v => v.Constant)
+                      .To(vm => vm.IsNameAlreadyTaken)
+                      .WithConversion(heightConverter);
+            
             //State
             bindingSet.Bind(NameTextField).To(vm => vm.Name);
             bindingSet.Bind(WorkspaceLabel).To(vm => vm.WorkspaceName);
@@ -66,7 +74,7 @@ namespace Toggl.Daneel.ViewControllers
 
         private void prepareViews()
         {
-            PrivateProjectSwitch.Resize(switchHeight);
+            PrivateProjectSwitch.Resize();
         }
     }
 }

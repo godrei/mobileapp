@@ -29,6 +29,12 @@ namespace Toggl.Daneel.Views
             set => TopSeparatorView.Hidden = value;
         }
 
+        public bool BottomSeparatorHidden
+        {
+            get => BottomSeparatorView.Hidden;
+            set => BottomSeparatorView.Hidden = value;
+        }
+
         static ProjectSuggestionViewCell()
         {
             Nib = UINib.FromName(nameof(ProjectSuggestionViewCell), NSBundle.MainBundle);

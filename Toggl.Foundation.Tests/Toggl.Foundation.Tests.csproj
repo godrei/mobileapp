@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\xunit.runner.visualstudio.2.3.1\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\packages\xunit.runner.visualstudio.2.3.1\build\net20\xunit.runner.visualstudio.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -199,6 +200,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\ApiExceptions.cs" />
     <Compile Include="MvvmCross\ViewModels\EditDurationViewModelTests.cs" />
     <Compile Include="MvvmCross\ViewModels\SelectDateTimeViewModelTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -224,6 +226,9 @@
     <Compile Include="Sync\States\Push\Clients\CreateClientTests.cs" />
     <Compile Include="Sync\States\Push\Clients\PushClientsStateTests.cs" />
     <Compile Include="Sync\States\Push\Clients\UnsyncableClientStateTests.cs" />
+    <Compile Include="Sync\States\Push\Users\PushUsersStateTests.cs" />
+    <Compile Include="Sync\States\Push\Users\UnsyncableUserStateTests.cs" />
+    <Compile Include="Sync\States\Push\Users\UpdateUserStateTests.cs" />
     <Compile Include="Sync\StateTreeTests.cs" />
     <Compile Include="Sync\SyncManagerTests.cs" />
     <Compile Include="Sync\SyncStateQueueTests.cs" />
@@ -278,6 +283,10 @@
     <Compile Include="MvvmCross\ViewModels\SelectWorkspaceViewModelTests.cs" />
     <Compile Include="MvvmCross\ViewModels\EditProjectViewModelTests.cs" />
     <Compile Include="MvvmCross\ViewModels\SelectClientViewModelTests.cs" />
+    <Compile Include="DataSources\TagsDataSourceTests.cs" />
+    <Compile Include="DataSources\BaseDataSourceTests.cs" />
+    <Compile Include="MvvmCross\ViewModels\OutdatedAppViewModelTests.cs" />
+    <Compile Include="MvvmCross\ViewModels\TokenResetViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MvvmCross\ViewModels\StartTimeEntryViewModelTests.cs" />
@@ -310,6 +319,10 @@
     <ProjectReference Include="..\Toggl.Ultrawave\Toggl.Ultrawave.csproj">
       <Project>{B4E4943F-0574-4BEF-9ADC-B19102458754}</Project>
       <Name>Toggl.Ultrawave</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Toggl.Multivac.Tests\Toggl.Multivac.Tests.csproj">
+      <Project>{DEAB771F-ED46-4A27-AD25-F26723820F93}</Project>
+      <Name>Toggl.Multivac.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

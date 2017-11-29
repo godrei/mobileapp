@@ -9,7 +9,9 @@ using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Sync;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
+using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
+using Toggl.Ultrawave.Exceptions;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -22,6 +24,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
         private readonly IMvxNavigationService navigationService;
+        private readonly IAccessRestrictionStorage accessRestrictionStorage;
 
         public TimeSpan CurrentTimeEntryElapsedTime { get; private set; } = TimeSpan.Zero;
 
@@ -55,15 +58,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand RefreshCommand { get; }
 
-        public MainViewModel(ITogglDataSource dataSource, ITimeService timeService, IMvxNavigationService navigationService)
+        public MainViewModel(
+            ITogglDataSource dataSource,
+            ITimeService timeService,
+            IMvxNavigationService navigationService,
+            IAccessRestrictionStorage accessRestrictionStorage)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
+            Ensure.Argument.IsNotNull(accessRestrictionStorage, nameof(accessRestrictionStorage));
 
             this.dataSource = dataSource;
             this.timeService = timeService;
             this.navigationService = navigationService;
+            this.accessRestrictionStorage = accessRestrictionStorage;
 
             RefreshCommand = new MvxCommand(refresh);
             OpenSettingsCommand = new MvxAsyncCommand(openSettings);
@@ -85,10 +94,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .CurrentlyRunningTimeEntry
                 .Subscribe(setRunningEntry);
 
-            var syncManagerDisposable = 
-                dataSource.SyncManager.StateObservable
-                    .Subscribe(syncState => IsSyncing = syncState != SyncState.Sleep);
-            
+            var syncManagerDisposable =
+                dataSource.SyncManager.ProgressObservable
+                    .Subscribe(progress => IsSyncing = progress == SyncProgress.Syncing, onSyncingError);
+
             var spiderDisposable =
                 dataSource.TimeEntries.IsEmpty
                     .Subscribe(isEmpty => SpiderIsVisible = !isWelcome && isEmpty);
@@ -139,5 +148,26 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private Task editTimeEntry()
             => navigationService.Navigate<EditTimeEntryViewModel, long>(CurrentTimeEntryId.Value);
+
+        private void onSyncingError(Exception exception)
+        {
+            switch (exception)
+            {
+                case ApiDeprecatedException apiDeprecated:
+                    accessRestrictionStorage.SetApiOutdated();
+                    navigationService.Navigate<OutdatedAppViewModel>();
+                    return;
+                case ClientDeprecatedException clientDeprecated:
+                    accessRestrictionStorage.SetClientOutdated();
+                    navigationService.Navigate<OutdatedAppViewModel>();
+                    return;
+                case UnauthorizedException unauthorized:
+                    accessRestrictionStorage.SetUnauthorizedAccess();
+                    navigationService.Navigate<TokenResetViewModel>();
+                    return;
+                default:
+                    throw new ArgumentException(nameof(exception));
+            }
+        }
     }
 }

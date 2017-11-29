@@ -14,11 +14,11 @@ namespace Toggl.Ultrawave.ApiClients
         private readonly UserEndpoints endPoints;
         private readonly IJsonSerializer serializer;
 
-        public UserApi(UserEndpoints endPoints, IApiClient apiClient, IJsonSerializer serializer,
+        public UserApi(Endpoints endPoints, IApiClient apiClient, IJsonSerializer serializer,
             Credentials credentials)
-            : base(apiClient, serializer, credentials)
+            : base(apiClient, serializer, credentials, endPoints.LoggedIn)
         {
-            this.endPoints = endPoints;
+            this.endPoints = endPoints.User;
             this.serializer = serializer;
         }
 
@@ -54,6 +54,7 @@ namespace Toggl.Ultrawave.ApiClients
             return CreateObservable<User>(endPoints.Post, new HttpHeader[0], json);
         }
 
+        [Preserve(AllMembers = true)]
         private class SignUpParameters
         {
             public string Email { get; set; }
@@ -62,6 +63,7 @@ namespace Toggl.Ultrawave.ApiClients
 
             public WorkspaceParameters Workspace { get; set; }
 
+            [Preserve(AllMembers = true)]
             internal class WorkspaceParameters
             {
                 public string Name { get; set; }

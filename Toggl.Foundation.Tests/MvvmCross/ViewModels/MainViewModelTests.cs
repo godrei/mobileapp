@@ -1,13 +1,18 @@
-﻿﻿﻿using System;
+using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck.Xunit;
+using MvvmCross.Core.Navigation;
 using NSubstitute;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
+using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
+using Toggl.Ultrawave.Exceptions;
+using Toggl.Ultrawave.Network;
 using Xunit;
 using TimeEntry = Toggl.Foundation.Models.TimeEntry;
 
@@ -17,22 +22,36 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
     {
         public abstract class MainViewModelTest : BaseViewModelTests<MainViewModel>
         {
+            protected IAccessRestrictionStorage AccessRestrictionStorage { get; } = Substitute.For<IAccessRestrictionStorage>();
+
+            protected ISubject<SyncProgress> ProgressSubject { get; } = new Subject<SyncProgress>();
+
             protected override MainViewModel CreateViewModel()
-                => new MainViewModel(DataSource, TimeService, NavigationService);
+                => new MainViewModel(DataSource, TimeService, NavigationService, AccessRestrictionStorage);
+
+            protected override void AdditionalSetup()
+            {
+                base.AdditionalSetup();
+
+                var syncManager = Substitute.For<ISyncManager>();
+                syncManager.ProgressObservable.Returns(ProgressSubject.AsObservable());
+                DataSource.SyncManager.Returns(syncManager);
+            }
         }
 
         public sealed class TheConstructor : MainViewModelTest
         {
-            [Theory]
-            [ClassData(typeof(ThreeParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useTimeService, bool useNavigationService)
+            [Theory, LogIfTooSlow]
+            [ClassData(typeof(FourParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useTimeService, bool useNavigationService, bool useAccessRestrictionStorage)
             {
                 var dataSource = useDataSource ? DataSource : null;
                 var timeService = useTimeService ? TimeService : null;
                 var navigationService = useNavigationService ? NavigationService : null;
+                var accessRestrictionStorage = useAccessRestrictionStorage ? AccessRestrictionStorage : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new MainViewModel(dataSource, timeService, navigationService);
+                    () => new MainViewModel(dataSource, timeService, navigationService, accessRestrictionStorage);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -41,7 +60,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheViewAppearedMethod : MainViewModelTest
         {
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void RequestsTheSuggestionsViewModel()
             {
                 ViewModel.ViewAppeared();
@@ -49,7 +68,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 NavigationService.Received().Navigate(typeof(SuggestionsViewModel));
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void RequestsTheLogTimeEntriesViewModel()
             {
                 ViewModel.ViewAppeared();
@@ -60,7 +79,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheStartTimeEntryCommand : MainViewModelTest
         {
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task NavigatesToTheStartTimeEntryViewModel()
             {
                 await ViewModel.StartTimeEntryCommand.ExecuteAsync();
@@ -84,7 +103,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheOpenSettingsCommand : MainViewModelTest
         {
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task NavigatesToTheSettingsViewModel()
             {
                 await ViewModel.OpenSettingsCommand.ExecuteAsync();
@@ -92,10 +111,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await NavigationService.Received().Navigate(typeof(SettingsViewModel));
             }
         }
-           
+
         public sealed class TheStopTimeEntryCommand : MainViewModelTest
         {
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task CallsTheStopMethodOnTheDataSource()
             {
                 var date = DateTimeOffset.UtcNow;
@@ -106,7 +125,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await DataSource.TimeEntries.Received().Stop(date);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task SetsTheElapsedTimeToZero()
             {
                 await ViewModel.StopTimeEntryCommand.ExecuteAsync();
@@ -114,7 +133,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.CurrentTimeEntryElapsedTime.Should().Be(TimeSpan.Zero);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task InitiatesPushSync()
             {
                 ViewModel.StopTimeEntryCommand.Execute();
@@ -122,7 +141,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await DataSource.SyncManager.Received().PushSync();
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task DoesNotInitiatePushSyncWhenSavingFails()
             {
                 DataSource.TimeEntries.Stop(Arg.Any<DateTimeOffset>())
@@ -166,7 +185,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 currentTimeEntrySubject.OnNext(timeEntry);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task IsSet()
             {
                 await prepare();
@@ -174,7 +193,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ActualValue.Should().Be(ExpectedValue);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task IsUnset()
             {
                 await prepare();
@@ -245,6 +264,72 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected override bool ExpectedValue => true;
 
             protected override bool ExpectedEmptyValue => false;
+        }
+
+        public sealed class SyncErrorHandling : MainViewModelTest
+        {
+            private IRequest request => Substitute.For<IRequest>();
+            private IResponse response => Substitute.For<IResponse>();
+
+            [Fact, LogIfTooSlow]
+            public async Task SetsTheOutdatedClientVersionFlag()
+            {
+                await ViewModel.Initialize();
+
+                ProgressSubject.OnError(new ClientDeprecatedException(request, response));
+
+                AccessRestrictionStorage.Received().SetClientOutdated();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task SetsTheOutdatedApiVersionFlag()
+            {
+                await ViewModel.Initialize();
+
+                ProgressSubject.OnError(new ApiDeprecatedException(request, response));
+
+                AccessRestrictionStorage.Received().SetApiOutdated();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task SetsTheUnauthorizedAccessFlag()
+            {
+                await ViewModel.Initialize();
+
+                ProgressSubject.OnError(new UnauthorizedException(request, response));
+
+                AccessRestrictionStorage.Received().SetUnauthorizedAccess();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task NavigatesToTheOutdatedClientScreen()
+            {
+                await ViewModel.Initialize();
+
+                ProgressSubject.OnError(new ClientDeprecatedException(request, response));
+
+                await NavigationService.Received().Navigate<OutdatedAppViewModel>();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task NavigatesToTheOutdatedApiScreen()
+            {
+                await ViewModel.Initialize();
+
+                ProgressSubject.OnError(new ApiDeprecatedException(request, response));
+
+                await NavigationService.Received().Navigate<OutdatedAppViewModel>();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task NavigatesToTheRepeatLoginScreen()
+            {
+                await ViewModel.Initialize();
+
+                ProgressSubject.OnError(new UnauthorizedException(request, response));
+
+                await NavigationService.Received().Navigate<TokenResetViewModel>();
+            }
         }
     }
 }

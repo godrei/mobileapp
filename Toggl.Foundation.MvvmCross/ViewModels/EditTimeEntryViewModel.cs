@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
@@ -9,13 +11,12 @@ using PropertyChanged;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.MvvmCross.Parameters;
+using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
-using System.Globalization;
 using static Toggl.Foundation.Helper.Constants;
-using Toggl.Foundation.MvvmCross.Services;
-using System.Text;
+using static Toggl.Multivac.Extensions.StringExtensions;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -41,13 +42,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public long Id { get; set; }
 
-        private int descriptionByteCount
-            => Encoding.UTF8.GetByteCount(Description);
-
-        public bool DescriptionLimitExceeded
-            => descriptionByteCount > MaxTimeEntryDescriptionLengthInBytes;
-
         public string Description { get; set; }
+
+        [DependsOn(nameof(Description))]
+        public int DescriptionRemainingLength
+            => MaxTimeEntryDescriptionLengthInBytes - Description.LengthInBytes();
+
+        [DependsOn(nameof(DescriptionRemainingLength))]
+        public bool DescriptionLimitExceeded
+            => DescriptionRemainingLength < 0;
 
         public string Project { get; set; }
 
@@ -202,7 +205,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var dto = new EditTimeEntryDto
             {
                 Id = Id,
-                Description = Description,
+                Description = Description?.Trim() ?? "",
                 StartTime = StartTime,
                 StopTime = StopTime,
                 ProjectId = projectId,
@@ -269,13 +272,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         
         private async Task editDuration()
         {
-            var currentDuration = DurationParameter.WithStartAndStop(StartTime, StopTime);
+            var currentDuration = DurationParameter.WithStartAndDuration(StartTime, Duration);
             var selectedDuration = await navigationService
                 .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(currentDuration)
                 .ConfigureAwait(false);
             
             StartTime = selectedDuration.Start;
-            StopTime = selectedDuration.Stop;
+            StopTime = selectedDuration.Start + (selectedDuration.Duration ?? TimeSpan.Zero);
         }
 
         private async Task selectTags()
@@ -331,7 +334,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private string trimTag(string tag)
         {
-            var tagLength = new StringInfo(tag).LengthInTextElements;
+            var tagLength = tag.LengthInGraphemes();
             if (tagLength <= maxTagLength)
                 return tag;
 

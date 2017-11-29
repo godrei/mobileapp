@@ -174,5 +174,10 @@ namespace Toggl.Daneel
         {
             binding = new MvxUIDatePickerDateTargetBinding(null, null);
         }
+
+        public void Include(MvxUISliderValueTargetBinding binding)
+        {
+            binding = new MvxUISliderValueTargetBinding(null, null);
+        }
     }
 }

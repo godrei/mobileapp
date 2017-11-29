@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using PropertyChanged;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
+using Toggl.PrimeRadiant.Models;
+using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -20,6 +24,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IMvxNavigationService navigationService;
         private readonly ITogglDataSource dataSource;
         private readonly Subject<string> textSubject = new Subject<string>();
+        private readonly BehaviorSubject<bool> hasTagsSubject = new BehaviorSubject<bool>(false);
         private readonly HashSet<long> selectedTagIds = new HashSet<long>();
 
         private long[] defaultResult;
@@ -27,12 +32,33 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public string Text { get; set; } = "";
 
+        public bool SuggestCreation
+        {
+            get
+            {
+                var text = Text.Trim();
+                return !string.IsNullOrEmpty(text)
+                       && !Tags.Any(tag => tag.Name == text.Trim())
+                       && Encoding.UTF8.GetByteCount(Text) <= MaxTagNameLengthInBytes;
+            }
+        }
+
         public MvxObservableCollection<SelectableTagViewModel> Tags { get; }
             = new MvxObservableCollection<SelectableTagViewModel>();
+
+        public bool IsEmpty { get; set; } = false;
+
+        [DependsOn(nameof(IsEmpty))]
+        public string PlaceholderText
+            => IsEmpty
+            ? Resources.AddTags
+            : Resources.AddFilterTags;
 
         public IMvxAsyncCommand CloseCommand { get; }
 
         public IMvxAsyncCommand SaveCommand { get; }
+
+        public IMvxAsyncCommand<string> CreateTagCommand { get; }
 
         public IMvxCommand<SelectableTagViewModel> SelectTagCommand { get; }
 
@@ -46,6 +72,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             CloseCommand = new MvxAsyncCommand(close);
             SaveCommand = new MvxAsyncCommand(save);
+            CreateTagCommand = new MvxAsyncCommand<string>(createTag);
             SelectTagCommand = new MvxCommand<SelectableTagViewModel>(selectTag);
         }
 
@@ -60,6 +87,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             await base.Initialize();
 
+
+            var initialHasTags = dataSource.Tags
+                                           .GetAll()
+                                           .Select(tags => tags.Where(tag => tag.WorkspaceId == workspaceId).Any());
+
+            hasTagsSubject.AsObservable()
+                          .Merge(initialHasTags)
+                          .Subscribe(hasTags => IsEmpty = !hasTags);
+
             textSubject.AsObservable()
                        .StartWith(Text)
                        .SelectMany(text => dataSource.AutocompleteProvider.Query(new QueryInfo(text, AutocompleteSuggestionType.Tags)))
@@ -70,7 +106,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void OnTextChanged()
         {
-            textSubject.OnNext(Text);
+            textSubject.OnNext(Text.Trim());
         }
 
         private void onTags(IEnumerable<TagSuggestion> tags)
@@ -100,6 +136,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 selectedTagIds.Add(tag.Id);
             else
                 selectedTagIds.Remove(tag.Id);
+        }
+
+        private async Task createTag(string name)
+        {
+            var createdTag = await dataSource.Tags.Create(name.Trim(), workspaceId);
+            selectedTagIds.Add(createdTag.Id);
+            Text = "";
+
+            hasTagsSubject.OnNext(true);
         }
     }
 }

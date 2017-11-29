@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Sync;
 using Toggl.Multivac;
@@ -23,7 +25,7 @@ namespace Toggl.Foundation.DataSources
             this.database = database;
 
             User = new UserDataSource(database.User);
-            Tags = new TagsDataSource(database.Tags);
+            Tags = new TagsDataSource(database.IdProvider, database.Tags, timeService);
             Tasks = new TasksDataSource(database.Tasks);
             Workspaces = new WorkspacesDataSource(database);
             Clients = new ClientsDataSource(database.IdProvider, database.Clients, timeService);
@@ -44,6 +46,24 @@ namespace Toggl.Foundation.DataSources
 
         public ISyncManager SyncManager { get; }
         public IAutocompleteProvider AutocompleteProvider { get; }
+
+        public IObservable<bool> HasUnsyncedData()
+            => Observable.Merge(
+                hasUnsyncedData(database.TimeEntries),
+                hasUnsyncedData(database.Projects),
+                hasUnsyncedData(database.User),
+                hasUnsyncedData(database.Tasks),
+                hasUnsyncedData(database.Clients),
+                hasUnsyncedData(database.Tags),
+                hasUnsyncedData(database.Workspaces))
+                .Any(hasUnsynced => hasUnsynced);
+
+        private IObservable<bool> hasUnsyncedData<TModel>(IRepository<TModel> repository)
+            where TModel : IDatabaseSyncable
+            => repository
+                .GetAll(entity => entity.SyncStatus != SyncStatus.InSync)
+                .Select(unsynced => unsynced.Any())
+                .SingleAsync();
 
         public IObservable<Unit> Logout() => database.Clear();
     }

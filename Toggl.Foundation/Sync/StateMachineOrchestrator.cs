@@ -11,13 +11,13 @@ namespace Toggl.Foundation.Sync
         private readonly StateMachineEntryPoints entryPoints;
 
         private readonly BehaviorSubject<SyncState> stateEntered = new BehaviorSubject<SyncState>(SyncState.Sleep);
-        private readonly Subject<SyncState> syncComplete = new Subject<SyncState>();
         
+        private readonly Subject<SyncResult> syncComplete = new Subject<SyncResult>();
         private bool syncing;
 
         public SyncState State => stateEntered.Value;
         public IObservable<SyncState> StateObservable { get; }
-        public IObservable<SyncState> SyncCompleteObservable { get; }
+        public IObservable<SyncResult> SyncCompleteObservable { get; }
 
         public StateMachineOrchestrator(IStateMachine stateMachine, StateMachineEntryPoints entryPoints)
         {
@@ -55,14 +55,17 @@ namespace Toggl.Foundation.Sync
 
         private void onStateEvent(StateMachineEvent @event)
         {
-            if (@event is StateMachineDeadEnd || @event is StateMachineError)
-                completeCurrentSync();
+            if (@event is StateMachineDeadEnd)
+                completeCurrentSync(new Success(State));
+
+            if (@event is StateMachineError error)
+                completeCurrentSync(new Error(error.Exception));
         }
 
-        private void completeCurrentSync()
+        private void completeCurrentSync(SyncResult result)
         {
             syncing = false;
-            syncComplete.OnNext(State);
+            syncComplete.OnNext(result);
         }
 
         private void startSync(SyncState newState, StateResult entryPoint)

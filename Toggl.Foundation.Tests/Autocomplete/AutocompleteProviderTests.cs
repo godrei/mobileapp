@@ -17,6 +17,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
     {
         public abstract class AutocompleteProviderTest
         {
+            protected const long WorkspaceId = 9;
             protected const long ProjectId = 10;
             protected const string ProjectName = "Toggl";
             protected const string ProjectColor = "#F41F19";
@@ -113,7 +114,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
 
         public sealed class TheConstructor
         {
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void ThrowsIfTheArgumentIsNull()
             {
                 Action tryingToConstructWithEmptyParameters =
@@ -128,7 +129,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
         {
             public sealed class QueriesTheDatabaseForTimeEntries : AutocompleteProviderTest
             {
-                [Theory]
+                [Theory, LogIfTooSlow]
                 [InlineData("Nothing")]
                 [InlineData("Testing Toggl mobile apps")]
                 public async Task WhenTheUserBeginsTypingADescription(string description)
@@ -140,7 +141,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                     await Database.TimeEntries.Received().GetAll();
                 }
 
-                [Theory]
+                [Theory, LogIfTooSlow]
                 [InlineData("Nothing")]
                 [InlineData("Testing Toggl mobile apps")]
                 public async Task WhenTheUserHasTypedAnySearchSymbolsButMovedTheCaretToAnIndexThatComesBeforeTheSymbol(
@@ -154,20 +155,20 @@ namespace Toggl.Foundation.Tests.Autocomplete
                     await Database.TimeEntries.Received().GetAll();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task WhenTheUserHasAlreadySelectedAProjectAndTypesTheAtSymbol()
                 {
                     var description = $"Testing Mobile Apps @toggl";
                     var textFieldInfo = TextFieldInfo.Empty
                         .WithTextAndCursor(description, description.Length)
-                        .WithProjectInfo(ProjectId, ProjectName, ProjectColor);
+                        .WithProjectInfo(WorkspaceId, ProjectId, ProjectName, ProjectColor);
                     
                     await Provider.Query(textFieldInfo);
 
                     await Database.TimeEntries.Received().GetAll();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SearchesTheDescription()
                 {
                     const string description = "40";
@@ -180,7 +181,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                         .And.AllBeOfType<TimeEntrySuggestion>();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SearchesTheProjectsName()
                 {
                     const string description = "30";
@@ -193,7 +194,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                         .And.AllBeOfType<TimeEntrySuggestion>();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SearchesTheClientsName()
                 {
                     const string description = "10";
@@ -206,7 +207,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                         .And.AllBeOfType<TimeEntrySuggestion>();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SearchesTheTaskName()
                 {
                     const string description = "25";
@@ -223,7 +224,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                     suggestion.Description.Should().Be("46");
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task OnlyDisplaysResultsTheHaveHasAtLeastOneMatchOnEveryWordTyped()
                 {
                     const string description = "10 30 4";
@@ -239,7 +240,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
 
             public sealed class QueriesTheDatabaseForProjects : AutocompleteProviderTest
             {
-                [Theory]
+                [Theory, LogIfTooSlow]
                 [InlineData("Nothing")]
                 [InlineData("Testing Toggl mobile apps")]
                 public async Task WhenTheAtSymbolIsTyped(string description)
@@ -252,7 +253,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                     await Database.Projects.Received().GetAll();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SearchesTheName()
                 {
                     const string description = "@30";
@@ -265,7 +266,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                         .And.AllBeOfType<ProjectSuggestion>();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SearchesTheClientsName()
                 {
                     const string description = "@10";
@@ -278,7 +279,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                         .And.AllBeOfType<ProjectSuggestion>();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SearchesTheTaskName()
                 {
                     const string description = "@20";
@@ -291,7 +292,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                         .And.AllBeOfType<ProjectSuggestion>();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task OnlyDisplaysResultsTheHaveHasAtLeastOneMatchOnEveryWordTyped()
                 {
                     const string description = "@10 3";
@@ -307,7 +308,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
 
             public sealed class QueriesTheDatabaseForTags : AutocompleteProviderTest
             {
-                [Theory]
+                [Theory, LogIfTooSlow]
                 [InlineData("Nothing")]
                 [InlineData("Testing Toggl mobile apps")]
                 public async Task WhenTheHashtagSymbolIsTyped(string description)
@@ -320,7 +321,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                     await Database.Tags.Received().GetAll();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SuggestsAllTagsWhenThereIsNoStringToSearch()
                 {
                     const string description = "#";
@@ -333,7 +334,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                         .And.AllBeOfType<TagSuggestion>();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task SearchesTheName()
                 {
                     const string description = "#50";
@@ -346,7 +347,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                         .And.AllBeOfType<TagSuggestion>();
                 }
 
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task OnlyDisplaysResultsThatHaveAtLeastOneMatchOnEveryWordTyped()
                 {
                     const string description = "#5 2";
@@ -362,7 +363,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
 
             public sealed class DoesNotQueryTheDatabase : AutocompleteProviderTest
             {
-                [Fact]
+                [Fact, LogIfTooSlow]
                 public async Task WhenTheSearchStringIsEmpty()
                 {
                     var textFieldInfo = TextFieldInfo.Empty.WithTextAndCursor("", 0);

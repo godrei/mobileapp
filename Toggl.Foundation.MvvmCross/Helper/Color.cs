@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using MvvmCross.Platform.UI;
 
 namespace Toggl.Foundation.MvvmCross.Helper
@@ -70,14 +71,70 @@ namespace Toggl.Foundation.MvvmCross.Helper
 
             public static readonly MvxColor SeparatorColor = new MvxColor(181, 188, 192);
 
-            public static readonly MvxColor ProjectTokenBorder = new MvxColor(232, 232, 232);
+            public static readonly MvxColor TokenText = new MvxColor(94, 91, 91);
+
+            public static readonly MvxColor TokenBorder = new MvxColor(232, 232, 232);
 
             public static readonly MvxColor AddIconColor = new MvxColor(75, 200, 0);
+        }
+
+        internal static MvxColor FromHSV(float hue, float saturation, float value)
+        {
+            int r = 0, g = 0, b = 0;
+
+            if (saturation == 0)
+            {
+                r = g = b = (int)(value * 255.0f + 0.5f);
+            }
+            else
+            {
+                float h = (hue - (float)Math.Floor(hue)) * 6.0f;
+                float f = h - (float)Math.Floor(h);
+                float p = value * (1.0f - saturation);
+                float q = value * (1.0f - saturation * f);
+                float t = value * (1.0f - (saturation * (1.0f - f)));
+                switch ((int)h)
+                {
+                    case 0:
+                        r = (int)(value * 255.0f + 0.5f);
+                        g = (int)(t * 255.0f + 0.5f);
+                        b = (int)(p * 255.0f + 0.5f);
+                        break;
+                    case 1:
+                        r = (int)(q * 255.0f + 0.5f);
+                        g = (int)(value * 255.0f + 0.5f);
+                        b = (int)(p * 255.0f + 0.5f);
+                        break;
+                    case 2:
+                        r = (int)(p * 255.0f + 0.5f);
+                        g = (int)(value * 255.0f + 0.5f);
+                        b = (int)(t * 255.0f + 0.5f);
+                        break;
+                    case 3:
+                        r = (int)(p * 255.0f + 0.5f);
+                        g = (int)(q * 255.0f + 0.5f);
+                        b = (int)(value * 255.0f + 0.5f);
+                        break;
+                    case 4:
+                        r = (int)(t * 255.0f + 0.5f);
+                        g = (int)(p * 255.0f + 0.5f);
+                        b = (int)(value * 255.0f + 0.5f);
+                        break;
+                    case 5:
+                        r = (int)(value * 255.0f + 0.5f);
+                        g = (int)(p * 255.0f + 0.5f);
+                        b = (int)(q * 255.0f + 0.5f);
+                        break;
+                }
+            }
+
+            return new MvxColor(r, g, b);
         }
 
         public static class EditTimeEntry
         {
             public static readonly MvxColor ClientText = new MvxColor(94, 91, 91);
+            public static readonly MvxColor DescriptionCharacterCounter = new MvxColor(247, 64, 73);
         }
 
         public static class ModalDialog
@@ -92,11 +149,15 @@ namespace Toggl.Foundation.MvvmCross.Helper
 
         public static class Settings
         {
-            public static readonly MvxColor SignOutButtonDisabled = new MvxColor(226, 5, 5, 61);
             public static readonly MvxColor SyncStatusText = new MvxColor(144, 146, 147);
         }
 
-        public static readonly MvxColor[] DefaultProjectColors = 
+        public static class Common
+        {
+            public static readonly MvxColor PlaceholderText = pinkishGrey;
+        }
+      
+        public static readonly MvxColor[] DefaultProjectColors =
             Foundation.Helper.Color.DefaultProjectColors.Select(MvxColor.ParseHexString).ToArray();
     }
 }

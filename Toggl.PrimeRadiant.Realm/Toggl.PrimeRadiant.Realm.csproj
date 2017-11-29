@@ -37,6 +37,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Models\IModifiableId.cs" />
     <Compile Include="Models\IUpdatesFrom.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\RealmUser.cs" />

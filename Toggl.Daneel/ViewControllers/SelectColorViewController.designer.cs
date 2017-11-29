@@ -19,7 +19,16 @@ namespace Toggl.Daneel.ViewControllers
 		UIKit.UICollectionView ColorCollectionView { get; set; }
 
 		[Outlet]
+		Toggl.Daneel.Views.HueSaturationPickerView PickerView { get; set; }
+
+		[Outlet]
 		UIKit.UIButton SaveButton { get; set; }
+
+		[Outlet]
+		Toggl.Daneel.Views.ValueSliderView SliderBackgroundView { get; set; }
+
+		[Outlet]
+		UIKit.UISlider SliderView { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
@@ -28,14 +37,29 @@ namespace Toggl.Daneel.ViewControllers
 				CloseButton = null;
 			}
 
+			if (ColorCollectionView != null) {
+				ColorCollectionView.Dispose ();
+				ColorCollectionView = null;
+			}
+
+			if (PickerView != null) {
+				PickerView.Dispose ();
+				PickerView = null;
+			}
+
 			if (SaveButton != null) {
 				SaveButton.Dispose ();
 				SaveButton = null;
 			}
 
-			if (ColorCollectionView != null) {
-				ColorCollectionView.Dispose ();
-				ColorCollectionView = null;
+			if (SliderBackgroundView != null) {
+				SliderBackgroundView.Dispose ();
+				SliderBackgroundView = null;
+			}
+
+			if (SliderView != null) {
+				SliderView.Dispose ();
+				SliderView = null;
 			}
 		}
 	}

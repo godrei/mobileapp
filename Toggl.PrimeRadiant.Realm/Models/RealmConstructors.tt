@@ -6,6 +6,7 @@
 #>using System.Linq;
 using Realms;
 using Toggl.PrimeRadiant.Models;
+using Toggl.PrimeRadiant.Realm.Models;
 
 namespace Toggl.PrimeRadiant.Realm
 {
@@ -44,8 +45,11 @@ namespace Toggl.PrimeRadiant.Realm
             if (isStartOfClass)
             {
                 var extendsIBaseModel = line.Contains(": IBaseModel");
+                var interfaces = $"IUpdatesFrom<{updatesFromInterface}>";
+                if (implementsIDatabaseSyncable)
+                    interfaces += ", IModifiableId";
 
-                WriteLine($"    internal partial class {realmClassName} : IUpdatesFrom<{updatesFromInterface}>");
+                WriteLine($"    internal partial class {realmClassName} : {interfaces}");
                 WriteLine( "    {");
 
                 if (extendsIBaseModel)
@@ -55,6 +59,7 @@ namespace Toggl.PrimeRadiant.Realm
 
                 if (implementsIDatabaseSyncable)
                 {
+                    WriteLine( "        public long? OriginalId { get; set; }\n");
                     WriteLine( "        public bool IsDeleted { get; set; }\n");
                     WriteLine( "        public int SyncStatusInt { get; set; }\n");
                     WriteLine( "        [Ignored]");
@@ -114,7 +119,7 @@ namespace Toggl.PrimeRadiant.Realm
                 WriteLine($"            var skip{entityName}Fetch = entity?.{entityName}Id == null || entity.{entityName}Id == 0;");
 
                 propName = $"Realm{entityName}";
-                assignment = $"skip{entityName}Fetch ? null : realm.All<{propName}>().Single(x => x.Id == entity.{entityName}Id)";
+                assignment = $"skip{entityName}Fetch ? null : realm.All<{propName}>().Single(x => x.Id == entity.{entityName}Id || x.OriginalId == entity.{entityName}Id)";
             }
 
             if (isListOfRealmProperties)
@@ -126,7 +131,7 @@ namespace Toggl.PrimeRadiant.Realm
                 WriteLine($"            {realmPropName}.Clear();");
                 WriteLine($"            if (entity.{propName} != null)");
                 WriteLine( "            {");
-                WriteLine($"                var all{realmPropName} = entity.{propName}.Select(id => realm.All<{realmModelName}>().Single(x => x.Id == id));");
+                WriteLine($"                var all{realmPropName} = entity.{propName}.Select(id => realm.All<{realmModelName}>().Single(x => x.Id == id || x.OriginalId == id));");
                 WriteLine($"                foreach (var oneOf{realmPropName} in all{realmPropName})");
                 WriteLine($"                    {realmPropName}.Add(oneOf{realmPropName});");
                 WriteLine( "            }");

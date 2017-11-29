@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -68,15 +69,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             await base.Initialize();
 
-            var timeEntries = await dataSource.TimeEntries.GetAll();
-
-            timeEntries
-                .Where(isNotRunning)
-                .OrderByDescending(te => te.Start)
-                .Select(te => new TimeEntryViewModel(te))
-                .GroupBy(te => te.Start.LocalDateTime.Date)
-                .Select(grouping => new TimeEntryViewModelCollection(grouping.Key, grouping))
-                .ForEach(addTimeEntries);
+            await reset();
 
             var deleteDisposable = 
                 dataSource.TimeEntries.TimeEntryDeleted
@@ -91,9 +84,29 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     .Where(isNotRunning)
                     .Subscribe(safeInsertTimeEntry);
 
+            var midnightDisposable =
+                timeService.MidnightObservable
+                    .Subscribe(onMidnight);
+
             disposeBag.Add(createDisposable);
             disposeBag.Add(updateDisposable);
             disposeBag.Add(deleteDisposable);
+            disposeBag.Add(midnightDisposable);
+        }
+        
+        private async Task reset()
+        {
+            TimeEntries.Clear();
+
+            var timeEntries = await dataSource.TimeEntries.GetAll();
+
+            timeEntries
+                .Where(isNotRunning)
+                .OrderByDescending(te => te.Start)
+                .Select(te => new TimeEntryViewModel(te))
+                .GroupBy(te => te.Start.LocalDateTime.Date)
+                .Select(grouping => new TimeEntryViewModelCollection(grouping.Key, grouping))
+                .ForEach(addTimeEntries);
         }
 
         private void addTimeEntries(TimeEntryViewModelCollection collection)
@@ -152,6 +165,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             RaisePropertyChanged(nameof(IsEmpty));
         }
+
+        private async void onMidnight(DateTimeOffset midnight)
+            => await reset();
 
         private bool isNotRunning(IDatabaseTimeEntry timeEntry) => !timeEntry.IsRunning();
 

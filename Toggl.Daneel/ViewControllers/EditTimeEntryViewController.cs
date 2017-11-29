@@ -15,11 +15,12 @@ using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
+using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Daneel.ViewControllers
 {
     [ModalCardPresentation]
-    public partial class EditTimeEntryViewController : MvxViewController, IUITextViewDelegate
+    public partial class EditTimeEntryViewController : MvxViewController
     {
         private const int switchHeight = 24;
         private const float nonScrollableContentHeight = 100;
@@ -88,6 +89,11 @@ namespace Toggl.Daneel.ViewControllers
 
             // Text
             bindingSet.Bind(DescriptionTextView)
+                      .For(v => v.RemainingLength)
+                      .To(vm => vm.DescriptionRemainingLength);
+
+            bindingSet.Bind(DescriptionTextView)
+                      .For(v => v.BindText())
                       .To(vm => vm.Description);
 
             bindingSet.Bind(BillableSwitch)
@@ -201,29 +207,14 @@ namespace Toggl.Daneel.ViewControllers
         {
             DurationLabel.Font = DurationLabel.Font.GetMonospacedDigitFont();
             PreferredContentSize = View.Frame.Size;
-            DescriptionTextView.Delegate = this;
-            BillableSwitch.Resize(switchHeight);
+            BillableSwitch.Resize();
             prepareDescriptionField();
         }
 
         private void prepareDescriptionField()
         {
             DescriptionTextView.TintColor = Color.StartTimeEntry.Cursor.ToNativeColor();
+            DescriptionTextView.PlaceholderText = Resources.AddDescription;
         }
-
-        [Export("textView:shouldChangeTextInRange:replacementText:")]
-        public bool ShouldChangeText(UITextView textView, NSRange range, string text)
-        {
-            if (text == "\n")
-            {
-                textView.ResignFirstResponder();
-                return false;
-            }
-            return true;
-        }
-
-        [Export("textViewDidChange:")]
-        public void Changed(UITextView textView)
-            => textView.Text = textView.Text.Replace('\n', ' ');
     }
 }

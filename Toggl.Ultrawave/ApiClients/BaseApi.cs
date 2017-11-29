@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Toggl.Multivac;
@@ -17,17 +19,21 @@ namespace Toggl.Ultrawave.ApiClients
         private readonly IApiClient apiClient;
         private readonly IJsonSerializer serializer;
 
+        private readonly Endpoint loggedEndpoint;
+
         protected HttpHeader AuthHeader { get; }
 
-        protected BaseApi(IApiClient apiClient, IJsonSerializer serializer, Credentials credentials)
+        protected BaseApi(IApiClient apiClient, IJsonSerializer serializer, Credentials credentials, Endpoint loggedEndpoint)
         {
             Ensure.Argument.IsNotNull(apiClient, nameof(apiClient));
             Ensure.Argument.IsNotNull(serializer, nameof(serializer));
             Ensure.Argument.IsNotNull(credentials, nameof(credentials));
+            Ensure.Argument.IsNotNull(loggedEndpoint, nameof(loggedEndpoint));
 
             this.apiClient = apiClient;
             this.serializer = serializer;
             this.AuthHeader = credentials.Header;
+            this.loggedEndpoint = loggedEndpoint;
         }
 
         protected IObservable<List<TInterface>> CreateListObservable<TModel, TInterface>(Endpoint endpoint, HttpHeader header, List<TModel> entities, SerializationReason serializationReason, IWorkspaceFeatureCollection features = null)
@@ -71,26 +77,63 @@ namespace Toggl.Ultrawave.ApiClients
             var request = new Request(body, endpoint.Url, headers, endpoint.Method);
             return Observable.Create<T>(async observer =>
             {
-                var response = await apiClient.Send(request).ConfigureAwait(false);
-                if (response.IsSuccess)
+                IResponse response;
+                try
                 {
-                    try
-                    {
-                        var data = await process(response.RawData);
-                        observer.OnNext(data);
-                        observer.OnCompleted();
-                    }
-                    catch
-                    {
-                        observer.OnError(new DeserializationException<T>(request, response, response.RawData));
-                    }
+                    response = await apiClient.Send(request).ConfigureAwait(false);
                 }
-                else
+                catch (HttpRequestException)
                 {
-                    var exception = ApiExceptions.For(request, response);
+                    observer.OnError(new OfflineException());
+                    return;
+                }
+
+                if (!response.IsSuccess)
+                {
+                    var exception = await getExceptionFor(request, response, headers);
                     observer.OnError(exception);
+                    return;
                 }
+
+                T data;
+                try
+                {
+                    data = await process(response.RawData);
+                }
+                catch
+                {
+                    observer.OnError(new DeserializationException<T>(request, response, response.RawData));
+                    return;
+                }
+
+                observer.OnNext(data);
+                observer.OnCompleted();
             });
+        }
+
+        private async Task<Exception> getExceptionFor(
+            IRequest request,
+            IResponse response,
+            IEnumerable<HttpHeader> headers)
+        {
+            try
+            {
+                if (response.StatusCode == HttpStatusCode.Forbidden && await isLoggedIn(headers) == false)
+                    return new UnauthorizedException(request, response);
+            }
+            catch (HttpRequestException)
+            {
+                return new OfflineException();
+            }
+
+            return ApiExceptions.For(request, response);
+        }
+
+        private async Task<bool> isLoggedIn(IEnumerable<HttpHeader> headers)
+        {
+            var request = new Request(String.Empty, loggedEndpoint.Url, headers, loggedEndpoint.Method);
+            var response = await apiClient.Send(request).ConfigureAwait(false);
+            return !((int)response.StatusCode >= 400 && (int)response.StatusCode < 500);
         }
     }
 }

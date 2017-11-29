@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -9,9 +10,12 @@ using MvvmCross.Platform.UI;
 using PropertyChanged;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DTOs;
+using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant.Models;
 using static Toggl.Foundation.Helper.Constants;
+using static Toggl.Multivac.Extensions.StringExtensions;
+using Toggl.Multivac.Extensions;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -22,16 +26,23 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly ITogglDataSource dataSource;
         private readonly IMvxNavigationService navigationService;
 
+        private bool isPro;
         private long? clientId;
         private long workspaceId;
+        private HashSet<string> projectNames = new HashSet<string>();
 
         public bool IsPrivate { get; set; }
+        public bool IsNameAlreadyTaken { get; set; }
 
-        [DependsOn(nameof(Name))]
+        [DependsOn(nameof(Name), nameof(IsNameAlreadyTaken))]
         public bool SaveEnabled => 
-            !string.IsNullOrWhiteSpace(Name) && Encoding.UTF8.GetByteCount(Name) <= MaxProjectNameLengthInBytes;
+            !IsNameAlreadyTaken
+            && !string.IsNullOrWhiteSpace(Name) 
+            && Name.LengthInBytes() <= MaxProjectNameLengthInBytes;
 
         public string Name { get; set; } = "";
+
+        public string TrimmedName => Name.Trim();
 
         public MvxColor Color { get; set; }
 
@@ -79,29 +90,48 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public override async Task Initialize()
         {
             var workspace = await dataSource.Workspaces.GetDefault();
+            isPro = await dataSource.Workspaces.WorkspaceHasFeature(workspace.Id, WorkspaceFeatureId.Pro);
             workspaceId = workspace.Id;
             WorkspaceName = workspace.Name;
+
+            await setupNameAlreadyTakenError();
         }
+
+        private async Task setupNameAlreadyTakenError() 
+        {
+            var existingProjectNames = await dataSource.Projects
+                                        .GetAll(project => project.WorkspaceId == workspaceId)
+                                        .Select(projects => projects.Select(p => p.Name));
+
+            projectNames.Clear();
+            projectNames.AddRange(existingProjectNames);
+
+            IsNameAlreadyTaken = projectNames.Contains(TrimmedName);
+        }
+
+        private void OnNameChanged() 
+            => IsNameAlreadyTaken = projectNames.Contains(TrimmedName);
 
         private async Task pickColor()
         {
-            Color = await navigationService.Navigate<SelectColorViewModel, MvxColor, MvxColor>(Color);
+            Color = await navigationService.Navigate<SelectColorViewModel, ColorParameters, MvxColor>(
+                ColorParameters.Create(Color, isPro));
         }
 
         private async Task done()
         {
             if (!SaveEnabled) return;
-
-            var billable =
-                await dataSource.Workspaces
-                    .WorkspaceHasFeature(workspaceId, WorkspaceFeatureId.Pro)
-                    .SelectMany(isPro =>
-                        isPro ? dataSource.Workspaces.GetById(workspaceId) : Observable.Return(default(IDatabaseWorkspace)))
-                    .Select(workspace => workspace?.ProjectsBillableByDefault);
+            
+            var workspace = 
+                await (isPro 
+                ? dataSource.Workspaces.GetById(workspaceId) 
+                : Observable.Return(default(IDatabaseWorkspace)));
+            
+            var billable = workspace?.ProjectsBillableByDefault;
 
             var createdProject = await dataSource.Projects.Create(new CreateProjectDTO
             {
-                Name = Name,
+                Name = TrimmedName,
                 Color = $"#{Color.R:X2}{Color.G:X2}{Color.B:X2}",
                 IsPrivate = IsPrivate,
                 ClientId = clientId,
@@ -117,18 +147,24 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task pickWorkspace()
         {
-            var selectedWorkspaceId = await navigationService.Navigate<SelectWorkspaceViewModel, long?>();
-            if (selectedWorkspaceId == null || selectedWorkspaceId.Value == workspaceId) return;
+            var parameters = WorkspaceParameters.Create(workspaceId, Resources.Workspaces, allowQuerying: true);
+            var selectedWorkspaceId = 
+                await navigationService
+                    .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(parameters);
 
-            var workspace = await dataSource.Workspaces.GetById(selectedWorkspaceId.Value);
+            if (selectedWorkspaceId == workspaceId) return;
+
+            var workspace = await dataSource.Workspaces.GetById(selectedWorkspaceId);
 
             clientId = null;
             ClientName = "";
-            workspaceId = selectedWorkspaceId.Value;
+            workspaceId = selectedWorkspaceId;
             WorkspaceName = workspace.Name;
 
-            var workspaceIsPro = await dataSource.Workspaces.WorkspaceHasFeature(workspaceId, WorkspaceFeatureId.Pro);
-            if (workspaceIsPro || Array.IndexOf(Helper.Color.DefaultProjectColors, Color) >= 0) return;
+            await setupNameAlreadyTakenError();
+
+            isPro = await dataSource.Workspaces.WorkspaceHasFeature(workspaceId, WorkspaceFeatureId.Pro);
+            if (isPro || Array.IndexOf(Helper.Color.DefaultProjectColors, Color) >= 0) return;
 
             pickRandomColor();
         }

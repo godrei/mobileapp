@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Realms;
 using Toggl.Multivac;
+using Toggl.PrimeRadiant.Realm.Models;
 
 namespace Toggl.PrimeRadiant.Realm
 {
@@ -63,7 +64,7 @@ namespace Toggl.PrimeRadiant.Realm
         {
             Ensure.Argument.IsNotNull(entity, nameof(entity));
 
-            return doTransaction(realm => realm.Add(convertToRealm(entity, realm)));
+            return doTransaction(realm => addRealmEntity(entity, realm));
         }
         
         public TModel Update(long id, TModel entity)
@@ -119,8 +120,16 @@ namespace Toggl.PrimeRadiant.Realm
             doModyfingTransaction(id, (realm, realmEntity) => realm.Remove(realmEntity));
         }
 
-        private TRealmEntity convertToRealm(TModel entity, Realms.Realm realm)
-            => entity as TRealmEntity ?? clone(entity, realm);
+        private TRealmEntity addRealmEntity(TModel entity, Realms.Realm realm)
+        {
+            var converted = entity as TRealmEntity ?? clone(entity, realm);
+            if (converted is IModifiableId modifiable)
+            {
+                modifiable.OriginalId = modifiable.Id;
+            }
+
+            return realm.Add(converted);
+        }
 
         private TModel doModyfingTransaction(long id, Action<Realms.Realm, TRealmEntity> transact)
             => doTransaction(realm =>
@@ -146,7 +155,7 @@ namespace Toggl.PrimeRadiant.Realm
             switch (resolveMode)
             {
                 case ConflictResolutionMode.Create:
-                    var realmEntity = realm.Add(convertToRealm(entity, realm));
+                    var realmEntity = addRealmEntity(entity, realm);
                     return new CreateResult<TModel>(realmEntity);
 
                 case ConflictResolutionMode.Delete:

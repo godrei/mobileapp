@@ -18,7 +18,7 @@ namespace Toggl.Ultrawave.Tests.Exceptions
     {
         public sealed class ClientErrors
         {
-            [Theory]
+            [Theory, LogIfTooSlow]
             [MemberData(nameof(ClientErrorsList), MemberType = typeof(ApiErrorResponsesTests))]
             public void ReturnsClientErrorException(HttpStatusCode httpStatusCode, Type expectedExceptionType)
             {
@@ -33,7 +33,7 @@ namespace Toggl.Ultrawave.Tests.Exceptions
         
         public sealed class ServerErrors
         {
-            [Theory]
+            [Theory, LogIfTooSlow]
             [MemberData(nameof(ServerErrorsList), MemberType = typeof(ApiErrorResponsesTests))]
             public void ReturnsServerErrorException(HttpStatusCode httpStatusCode, Type expectedExceptionType)
             {
@@ -48,7 +48,7 @@ namespace Toggl.Ultrawave.Tests.Exceptions
 
         public sealed class UnknownErrors
         {
-            [Theory]
+            [Theory, LogIfTooSlow]
             [MemberData(nameof(UnknownErrorsList), MemberType = typeof(ApiErrorResponsesTests))]
             public void ReturnsUnknownApiError(HttpStatusCode httpStatusCode)
             {
@@ -64,7 +64,21 @@ namespace Toggl.Ultrawave.Tests.Exceptions
 
         public sealed class Serialization
         {
-            [Fact]
+            [Theory, LogIfTooSlow]
+            [MemberData(nameof(ClientErrorsList), MemberType = typeof(ApiErrorResponsesTests))]
+            [MemberData(nameof(ServerErrorsList), MemberType = typeof(ApiErrorResponsesTests))]
+            public void CreatesAStringStartingWithExceptionName(HttpStatusCode statusCode, Type exceptionType)
+            {
+                var request = createRequest(HttpMethod.Get);
+                var response = createErrorResponse(statusCode);
+                var exception = ApiExceptions.For(request, response);
+
+                var serialized = exception.ToString();
+
+                serialized.Should().StartWith($"{exceptionType.Name} ");
+            }
+
+            [Fact, LogIfTooSlow]
             public void CreatesAStringWithBodyAndNoHeaders()
             {
                 string body = "Body.";
@@ -73,14 +87,14 @@ namespace Toggl.Ultrawave.Tests.Exceptions
                 var request = new Request("", endpoint, new HttpHeader[0], method);
                 var response = new Response(body, false, "application/json", new List<KeyValuePair<string, IEnumerable<string>>>(), HttpStatusCode.InternalServerError);
                 var exception = new InternalServerErrorException(request, response, "Custom message.");
-                var expectedSerialization = $"ApiException for request {method} {endpoint}: Response: (Status: [500 InternalServerError]) (Headers: []) (Body: {body}) (Message: Custom message.)";
+                var expectedSerialization = $"InternalServerErrorException for request {method} {endpoint}: Response: (Status: [500 InternalServerError]) (Headers: []) (Body: {body}) (Message: Custom message.)";
 
                 var serialized = exception.ToString();
 
                 serialized.Should().Be(expectedSerialization);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void CreatesAStringWithBodyAndWithHeaders()
             {
                 string body = "Body of a response with headers.";
@@ -90,14 +104,14 @@ namespace Toggl.Ultrawave.Tests.Exceptions
                 var headers = new[] { new KeyValuePair<string, IEnumerable<string>>("abc", new[] { "a", "b", "c" }) };
                 var response = new Response(body, false, "application/json", headers, HttpStatusCode.InternalServerError);
                 var exception = new InternalServerErrorException(request, response, "Custom message.");
-                var expectedSerialization = $"ApiException for request {method} {endpoint}: Response: (Status: [500 InternalServerError]) (Headers: ['abc': ['a', 'b', 'c']]) (Body: {body}) (Message: Custom message.)";
+                var expectedSerialization = $"InternalServerErrorException for request {method} {endpoint}: Response: (Status: [500 InternalServerError]) (Headers: ['abc': ['a', 'b', 'c']]) (Body: {body}) (Message: Custom message.)";
 
                 var serialized = exception.ToString();
 
                 serialized.Should().Be(expectedSerialization);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void SerializesOneHeaderKeyWithNoValues()
             {
                 var headers = new[] { new KeyValuePair<string, IEnumerable<string>>("abc", new string[0]) };
@@ -108,7 +122,7 @@ namespace Toggl.Ultrawave.Tests.Exceptions
                 serialized.Should().Be(expectedSerialization);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void SerializesOneHeaderKeyWithOneValue()
             {
                 var headers = new[] { new KeyValuePair<string, IEnumerable<string>>("abc", new[] { "def" }) };
@@ -119,7 +133,7 @@ namespace Toggl.Ultrawave.Tests.Exceptions
                 serialized.Should().Be(expectedSerialization);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void SerializesOneHeaderKeyWithMultipleValues()
             {
                 var headers = new[] { new KeyValuePair<string, IEnumerable<string>>("abc", new[] { "def", "ghi", "jkl" }) };
@@ -130,7 +144,7 @@ namespace Toggl.Ultrawave.Tests.Exceptions
                 serialized.Should().Be(expectedSerialization);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void SerializesMultipleHeaderKeyWithZeroOneOrMultipleValues()
             {
                 var headers = new[]

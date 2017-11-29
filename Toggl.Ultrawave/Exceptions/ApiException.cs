@@ -24,7 +24,7 @@ namespace Toggl.Ultrawave.Exceptions
             => response.RawData;
 
         public override string ToString()
-            => $"ApiException for request {request.HttpMethod} {request.Endpoint}: "
+            => $"{GetType().Name} for request {request.HttpMethod} {request.Endpoint}: "
                 + $"Response: "
                 + $"(Status: [{(int)response.StatusCode} {response.StatusCode}]) "
                 + $"(Headers: [{SerializeHeaders(response.Headers)}]) "

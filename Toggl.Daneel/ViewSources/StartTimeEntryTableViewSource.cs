@@ -5,6 +5,7 @@ using MvvmCross.Binding.ExtensionMethods;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Plugins.Color.iOS;
 using Toggl.Daneel.Views;
+using Toggl.Foundation;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.MvvmCross.Helper;
 using UIKit;
@@ -62,6 +63,12 @@ namespace Toggl.Daneel.ViewSources
                 var previous = GetItemAt(previousItemPath);
                 var previousIsTask = previous is TaskSuggestion;
                 projectCell.TopSeparatorHidden = !previousIsTask;
+
+                var nextItemPath = NSIndexPath.FromItemSection(indexPath.Item + 1, indexPath.Section);
+                var next = GetItemAt(nextItemPath);
+                var isLastItemInSection = next == null;
+                var isLastSection = indexPath.Section == tableView.NumberOfSections() - 1;
+                projectCell.BottomSeparatorHidden = isLastItemInSection && !isLastSection;
             }
 
             return cell;
@@ -126,6 +133,9 @@ namespace Toggl.Daneel.ViewSources
             return timeEntryCellIdentifier;
         }
 
-        protected override object GetCreateSuggestionItem() => $"Create project \"{Text}\"";
+        protected override object GetCreateSuggestionItem()
+            => IsSuggestingProjects
+                ? $"{Resources.CreateProject} \"{Text}\""
+                : $"{Resources.CreateTag} \"{Text}\"";
     }
 }

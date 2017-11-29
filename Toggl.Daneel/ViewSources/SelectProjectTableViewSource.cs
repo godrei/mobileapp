@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Foundation;
 using MvvmCross.Core.ViewModels;
@@ -44,6 +45,12 @@ namespace Toggl.Daneel.ViewSources
                 var previous = GetItemAt(previousItemPath);
                 var previousIsTask = previous is TaskSuggestion;
                 projectCell.TopSeparatorHidden = !previousIsTask;
+
+                var nextItemPath = NSIndexPath.FromItemSection(indexPath.Item + 1, indexPath.Section);
+                var next = GetItemAt(nextItemPath);
+                var isLastItemInSection = next == null;
+                var isLastSection = indexPath.Section == tableView.NumberOfSections() - 1;
+                projectCell.BottomSeparatorHidden = isLastItemInSection && !isLastSection;
             }
 
             return cell;

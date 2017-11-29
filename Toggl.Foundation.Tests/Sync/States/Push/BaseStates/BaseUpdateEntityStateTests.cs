@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Reactive.Linq;
 using FluentAssertions;
 using NSubstitute;
-using Toggl.Foundation;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Sync.States;
+using Toggl.Foundation.Tests.Helpers;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.Ultrawave;
 using Toggl.Ultrawave.Exceptions;
-using Toggl.Ultrawave.Network;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.Sync.States
@@ -26,67 +24,44 @@ namespace Toggl.Foundation.Tests.Sync.States
             this.helper = helper;
         }
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public void ReturnsTheFailTransitionWhenEntityIsNull()
             => helper.ReturnsTheFailTransitionWhenEntityIsNull();
 
-        [Theory]
-        [MemberData(nameof(ServerExceptions))]
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ServerExceptions), MemberType = typeof(ApiExceptions))]
         public void ReturnsTheServerErrorTransitionWhenHttpFailsWithServerError(ServerErrorException exception)
             => helper.ReturnsTheServerErrorTransitionWhenHttpFailsWithServerError(exception);
 
-        [Theory]
-        [MemberData(nameof(ClientExceptions))]
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ClientExceptionsWhichAreNotReThrownInSyncStates), MemberType = typeof(ApiExceptions))]
         public void ReturnsTheClientErrorTransitionWhenHttpFailsWithClientError(ClientErrorException exception)
             => helper.ReturnsTheClientErrorTransitionWhenHttpFailsWithClientError(exception);
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public void ReturnsTheUnknownErrorTransitionWhenHttpFailsWithNonApiError()
             => helper.ReturnsTheUnknownErrorTransitionWhenHttpFailsWithNonApiError();
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public void ReturnsTheFailTransitionWhenDatabaseOperationFails()
             => helper.ReturnsTheFailTransitionWhenDatabaseOperationFails();
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public void UpdateApiCallIsCalledWithTheInputEntity()
             => helper.UpdateApiCallIsCalledWithTheInputEntity();
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public void ReturnsTheEntityChangedTransitionWhenEntityChangesLocally()
             => helper.ReturnsTheEntityChangedTransitionWhenEntityChangesLocally();
 
-        [Fact]
+        [Fact, LogIfTooSlow]
         public void ReturnsTheUpdatingSuccessfulTransitionWhenEntityDoesNotChangeLocallyAndAllFunctionsAreCalledWithCorrectParameters()
             => helper.ReturnsTheUpdatingSuccessfulTransitionWhenEntityDoesNotChangeLocallyAndAllFunctionsAreCalledWithCorrectParameters();
 
-        public static object[] ClientExceptions()
-            => new[]
-            {
-                new object[] { new BadRequestException(request, response) },
-                new object[] { new UnauthorizedException(request, response) },
-                new object[] { new PaymentRequiredException(request, response) },
-                new object[] { new ForbiddenException(request, response) },
-                new object[] { new NotFoundException(request, response) },
-                new object[] { new ApiDeprecatedException(request, response) },
-                new object[] { new RequestEntityTooLargeException(request, response) },
-                new object[] { new ClientDeprecatedException(request, response) },
-                new object[] { new TooManyRequestsException(request, response) }
-            };
-
-        public static object[] ServerExceptions()
-            => new[]
-            {
-                new object[] { new InternalServerErrorException(request, response) },
-                new object[] { new BadGatewayException(request, response) },
-                new object[] { new GatewayTimeoutException(request, response) },
-                new object[] { new HttpVersionNotSupportedException(request, response) },
-                new object[] { new ServiceUnavailableException(request, response) }
-            };
-
-        private static IRequest request => Substitute.For<IRequest>();
-
-        private static IResponse response => Substitute.For<IResponse>();
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ExceptionsWhichCauseRethrow), MemberType = typeof(ApiExceptions))]
+        public void ThrowsWhenCertainExceptionsAreCaught(Exception exception)
+            => helper.ThrowsWhenCertainExceptionsAreCaught(exception);
 
         public interface TheStartMethodHelper
         {
@@ -98,6 +73,7 @@ namespace Toggl.Foundation.Tests.Sync.States
             void UpdateApiCallIsCalledWithTheInputEntity();
             void ReturnsTheEntityChangedTransitionWhenEntityChangesLocally();
             void ReturnsTheUpdatingSuccessfulTransitionWhenEntityDoesNotChangeLocallyAndAllFunctionsAreCalledWithCorrectParameters();
+            void ThrowsWhenCertainExceptionsAreCaught(Exception exception);
         }
 
         internal abstract class TheStartMethod<TModel, TApiModel> : BasePushEntityStateTests<TModel, TApiModel>, TheStartMethodHelper
@@ -111,7 +87,7 @@ namespace Toggl.Foundation.Tests.Sync.States
                 : this(Substitute.For<ITogglApi>(), Substitute.For<IRepository<TModel>>())
             {
             }
-            
+
             public TheStartMethod(ITogglApi api, IRepository<TModel> repository)
                 : base(api, repository)
             {
@@ -256,7 +232,7 @@ namespace Toggl.Foundation.Tests.Sync.States
                     .Returns(_ => Observable.Throw<TModel>(e));
 
             protected abstract Func<TModel, IObservable<TApiModel>> GetUpdateFunction(ITogglApi api);
-                
+
             private BaseUpdateEntityState<TModel> createUpdateState(ITogglApi api, IRepository<TModel> repository)
                 => CreateState(api, repository) as BaseUpdateEntityState<TModel>;
 

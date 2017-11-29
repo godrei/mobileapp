@@ -2,6 +2,7 @@
 using System.Text;
 using Toggl.PrimeRadiant;
 using static Toggl.Foundation.Helper.Constants;
+using static Toggl.Multivac.Extensions.StringExtensions;
 
 namespace Toggl.Foundation.Models
 {
@@ -32,6 +33,8 @@ namespace Toggl.Foundation.Models
             public bool IsDeleted { get; private set; }
 
             public long? ClientId { get; private set; }
+
+            public bool Active { get; private set; } = true;
 
             private Builder(long id)
             {
@@ -98,6 +101,12 @@ namespace Toggl.Foundation.Models
                 return this;
             }
 
+            public Builder SetActive(bool active)
+            {
+                Active = active;
+                return this;
+            }
+
             private void ensureValidity()
             {
                 if (string.IsNullOrEmpty(Name))
@@ -112,7 +121,7 @@ namespace Toggl.Foundation.Models
                 if (At == null)
                     throw new InvalidOperationException(string.Format(errorMessage, "at"));
 
-                if (Encoding.UTF8.GetByteCount(Name) > MaxClientNameLengthInBytes)
+                if (Name.LengthInBytes() > MaxClientNameLengthInBytes)
                     throw new InvalidOperationException("Client name must have less than {MaxClientNameLengthInBytes} bytes");
             }
         }
@@ -129,6 +138,7 @@ namespace Toggl.Foundation.Models
             SyncStatus = builder.SyncStatus;
             WorkspaceId = builder.WorkspaceId.Value;
             ServerDeletedAt = builder.ServerDeletedAt;
+            Active = builder.Active;
         }
     }
 }

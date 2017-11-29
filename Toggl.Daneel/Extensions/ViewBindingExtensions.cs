@@ -1,5 +1,6 @@
 ﻿﻿using Toggl.Daneel.Binding;
 using UIKit;
+using Toggl.Daneel.Views;
 
 namespace Toggl.Daneel.Extensions
 {  
@@ -27,11 +28,17 @@ namespace Toggl.Daneel.Extensions
         public static string BindFocus(this UITextField self)
             => TextFieldFocusTargetBinding.BindingName;
 
+        public static string BindPlaceholder(this UITextField self)
+            => TextFieldPlaceholderTargetBinding.BindingName;
+
         public static string BindSecureTextEntry(this UITextField self)
             => TextFieldSecureTextEntryTargetBinding.BindingName;
 
         public static string BindTextFieldInfo(this UITextView self)
             => TextViewTextInfoTargetBinding.BindingName;
+
+        public static string BindText(this TextViewWithPlaceholder self)
+            => TextViewWithPlaceholderTextTargetBinding.BindingName;
 
         public static string BindAnimatedBackground(this UIView self)
             => ViewAnimatedBackgroundTargetBinding.BindingName;

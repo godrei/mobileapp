@@ -8,5 +8,7 @@ namespace Toggl.Foundation
         DateTimeOffset CurrentDateTime { get; }
 
         IConnectableObservable<DateTimeOffset> CurrentDateTimeObservable { get; } 
+
+        IConnectableObservable<DateTimeOffset> MidnightObservable { get; }
     }
 }

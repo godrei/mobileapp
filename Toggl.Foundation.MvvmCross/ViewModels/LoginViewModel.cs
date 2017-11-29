@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
@@ -9,6 +10,7 @@ using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Multivac;
+using Toggl.PrimeRadiant;
 using Toggl.Ultrawave.Exceptions;
 using EmailType = Toggl.Multivac.Email;
 
@@ -19,33 +21,49 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     {
         public const int EmailPage = 0;
         public const int PasswordPage = 1;
+        public const int ForgotPasswordPage = 2;
         public const string PrivacyPolicyUrl = "https://toggl.com/legal/privacy";
         public const string TermsOfServiceUrl = "https://toggl.com/legal/terms";
 
         private readonly ILoginManager loginManager;
         private readonly IMvxNavigationService navigationService;
         private readonly IPasswordManagerService passwordManagerService;
+        private readonly IAccessRestrictionStorage accessRestrictionStorage;
 
         private LoginType loginType;
         private IDisposable loginDisposable;
-        private IDisposable passwordManagerDisposable;
 
         private EmailType email = EmailType.Invalid;
+
+        private int pageBeforeForgotPasswordPage;
 
         public bool IsLogin => loginType == LoginType.Login;
 
         public bool IsSignUp => loginType == LoginType.SignUp;
 
-        public string Title { get; private set; }
+        [DependsOn(nameof(IsLogin), nameof(IsForgotPasswordPage))]
+        public string Title
+        {
+            get
+            {
+                if (IsSignUp)
+                    return Resources.SignUpTitle;
+
+                if (IsForgotPasswordPage)
+                    return Resources.LoginForgotPassword;
+
+                return Resources.LoginTitle;
+            }
+        }
 
         public string Email { get; set; } = "";
 
         public string Password { get; set; } = "";
 
-        public string ErrorText { get; set; } = "";
+        public string InfoText { get; set; } = "";
 
-        [DependsOn(nameof(ErrorText))]
-        public bool HasError => !string.IsNullOrEmpty(ErrorText);
+        [DependsOn(nameof(InfoText))]
+        public bool HasInfoText => !string.IsNullOrEmpty(InfoText);
 
         public int CurrentPage { get; private set; } = EmailPage;
 
@@ -57,13 +75,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand BackCommand { get; }
 
+        public IMvxCommand ForgotPasswordCommand { get; }
+
         public IMvxCommand OpenPrivacyPolicyCommand { get; }
 
         public IMvxCommand OpenTermsOfServiceCommand { get; }
 
         public IMvxCommand TogglePasswordVisibilityCommand { get; }
 
-        public IMvxCommand StartPasswordManagerCommand { get; }
+        public IMvxAsyncCommand StartPasswordManagerCommand { get; }
 
         [DependsOn(nameof(CurrentPage))]
         public bool IsEmailPage => CurrentPage == EmailPage;
@@ -71,41 +91,64 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [DependsOn(nameof(CurrentPage))]
         public bool IsPasswordPage => CurrentPage == PasswordPage;
 
+        [DependsOn(nameof(CurrentPage))]
+        public bool IsForgotPasswordPage => CurrentPage == ForgotPasswordPage;
+
+        [DependsOn(nameof(IsEmailPage), nameof(IsForgotPasswordPage))]
+        public bool EmailFieldVisible => IsEmailPage || IsForgotPasswordPage;
+
         [DependsOn(nameof(IsPasswordPage), nameof(IsLoading))]
         public bool ShowPasswordButtonVisible => IsPasswordPage && !IsLoading;
 
-        [DependsOn(nameof(IsLogin), nameof(IsPasswordPage))]
-        public bool ShowForgotPassword => IsLogin && IsPasswordPage;
+        [DependsOn(nameof(IsLogin), nameof(IsForgotPasswordPage))]
+        public bool ShowForgotPassword => IsLogin && !IsForgotPasswordPage;
 
         [DependsOn(nameof(CurrentPage), nameof(Password))]
         public bool NextIsEnabled
-            => IsEmailPage ? email.IsValid : (Password.Length > 0 && !IsLoading);
+        {
+            get
+            {
+                if (IsEmailPage)
+                    return email.IsValid;
+                if (IsPasswordPage)
+                    return Password.Length > 0 && !IsLoading;
+                if (IsForgotPasswordPage)
+                    return email.IsValid && !IsLoading;
+                return false;
+            }
+        }
 
         public bool IsPasswordManagerAvailable
             => passwordManagerService.IsAvailable;
 
-        public LoginViewModel(ILoginManager loginManager, IMvxNavigationService navigationService, IPasswordManagerService passwordManagerService)
+        public LoginViewModel(
+            ILoginManager loginManager,
+            IMvxNavigationService navigationService,
+            IPasswordManagerService passwordManagerService,
+            IAccessRestrictionStorage accessRestrictionStorage)
         {
             Ensure.Argument.IsNotNull(loginManager, nameof(loginManager));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(passwordManagerService, nameof(passwordManagerService));
+            Ensure.Argument.IsNotNull(accessRestrictionStorage, nameof(accessRestrictionStorage));
 
             this.loginManager = loginManager;
             this.navigationService = navigationService;
             this.passwordManagerService = passwordManagerService;
+            this.accessRestrictionStorage = accessRestrictionStorage;
 
             BackCommand = new MvxCommand(back);
             NextCommand = new MvxCommand(next);
-            StartPasswordManagerCommand = new MvxCommand(startPasswordManager);
+            ForgotPasswordCommand = new MvxCommand(forgotPassword);
             OpenPrivacyPolicyCommand = new MvxCommand(openPrivacyPolicyCommand);
             OpenTermsOfServiceCommand = new MvxCommand(openTermsOfServiceCommand);
+            StartPasswordManagerCommand = new MvxAsyncCommand(startPasswordManager);
             TogglePasswordVisibilityCommand = new MvxCommand(togglePasswordVisibility);
         }
 
         public override void Prepare(LoginType parameter)
         {
             loginType = parameter;
-            Title = loginType == LoginType.Login ? Resources.LoginTitle : Resources.SignUpTitle;
         }
 
         private void OnEmailChanged()
@@ -119,7 +162,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 BrowserParameters.WithUrlAndTitle(TermsOfServiceUrl, Resources.TermsOfService)
             );
 
-        private void openPrivacyPolicyCommand() => 
+        private void openPrivacyPolicyCommand() =>
             navigationService.Navigate<BrowserViewModel, BrowserParameters>(
                 BrowserParameters.WithUrlAndTitle(PrivacyPolicyUrl, Resources.PrivacyPolicy)
             );
@@ -128,10 +171,61 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (!NextIsEnabled) return;
 
-            if (IsPasswordPage) login();
+            if (IsPasswordPage)
+            {
+                if (IsLogin) login();
+                if (IsSignUp) signUp();
+            }
+
+            if (IsForgotPasswordPage)
+            {
+                resetPassword();
+                return;
+            }
 
             CurrentPage = PasswordPage;
-            ErrorText = "";
+            InfoText = loginType == LoginType.SignUp
+                ? Resources.SignUpPasswordRequirements
+                : "";
+        }
+
+        private void resetPassword()
+        {
+            IsLoading = true;
+            loginManager
+                .ResetPassword(email)
+                .Subscribe(onPasswordResetSuccess, onPasswordResetError);
+        }
+
+        private void onPasswordResetSuccess(string result)
+        {
+            IsLoading = false;
+            CurrentPage = PasswordPage;
+            InfoText = Resources.PasswordResetSuccess;
+        }
+
+        private void onPasswordResetError(Exception exception)
+        {
+            IsLoading = false;
+
+            switch (exception)
+            {
+                case BadRequestException _:
+                    InfoText = Resources.PasswordResetEmailDoesNotExistError;
+                    break;
+
+                case OfflineException _:
+                    InfoText = Resources.PasswordResetOfflineError;
+                    break;
+
+                case ApiException apiException:
+                    InfoText = apiException.LocalizedApiErrorMessage;
+                    break;
+
+                default:
+                    InfoText = Resources.PasswordResetGeneralError;
+                    break;
+            }
         }
 
         private void back()
@@ -139,8 +233,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             if (IsEmailPage)
                 navigationService.Close(this);
 
-            CurrentPage = EmailPage;
-            ErrorText = "";
+            if (IsForgotPasswordPage)
+                CurrentPage = pageBeforeForgotPasswordPage;
+            else
+                CurrentPage--;
+            
+            InfoText = "";
         }
 
         private void togglePasswordVisibility()
@@ -156,27 +254,30 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     .Subscribe(onDataSource, onError, onCompleted);
         }
 
-        private void startPasswordManager()
+        private void signUp()
         {
-            if (!passwordManagerService.IsAvailable) return;
-            if (passwordManagerDisposable != null) return;
+            IsLoading = true;
 
-            passwordManagerDisposable =
-                passwordManagerService
-                    .GetLoginInformation()
-                    .Subscribe(onLoginInfo, onError, onCompleted);
+            loginDisposable =
+                loginManager
+                    .SignUp(email, Password)
+                    .Subscribe(onDataSource, onError, onCompleted);
         }
 
-        private void onLoginInfo(PasswordManagerResult loginInfo)
+        private async Task startPasswordManager()
         {
+            if (!passwordManagerService.IsAvailable) return;
+
+            var loginInfo = await passwordManagerService.GetLoginInformation();
+
             Email = loginInfo.Email;
             if (!NextIsEnabled) return;
- 
-            CurrentPage = PasswordPage;
+            
+            next();
             Password = loginInfo.Password;
             if (!NextIsEnabled) return;
-
-            login();
+            
+            next();
         }
 
         private async void onDataSource(ITogglDataSource dataSource)
@@ -190,23 +291,46 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await navigationService.Navigate<MainViewModel>();
         }
 
-        private void onError(Exception ex)
+        private void onError(Exception exception)
         {
-            ErrorText = ex is ForbiddenException ? Resources.IncorrectEmailOrPassword
-                                                 : Resources.GenericLoginError;
-
-
             IsLoading = false;
             onCompleted();
+
+            switch (exception)
+            {
+                case ApiDeprecatedException apiDeprecated:
+                    accessRestrictionStorage.SetApiOutdated();
+                    navigationService.Navigate<OutdatedAppViewModel>();
+                    return;
+                case ClientDeprecatedException clientDeprecated:
+                    accessRestrictionStorage.SetClientOutdated();
+                    navigationService.Navigate<OutdatedAppViewModel>();
+                    return;
+                case UnauthorizedException forbidden:
+                    InfoText = Resources.IncorrectEmailOrPassword;
+                    break;
+                default:
+                    InfoText = getGenericError();
+                    break;
+            }
         }
+
+        private string getGenericError()
+            => loginType == LoginType.Login
+                ? Resources.GenericLoginError
+                : Resources.GenericSignUpError;
 
         private void onCompleted()
         {
             loginDisposable?.Dispose();
-            passwordManagerDisposable?.Dispose();
-
             loginDisposable = null;
-            passwordManagerDisposable = null;
+        }
+
+        private void forgotPassword()
+        {
+            pageBeforeForgotPasswordPage = CurrentPage;
+            CurrentPage = ForgotPasswordPage;
+            InfoText = email.IsValid ? "" : Resources.PasswordResetExplanation;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\xunit.runner.visualstudio.2.3.1\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\packages\xunit.runner.visualstudio.2.3.1\build\net20\xunit.runner.visualstudio.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -196,6 +197,10 @@
     <ProjectReference Include="..\Toggl.PrimeRadiant.Realm\Toggl.PrimeRadiant.Realm.csproj">
       <Project>{64A8727E-5D39-4EFB-80FA-4510147796BB}</Project>
       <Name>Toggl.PrimeRadiant.Realm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Toggl.Multivac.Tests\Toggl.Multivac.Tests.csproj">
+      <Project>{DEAB771F-ED46-4A27-AD25-F26723820F93}</Project>
+      <Name>Toggl.Multivac.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

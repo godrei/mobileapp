@@ -17,6 +17,9 @@ namespace Toggl.Daneel.Views
 		UIKit.UILabel AmountOfTasksLabel { get; set; }
 
 		[Outlet]
+		UIKit.UIView BottomSeparatorView { get; set; }
+
+		[Outlet]
 		[GeneratedCode ("iOS Designer", "1.0")]
 		UIKit.UILabel ClientNameLabel { get; set; }
 
@@ -99,6 +102,11 @@ namespace Toggl.Daneel.Views
 			if (TopSeparatorView != null) {
 				TopSeparatorView.Dispose ();
 				TopSeparatorView = null;
+			}
+
+			if (BottomSeparatorView != null) {
+				BottomSeparatorView.Dispose ();
+				BottomSeparatorView = null;
 			}
 		}
 	}

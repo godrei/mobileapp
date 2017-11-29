@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -9,6 +8,7 @@ using FsCheck;
 using FsCheck.Xunit;
 using MvvmCross.Core.Navigation;
 using NSubstitute;
+using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
@@ -38,7 +38,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheConstructor : SettingsViewModelTest
         {
-            [Theory]
+            [Theory, LogIfTooSlow]
             [ClassData(typeof(ThreeParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useNavigationService, bool useDialogService)
             {
@@ -128,7 +128,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheLogoutCommand : SettingsViewModelTest
         {
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task SetsTheIsLoggingOutFlagToTrue()
             {
                 doNotShowConfirmationDialog();
@@ -137,7 +137,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.IsLoggingOut.Should().BeTrue();
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task CallsFreezeOnTheSyncManager()
             {
                 doNotShowConfirmationDialog();
@@ -146,7 +146,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await DataSource.SyncManager.Received().Freeze();
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task CallsLogoutOnTheDataSource()
             {
                 doNotShowConfirmationDialog();
@@ -155,7 +155,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await DataSource.Received().Logout();
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task NavigatesToTheOnboardingScreen()
             {
                 doNotShowConfirmationDialog();
@@ -164,7 +164,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await NavigationService.Received().Navigate(typeof(OnboardingViewModel));
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task DoesOperationsInTheCorrectOrder()
             {
                 doNotShowConfirmationDialog();
@@ -217,40 +217,45 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 awaitingNavigation.Should().Be(6);
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
+            public void ChecksIfThereAreUnsyncedDataWhenTheSyncProcessFinishes()
+            {
+                StateObservableSubject.OnNext(SyncState.Sleep);
+
+                DataSource.Received().HasUnsyncedData();
+            }
+
+            [Fact, LogIfTooSlow]
             public void SetsTheIsSyncedFlagAfterTheSyncProcessHasFinishedAndThereIsNoTimeEntryToPush()
             {
-                var emptyList = Observable.Return(new IDatabaseTimeEntry[0]);
-                DataSource.TimeEntries.GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>()).Returns(emptyList);
+                DataSource.HasUnsyncedData().Returns(Observable.Return(false));
                 StateObservableSubject.OnNext(SyncState.Sleep);
 
                 ViewModel.IsSynced.Should().BeTrue();
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void UnsetsTheIsSyncedFlagWhenTheSyncProcessIsNotRunningButThrereIsSomeTimeEntryToPush()
             {
-                var listOfTimeEntries = Observable.Return(new[] { Substitute.For<IDatabaseTimeEntry>() });
-                DataSource.TimeEntries.GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>()).Returns(listOfTimeEntries);
+                DataSource.HasUnsyncedData().Returns(Observable.Return(true));
                 StateObservableSubject.OnNext(SyncState.Sleep);
 
                 ViewModel.IsSynced.Should().BeFalse();
             }
 
-            [Theory]
+            [Theory, LogIfTooSlow]
             [InlineData(SyncState.Pull)]
             [InlineData(SyncState.Push)]
             public void UnsetsTheIsSyncedFlagWhenThereIsNothingToPushButTheSyncProcessStartsAgain(SyncState state)
             {
-                var emptyList = Observable.Return(new IDatabaseTimeEntry[0]);
-                DataSource.TimeEntries.GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>()).Returns(emptyList);
+                DataSource.HasUnsyncedData().Returns(Observable.Return(false));
                 StateObservableSubject.OnNext(SyncState.Sleep);
                 StateObservableSubject.OnNext(state);
 
                 ViewModel.IsSynced.Should().BeFalse();
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task DoesNotShowConfirmationDialogWhenTheAppIsInSync()
             {
                 doNotShowConfirmationDialog();
@@ -260,11 +265,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await DialogService.DidNotReceiveWithAnyArgs().Confirm("", "", "", "");
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task ShowsConfirmationDialogWhenThereIsNothingToPushButSyncIsRunning()
             {
-                var emptyList = Observable.Return(new IDatabaseTimeEntry[0]);
-                DataSource.TimeEntries.GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>()).Returns(emptyList);
+                DataSource.HasUnsyncedData().Returns(Observable.Return(false));
                 StateObservableSubject.OnNext(SyncState.Pull);
 
                 await ViewModel.LogoutCommand.ExecuteAsync();
@@ -272,11 +276,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await DialogService.ReceivedWithAnyArgs().Confirm("", "", "", "");
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task ShowsConfirmationDialogWhenThereIsSomethingToPushButSyncIsNotRunning()
             {
-                var listOfTimeEntries = Observable.Return(new[] { Substitute.For<IDatabaseTimeEntry>() });
-                DataSource.TimeEntries.GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>()).Returns(listOfTimeEntries);
+                DataSource.HasUnsyncedData().Returns(Observable.Return(true));
                 StateObservableSubject.OnNext(SyncState.Sleep);
 
                 await ViewModel.LogoutCommand.ExecuteAsync();
@@ -284,14 +287,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await DialogService.ReceivedWithAnyArgs().Confirm("", "", "", "");
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task DoesNotProceedWithLogoutWhenUserClicksCancelButtonInTheDialog()
             {
                 StateObservableSubject.OnNext(SyncState.Pull);
                 DialogService.Confirm(
-                    Arg.Any<string>(), 
-                    Arg.Any<string>(), 
-                    Arg.Any<string>(), 
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
                     Arg.Any<string>()).Returns(false);
 
                 await ViewModel.LogoutCommand.ExecuteAsync();
@@ -302,7 +305,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await NavigationService.DidNotReceive().Navigate<OnboardingViewModel>();
             }
 
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task ProceedsWithLogoutWhenUserClicksSignOutButtonInTheDialog()
             {
                 StateObservableSubject.OnNext(SyncState.Pull);
@@ -322,20 +325,114 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             private void doNotShowConfirmationDialog()
             {
-                var emptyList = Observable.Return(new IDatabaseTimeEntry[0]);
-                DataSource.TimeEntries.GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>()).Returns(_ => emptyList);
+                DataSource.HasUnsyncedData().Returns(Observable.Return(false));
                 StateObservableSubject.OnNext(SyncState.Sleep);
+            }
+        }
+
+        public sealed class ThePickWorkspaceCommand : SettingsViewModelTest
+        {
+            private const long workspaceId = 10;
+            private const long defaultWorkspaceId = 11;
+            private const string workspaceName = "My custom workspace";
+            private readonly IDatabaseWorkspace workspace = Substitute.For<IDatabaseWorkspace>();
+            private readonly IDatabaseWorkspace defaultWorkspace = Substitute.For<IDatabaseWorkspace>();
+
+            public ThePickWorkspaceCommand()
+            {
+                workspace.Id.Returns(workspaceId);
+                workspace.Name.Returns(workspaceName);
+                defaultWorkspace.Id.Returns(defaultWorkspaceId);
+
+                DataSource.Workspaces.GetDefault()
+                    .Returns(Observable.Return(defaultWorkspace));
+
+                DataSource.Workspaces.GetById(workspaceId)
+                    .Returns(Observable.Return(workspace));
+
+                ViewModel.Prepare();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task CallsTheSelectWorkspaceViewModel()
+            {
+                await ViewModel.EditWorkspaceCommand.ExecuteAsync();
+
+                await NavigationService.Received()
+                    .Navigate<WorkspaceParameters, long>(typeof(SelectWorkspaceViewModel), Arg.Any<WorkspaceParameters>());
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task SetsTheReturnedWorkspaceNameAsTheWorkspaceNameProperty()
+            {
+                NavigationService
+                    .Navigate<WorkspaceParameters, long>(typeof(SelectWorkspaceViewModel), Arg.Any<WorkspaceParameters>())
+                    .Returns(Task.FromResult(workspaceId));
+
+                await ViewModel.EditWorkspaceCommand.ExecuteAsync();
+
+                ViewModel.WorkspaceName.Should().Be(workspaceName);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task UpdatesTheUserWithTheReceivedWorspace()
+            {
+                NavigationService
+                    .Navigate<WorkspaceParameters, long>(typeof(SelectWorkspaceViewModel), Arg.Any<WorkspaceParameters>())
+                    .Returns(Task.FromResult(workspaceId));
+
+                await ViewModel.EditWorkspaceCommand.ExecuteAsync();
+
+                await DataSource.User.Received().UpdateWorkspace(Arg.Is(workspaceId));
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task StartsTheSyncAlgorithm()
+            {
+                NavigationService
+                    .Navigate<WorkspaceParameters, long>(typeof(SelectWorkspaceViewModel), Arg.Any<WorkspaceParameters>())
+                    .Returns(Task.FromResult(workspaceId));
+
+                await ViewModel.EditWorkspaceCommand.ExecuteAsync();
+
+                await DataSource.SyncManager.Received().PushSync();
             }
         }
 
         public sealed class TheBackCommand : SettingsViewModelTest
         {
-            [Fact]
+            [Fact, LogIfTooSlow]
             public async Task ClosesTheViewModel()
             {
                 await ViewModel.BackCommand.ExecuteAsync();
 
                 await NavigationService.Received().Close(ViewModel);
+            }
+        }
+
+        public sealed class TheToggleAddMobileTagCommand : SettingsViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void TogglesTheCurrentValueOfTheToggleAddMobileTagProperty()
+            {
+                var expected = !ViewModel.AddMobileTag;
+
+                ViewModel.ToggleAddMobileTagCommand.Execute();
+
+                ViewModel.AddMobileTag.Should().Be(expected);
+            }
+        }
+
+        public sealed class TheToggleUseTwentyFourHourClockCommand : SettingsViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void TogglesTheCurrentValueOfTheToggleUseTwentyFourHourClockProperty()
+            {
+                var expected = !ViewModel.UseTwentyFourHourClock;
+
+                ViewModel.ToggleUseTwentyFourHourClockCommand.Execute();
+
+                ViewModel.UseTwentyFourHourClock.Should().Be(expected);
             }
         }
     }

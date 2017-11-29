@@ -93,7 +93,7 @@
                             <constraint firstAttribute="width" constant="90" id="4uR-RI-qFC"/>
                         </constraints>
                     </button>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Unr-Lo-53U">
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Unr-Lo-53U" userLabel="Bottom Separator View">
                         <rect key="frame" x="0.0" y="43" width="320" height="1"/>
                         <color key="backgroundColor" red="0.90980392156862744" green="0.90980392156862744" blue="0.90980392156862744" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
@@ -133,6 +133,7 @@
             </constraints>
             <connections>
                 <outlet property="AmountOfTasksLabel" destination="Xiq-G1-JxK" id="name-outlet-Xiq-G1-JxK"/>
+                <outlet property="BottomSeparatorView" destination="Unr-Lo-53U" id="ulh-xp-l4Y"/>
                 <outlet property="ClientNameLabel" destination="fDA-Bu-6tn" id="name-outlet-fDA-Bu-6tn"/>
                 <outlet property="FadeView" destination="v2v-lT-XQa" id="egS-VE-OYZ"/>
                 <outlet property="FadeViewTrailingConstraint" destination="6hV-bI-J9u" id="Uox-Xj-BX4"/>

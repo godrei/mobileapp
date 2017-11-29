@@ -1,10 +1,17 @@
-﻿using NSubstitute;
+﻿using System;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using FluentAssertions;
+using NSubstitute;
 using Toggl.Foundation.DataSources;
 using Toggl.PrimeRadiant;
 using Toggl.Ultrawave;
 using Xunit;
-using System.Reactive.Concurrency;
 using Microsoft.Reactive.Testing;
+using Toggl.Foundation.Models;
+using Toggl.Multivac.Models;
+using Toggl.PrimeRadiant.Models;
+using ThreadingTask = System.Threading.Tasks.Task;
 
 namespace Toggl.Foundation.Tests.DataSources
 {
@@ -17,7 +24,7 @@ namespace Toggl.Foundation.Tests.DataSources
             protected ITogglDatabase Database { get; } = Substitute.For<ITogglDatabase>();
             protected ITimeService TimeService { get; } = Substitute.For<ITimeService>();
             protected IScheduler Scheduler { get; } = new TestScheduler();
-          
+
             public TogglDataSourceTest()
             {
                 DataSource = new TogglDataSource(Database, Api, TimeService, Scheduler);
@@ -26,12 +33,123 @@ namespace Toggl.Foundation.Tests.DataSources
 
         public sealed class TheLogoutMethod : TogglDataSourceTest
         {
-            [Fact]
+            [Fact, LogIfTooSlow]
             public void ClearsTheDatabase()
             {
                 DataSource.Logout();
 
                 Database.Received(1).Clear();
+            }
+        }
+
+        public sealed class TheHasUnsyncedDataMetod
+        {
+            public abstract class BaseHasUnsyncedDataTest<TModel, TDatabaseModel> : TogglDataSourceTest
+                where TModel : class
+                where TDatabaseModel : TModel, IDatabaseSyncable
+            {
+                private readonly IRepository<TDatabaseModel> repository;
+                private readonly Func<TModel, TDatabaseModel> dirty;
+                private readonly Func<TModel, string, TDatabaseModel> unsyncable;
+
+                public BaseHasUnsyncedDataTest(Func<ITogglDatabase, IRepository<TDatabaseModel>> repository,
+                    Func<TModel, TDatabaseModel> dirty, Func<TModel, string, TDatabaseModel> unsyncable)
+                {
+                    this.repository = repository(Database);
+                    this.dirty = dirty;
+                    this.unsyncable = unsyncable;
+                }
+
+                [Fact, LogIfTooSlow]
+                public async ThreadingTask ReturnsTrueWhenThereIsAnEntityWhichNeedsSync()
+                {
+                    var dirtyEntity = dirty(Substitute.For<TModel>());
+                    repository.GetAll(Arg.Any<Func<TDatabaseModel, bool>>())
+                        .Returns(Observable.Return(new[] { dirtyEntity }));
+
+                    var hasUnsyncedData = await DataSource.HasUnsyncedData();
+
+                    hasUnsyncedData.Should().BeTrue();
+                }
+
+                [Fact, LogIfTooSlow]
+                public async ThreadingTask ReturnsTrueWhenThereIsAnEntityWhichFailedToSync()
+                {
+                    var unsyncableEntity = unsyncable(Substitute.For<TModel>(), "Error message.");
+                    repository.GetAll(Arg.Any<Func<TDatabaseModel, bool>>())
+                        .Returns(Observable.Return(new[] { unsyncableEntity }));
+
+                    var hasUnsyncedData = await DataSource.HasUnsyncedData();
+
+                    hasUnsyncedData.Should().BeTrue();
+                }
+
+                [Fact, LogIfTooSlow]
+                public async ThreadingTask ReturnsFalseWhenThereIsNoUnsyncedEntityAndAllOtherRepositoriesAreSyncedAsWell()
+                {
+                    repository.GetAll(Arg.Any<Func<TDatabaseModel, bool>>())
+                        .Returns(Observable.Return(new TDatabaseModel[0]));
+
+                    var hasUnsyncedData = await DataSource.HasUnsyncedData();
+
+                    hasUnsyncedData.Should().BeFalse();
+                }
+            }
+
+            public sealed class TimeEntriesTest : BaseHasUnsyncedDataTest<ITimeEntry, IDatabaseTimeEntry>
+            {
+                public TimeEntriesTest()
+                    : base(database => database.TimeEntries, TimeEntry.Dirty, TimeEntry.Unsyncable)
+                {
+                }
+            }
+
+            public sealed class ProjectsTest : BaseHasUnsyncedDataTest<IProject, IDatabaseProject>
+            {
+                public ProjectsTest()
+                    : base(database => database.Projects, Project.Dirty, Project.Unsyncable)
+                {
+                }
+            }
+
+            public sealed class UserTest : BaseHasUnsyncedDataTest<IUser, IDatabaseUser>
+            {
+                public UserTest()
+                    : base(database => database.User, User.Dirty, User.Unsyncable)
+                {
+                }
+            }
+
+            public sealed class TasksTest : BaseHasUnsyncedDataTest<ITask, IDatabaseTask>
+            {
+                public TasksTest()
+                    : base(database => database.Tasks, Task.Dirty, Task.Unsyncable)
+                {
+                }
+            }
+
+            public sealed class ClientsTest : BaseHasUnsyncedDataTest<IClient, IDatabaseClient>
+            {
+                public ClientsTest()
+                    : base(database => database.Clients, Client.Dirty, Client.Unsyncable)
+                {
+                }
+            }
+
+            public sealed class TagsTest : BaseHasUnsyncedDataTest<ITag, IDatabaseTag>
+            {
+                public TagsTest()
+                    : base(database => database.Tags, Tag.Dirty, Tag.Unsyncable)
+                {
+                }
+            }
+
+            public sealed class WorkspacesTest : BaseHasUnsyncedDataTest<IWorkspace, IDatabaseWorkspace>
+            {
+                public WorkspacesTest()
+                    : base(database => database.Workspaces, Workspace.Dirty, Workspace.Unsyncable)
+                {
+                }
             }
         }
     }

@@ -76,7 +76,7 @@ namespace Toggl.Multivac.Tests
                 NonEmptyString nonEmptyString, NonZeroInt startIndexOffset)
             {
                 var str = nonEmptyString.Get;
-                var stringLength = new StringInfo(str).LengthInTextElements;
+                var stringLength = str.LengthInGraphemes();
                 var startIndex = stringLength + Abs(startIndexOffset.Get);
 
                 Action tryingToGetSubstringWithStartIndexGreaterThanStringLength
@@ -86,7 +86,7 @@ namespace Toggl.Multivac.Tests
                     .ShouldThrow<ArgumentOutOfRangeException>();
             }
 
-            [Theory]
+            [Theory, LogIfTooSlow]
             [InlineData("Hello", 0, 6)]
             [InlineData("Hello", 3, 3)]
             [InlineData("Hello", 4, 2)]
@@ -106,7 +106,7 @@ namespace Toggl.Multivac.Tests
                     .ShouldThrow<ArgumentOutOfRangeException>();
             }
 
-            [Theory]
+            [Theory, LogIfTooSlow]
             [InlineData("Hello", 0, 5, "Hello")]
             [InlineData("Hello", 3, 2, "lo")]
             [InlineData("Hello", 0, 3, "Hel")]

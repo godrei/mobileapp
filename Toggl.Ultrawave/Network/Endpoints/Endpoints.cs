@@ -16,10 +16,14 @@ namespace Toggl.Ultrawave.Network
         public TagEndpoints Tags => new TagEndpoints(baseUrl);
         public StatusEndpoints Status => new StatusEndpoints(baseUrl);
         public WorkspaceFeaturesEndpoints WorkspaceFeatures => new WorkspaceFeaturesEndpoints(baseUrl);
+        public Endpoint LoggedIn => Endpoint.Get(baseUrl, "me/logged");
+
+        public ReportsEndpoints ReportsEndpoints { get; }
 
         public Endpoints(ApiEnvironment environment)
         {
             baseUrl = ApiUrls.ForEnvironment(environment);
+            ReportsEndpoints = new ReportsEndpoints(environment);
         }
     }
 }

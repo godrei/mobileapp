@@ -46,6 +46,7 @@
     <Compile Include="Exceptions\InternalServerErrorException.cs" />
     <Compile Include="Exceptions\NotFoundException.cs" />
     <Compile Include="Exceptions\NotImplementedException.cs" />
+    <Compile Include="Exceptions\OfflineException.cs" />
     <Compile Include="Exceptions\PaymentRequiredException.cs" />
     <Compile Include="Exceptions\RequestEntityTooLargeException.cs" />
     <Compile Include="Exceptions\ServerErrorException.cs" />
@@ -131,6 +132,15 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Exceptions\DeserializationException.cs" />
+    <Compile Include="Network\ReportsEndpoints\ProjectsSummaryEndpoints.cs" />
+    <Compile Include="ReportsApiClients\Interfaces\IProjectsSummaryApi.cs" />
+    <Compile Include="IReportsApi.cs" />
+    <Compile Include="ReportsApiClients\ProjectsSummaryApi.cs" />
+    <Compile Include="Models\Reports\ProjectSummary.cs" />
+    <Compile Include="Models\Reports\ProjectsSummary.cs" />
+    <Compile Include="ReportsApi.cs" />
+    <Compile Include="Network\ReportsEndpoints\ReportsEndpoints.cs" />
+    <Compile Include="Helpers\ReportsUrls.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Multivac\Toggl.Multivac.csproj">

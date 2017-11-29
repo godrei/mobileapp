@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using PropertyChanged;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
@@ -16,6 +17,7 @@ using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
+using Toggl.PrimeRadiant.Models;
 using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -42,9 +44,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 var text = Text.Trim();
                 return !string.IsNullOrEmpty(text)
                     && !Suggestions.Any(c => c.Any(s => s is ProjectSuggestion pS && pS.ProjectName == text))
-                    && Encoding.UTF8.GetByteCount(text) <= MaxProjectNameLengthInBytes;
+                    && text.LengthInBytes() <= MaxProjectNameLengthInBytes;
             }
         }
+
+        public bool IsEmpty { get; set; } = false;
+
+        [DependsOn(nameof(IsEmpty))]
+        public string PlaceholderText
+            => IsEmpty
+            ? Resources.AddProject
+            : Resources.AddFilterProjects;
 
         public IMvxAsyncCommand CloseCommand { get; }
 
@@ -85,6 +95,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             await base.Initialize();
 
+            dataSource.Projects
+                      .GetAll()
+                      .Select(projects => projects.Any())
+                      .Subscribe(hasProjects => IsEmpty = !hasProjects);
+
             infoSubject.AsObservable()
                        .StartWith(Text)
                        .SelectMany(text => dataSource.AutocompleteProvider.Query(new QueryInfo(text, AutocompleteSuggestionType.Projects)))
@@ -113,10 +128,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task createProject()
         {
             if (!SuggestCreation) return;
-            
+
             var createdProjectId = await navigationService.Navigate<EditProjectViewModel, string, long?>(Text.Trim());
             if (createdProjectId == null) return;
-            
+
             var project = await dataSource.Projects.GetById(createdProjectId.Value);
             var parameter = SelectProjectParameter.WithIds(project.Id, null, project.WorkspaceId);
             await navigationService.Close(this, parameter);
