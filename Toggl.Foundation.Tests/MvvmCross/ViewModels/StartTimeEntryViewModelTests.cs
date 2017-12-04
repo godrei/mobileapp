@@ -259,6 +259,31 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.Prepare(DateTimeOffset.Now);
                 }
+
+                [Fact, LogIfTooSlow]
+                public async Task ReturnsTrueNoMatterThatAProjectIsAlreadySelected()
+                {
+                    await ViewModel.Initialize();
+                    ViewModel.TextFieldInfo = TextFieldInfo.Empty
+                        .WithProjectInfo(WorkspaceId, ProjectId, ProjectName, ProjectColor);
+
+                    ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("abcde #fgh", 10);
+
+                    ViewModel.SuggestCreation.Should().BeTrue();
+                }
+
+                [Fact, LogIfTooSlow]
+                public async Task ReturnsTrueNoMatterThatAProjectIsAlreadySelectedAndInTagSuccestionMode()
+                {
+                    await ViewModel.Initialize();
+                    ViewModel.TextFieldInfo = TextFieldInfo.Empty
+                        .WithProjectInfo(WorkspaceId, ProjectId, ProjectName, ProjectColor);
+                    ViewModel.ToggleTagSuggestionsCommand.Execute();
+
+                    ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("abcde #fgh", 10);
+
+                    ViewModel.SuggestCreation.Should().BeTrue();
+                }
             }
         }
 

@@ -227,6 +227,7 @@
     <Compile Include="Sync\States\Push\Clients\CreateClientTests.cs" />
     <Compile Include="Sync\States\Push\Clients\PushClientsStateTests.cs" />
     <Compile Include="Sync\States\Push\Clients\UnsyncableClientStateTests.cs" />
+    <Compile Include="Sync\States\Push\TryResolveClientErrorStateTests.cs" />
     <Compile Include="Sync\States\Push\Users\PushUsersStateTests.cs" />
     <Compile Include="Sync\States\Push\Users\UnsyncableUserStateTests.cs" />
     <Compile Include="Sync\States\Push\Users\UpdateUserStateTests.cs" />

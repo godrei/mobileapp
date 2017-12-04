@@ -112,11 +112,12 @@ namespace Toggl.Foundation
             var update = new UpdateTimeEntryState(api, dataSource.TimeEntries);
             var delete = new DeleteTimeEntryState(api, database.TimeEntries);
             var deleteLocal = new DeleteLocalTimeEntryState(database.TimeEntries);
+            var tryResolveClientError = new TryResolveClientErrorState<IDatabaseTimeEntry>();
             var unsyncable = new UnsyncableTimeEntryState(dataSource.TimeEntries);
             var checkServerStatus = new CheckServerStatusState(api, scheduler, apiDelay, statusDelay, delayCancellation);
             var finished = new ResetAPIDelayState(apiDelay);
 
-            return configurePush(transitions, entryPoint, push, pushOne, create, update, delete, deleteLocal, unsyncable, checkServerStatus, finished);
+            return configurePush(transitions, entryPoint, push, pushOne, create, update, delete, deleteLocal, tryResolveClientError, unsyncable, checkServerStatus, finished);
         }
 
         private static IStateResult configurePushTransitionsForTags(
@@ -134,11 +135,12 @@ namespace Toggl.Foundation
             var push = new PushTagsState(database.Tags);
             var pushOne = new PushOneEntityState<IDatabaseTag>();
             var create = new CreateTagState(api, database.Tags);
+            var tryResolveClientError = new TryResolveClientErrorState<IDatabaseTag>();
             var unsyncable = new UnsyncableTagState(database.Tags);
             var checkServerStatus = new CheckServerStatusState(api, scheduler, apiDelay, statusDelay, delayCancellation);
             var finished = new ResetAPIDelayState(apiDelay);
 
-            return configureCreateOnlyPush(transitions, entryPoint, push, pushOne, create, unsyncable, checkServerStatus, finished);
+            return configureCreateOnlyPush(transitions, entryPoint, push, pushOne, create, tryResolveClientError, unsyncable, checkServerStatus, finished);
         }
 
         private static IStateResult configurePushTransitionsForClients(
@@ -156,11 +158,12 @@ namespace Toggl.Foundation
             var push = new PushClientsState(database.Clients);
             var pushOne = new PushOneEntityState<IDatabaseClient>();
             var create = new CreateClientState(api, database.Clients);
+            var tryResolveClientError = new TryResolveClientErrorState<IDatabaseClient>();
             var unsyncable = new UnsyncableClientState(database.Clients);
             var checkServerStatus = new CheckServerStatusState(api, scheduler, apiDelay, statusDelay, delayCancellation);
             var finished = new ResetAPIDelayState(apiDelay);
 
-            return configureCreateOnlyPush(transitions, entryPoint, push, pushOne, create, unsyncable, checkServerStatus, finished);
+            return configureCreateOnlyPush(transitions, entryPoint, push, pushOne, create, tryResolveClientError, unsyncable, checkServerStatus, finished);
         }
 
         private static IStateResult configurePushTransitionsForProjects(
@@ -178,11 +181,12 @@ namespace Toggl.Foundation
             var push = new PushProjectsState(database.Projects);
             var pushOne = new PushOneEntityState<IDatabaseProject>();
             var create = new CreateProjectState(api, database.Projects);
+            var tryResolveClientError = new TryResolveClientErrorState<IDatabaseProject>();
             var unsyncable = new UnsyncableProjectState(database.Projects);
             var checkServerStatus = new CheckServerStatusState(api, scheduler, apiDelay, statusDelay, delayCancellation);
             var finished = new ResetAPIDelayState(apiDelay);
 
-            return configureCreateOnlyPush(transitions, entryPoint, push, pushOne, create, unsyncable, checkServerStatus, finished);
+            return configureCreateOnlyPush(transitions, entryPoint, push, pushOne, create, tryResolveClientError, unsyncable, checkServerStatus, finished);
         }
 
         private static IStateResult configurePushTransitionsForUsers(
@@ -200,11 +204,12 @@ namespace Toggl.Foundation
             var push = new PushUsersState(database.User);
             var pushOne = new PushOneEntityState<IDatabaseUser>();
             var update = new UpdateUserState(api, database.User);
+            var tryResolveClientError = new TryResolveClientErrorState<IDatabaseUser>();
             var unsyncable = new UnsyncableUserState(database.User);
             var checkServerStatus = new CheckServerStatusState(api, scheduler, apiDelay, statusDelay, delayCancellation);
             var finished = new ResetAPIDelayState(apiDelay);
 
-            return configureUpdateOnlyPush(transitions, entryPoint, push, pushOne, update, unsyncable, checkServerStatus, finished);
+            return configureUpdateOnlyPush(transitions, entryPoint, push, pushOne, update, tryResolveClientError, unsyncable, checkServerStatus, finished);
         }
 
         private static IStateResult configurePush<T>(
@@ -216,6 +221,7 @@ namespace Toggl.Foundation
             BaseUpdateEntityState<T> update,
             BaseDeleteEntityState<T> delete,
             BaseDeleteLocalEntityState<T> deleteLocal,
+            TryResolveClientErrorState<T> tryResolveClientError,
             BaseUnsyncableEntityState<T> markUnsyncable,
             CheckServerStatusState checkServerStatus,
             ResetAPIDelayState finished)
@@ -228,9 +234,9 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(pushOne.DeleteEntity, delete.Start);
             transitions.ConfigureTransition(pushOne.DeleteEntityLocally, deleteLocal.Start);
 
-            transitions.ConfigureTransition(create.ClientError, markUnsyncable.Start);
-            transitions.ConfigureTransition(update.ClientError, markUnsyncable.Start);
-            transitions.ConfigureTransition(delete.ClientError, markUnsyncable.Start);
+            transitions.ConfigureTransition(create.ClientError, tryResolveClientError.Start);
+            transitions.ConfigureTransition(update.ClientError, tryResolveClientError.Start);
+            transitions.ConfigureTransition(delete.ClientError, tryResolveClientError.Start);
 
             transitions.ConfigureTransition(create.ServerError, checkServerStatus.Start);
             transitions.ConfigureTransition(update.ServerError, checkServerStatus.Start);
@@ -239,6 +245,9 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(create.UnknownError, checkServerStatus.Start);
             transitions.ConfigureTransition(update.UnknownError, checkServerStatus.Start);
             transitions.ConfigureTransition(delete.UnknownError, checkServerStatus.Start);
+
+            transitions.ConfigureTransition(tryResolveClientError.UnresolvedTooManyRequests, checkServerStatus.Start);
+            transitions.ConfigureTransition(tryResolveClientError.Unresolved, markUnsyncable.Start);
 
             transitions.ConfigureTransition(checkServerStatus.Retry, checkServerStatus.Start);
             transitions.ConfigureTransition(checkServerStatus.ServerIsAvailable, push.Start);
@@ -260,6 +269,7 @@ namespace Toggl.Foundation
             BasePushState<T> push,
             PushOneEntityState<T> pushOne,
             BaseCreateEntityState<T> create,
+            TryResolveClientErrorState<T> tryResolveClientError,
             BaseUnsyncableEntityState<T> markUnsyncable,
             CheckServerStatusState checkServerStatus,
             ResetAPIDelayState finished)
@@ -273,9 +283,12 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(pushOne.DeleteEntity, new InvalidTransitionState($"Deleting is not supported for {typeof(T).Name} during Push sync.").Start);
             transitions.ConfigureTransition(pushOne.DeleteEntityLocally, new InvalidTransitionState($"Deleting locally is not supported for {typeof(T).Name} during Push sync.").Start);
 
-            transitions.ConfigureTransition(create.ClientError, markUnsyncable.Start);
+            transitions.ConfigureTransition(create.ClientError, tryResolveClientError.Start);
             transitions.ConfigureTransition(create.ServerError, checkServerStatus.Start);
             transitions.ConfigureTransition(create.UnknownError, checkServerStatus.Start);
+
+            transitions.ConfigureTransition(tryResolveClientError.UnresolvedTooManyRequests, checkServerStatus.Start);
+            transitions.ConfigureTransition(tryResolveClientError.Unresolved, markUnsyncable.Start);
 
             transitions.ConfigureTransition(checkServerStatus.Retry, checkServerStatus.Start);
             transitions.ConfigureTransition(checkServerStatus.ServerIsAvailable, push.Start);
@@ -293,6 +306,7 @@ namespace Toggl.Foundation
             BasePushState<T> push,
             PushOneEntityState<T> pushOne,
             BaseUpdateEntityState<T> update,
+            TryResolveClientErrorState<T> tryResolveClientError,
             BaseUnsyncableEntityState<T> markUnsyncable,
             CheckServerStatusState checkServerStatus,
             ResetAPIDelayState finished)
@@ -306,9 +320,12 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(pushOne.DeleteEntity, new InvalidTransitionState($"Deleting is not supported for {typeof(T).Name} during Push sync.").Start);
             transitions.ConfigureTransition(pushOne.DeleteEntityLocally, new InvalidTransitionState($"Deleting locally is not supported for {typeof(T).Name} during Push sync.").Start);
 
-            transitions.ConfigureTransition(update.ClientError, markUnsyncable.Start);
+            transitions.ConfigureTransition(update.ClientError, tryResolveClientError.Start);
             transitions.ConfigureTransition(update.ServerError, checkServerStatus.Start);
             transitions.ConfigureTransition(update.UnknownError, checkServerStatus.Start);
+
+            transitions.ConfigureTransition(tryResolveClientError.UnresolvedTooManyRequests, checkServerStatus.Start);
+            transitions.ConfigureTransition(tryResolveClientError.Unresolved, markUnsyncable.Start);
 
             transitions.ConfigureTransition(checkServerStatus.Retry, checkServerStatus.Start);
             transitions.ConfigureTransition(checkServerStatus.ServerIsAvailable, push.Start);

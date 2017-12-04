@@ -16,6 +16,7 @@
                 <outlet property="EmailTextField" destination="WxQ-t5-Zte" id="name-outlet-WxQ-t5-Zte"/>
                 <outlet property="ForgotPasswordButton" destination="8lc-P8-x4K" id="name-outlet-8lc-P8-x4K"/>
                 <outlet property="GoogleSignInButton" destination="PiY-Rc-MrZ" id="A37-fy-IHs"/>
+                <outlet property="GoogleSignInImage" destination="KpB-g5-xIZ" id="uhP-m6-eTL"/>
                 <outlet property="InfoLabel" destination="3Dj-pA-An9" id="FoP-ya-wnL"/>
                 <outlet property="PasswordManagerButton" destination="zrB-CR-ZBC" id="name-outlet-zrB-CR-ZBC"/>
                 <outlet property="PasswordTextField" destination="965-7g-Gu6" id="name-outlet-965-7g-Gu6"/>

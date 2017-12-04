@@ -32,6 +32,9 @@ namespace Toggl.Daneel.ViewControllers
 		UIKit.UIButton GoogleSignInButton { get; set; }
 
 		[Outlet]
+		UIKit.UIImageView GoogleSignInImage { get; set; }
+
+		[Outlet]
 		UIKit.UILabel InfoLabel { get; set; }
 
 		[Outlet]
@@ -68,6 +71,11 @@ namespace Toggl.Daneel.ViewControllers
 			if (BottomConstraint != null) {
 				BottomConstraint.Dispose ();
 				BottomConstraint = null;
+			}
+
+			if (GoogleSignInImage != null) {
+				GoogleSignInImage.Dispose ();
+				GoogleSignInImage = null;
 			}
 
 			if (EmailTextField != null) {
