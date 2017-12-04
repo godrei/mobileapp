@@ -216,4 +216,10 @@ time entries will appear here.</value>
     <data name="IncorrectPassword">
         <value>Incorrect password. Please, try again</value>
     </data>
+    <data name="GoogleLogin">
+        <value>Log in with Google</value>
+    </data>
+    <data name="GoogleSignUp">
+        <value>Sign up with Google</value>
+    </data>
 </root>

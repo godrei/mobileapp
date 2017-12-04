@@ -108,6 +108,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [DependsOn(nameof(IsLogin), nameof(IsForgotPasswordPage))]
         public bool ShowForgotPassword => IsLogin && !IsForgotPasswordPage;
 
+        [DependsOn(nameof(IsLogin))]
+        public string GoogleButtonText => IsLogin ? Resources.GoogleLogin : Resources.GoogleSignUp;
+
         [DependsOn(nameof(CurrentPage), nameof(Password))]
         public bool NextIsEnabled
         {
@@ -266,10 +269,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             IsLoading = true;
 
-            loginDisposable =
-                loginManager
-                    .LoginWithGoogle()
-                    .Subscribe(onDataSource, onError, onCompleted);
+            var googleObservable = IsLogin ? loginManager.LoginWithGoogle() : loginManager.SignUpWithGoogle();
+            loginDisposable = googleObservable.Subscribe(onDataSource, onError, onCompleted);
         }
 
         private void signUp()

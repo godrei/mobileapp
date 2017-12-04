@@ -51,6 +51,10 @@ namespace Toggl.Daneel.ViewControllers
                       .For(v => v.BindSecureTextEntry())
                       .To(vm => vm.IsPasswordMasked);
 
+            bindingSet.Bind(GoogleSignInButton)
+                      .For(v => v.BindTitle())
+                      .To(vm => vm.GoogleButtonText);
+
             bindingSet.Bind(this)
                       .For(v => v.Title)
                       .To(vm => vm.Title);

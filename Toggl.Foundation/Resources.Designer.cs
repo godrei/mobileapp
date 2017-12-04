@@ -424,7 +424,7 @@ namespace Toggl.Foundation {
                 return ResourceManager.GetString("PasswordResetOfflineError", resourceCulture);
             }
         }
-
+        
         public static string AreYouSure {
             get {
                 return ResourceManager.GetString("AreYouSure", resourceCulture);
@@ -434,6 +434,18 @@ namespace Toggl.Foundation {
         public static string IncorrectPassword {
             get {
                 return ResourceManager.GetString("IncorrectPassword", resourceCulture);
+            }
+        }
+        
+        public static string GoogleLogin {
+            get {
+                return ResourceManager.GetString("GoogleLogin", resourceCulture);
+            }
+        }
+        
+        public static string GoogleSignUp {
+            get {
+                return ResourceManager.GetString("GoogleSignUp", resourceCulture);
             }
         }
     }
