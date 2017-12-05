@@ -81,6 +81,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 {
                     IsRunningSync = IsLoggingOut == false && state != SyncState.Sleep;
                     IsSynced = IsLoggingOut == false && await isSynced();
+                    throw new Exception("This is an intentional exception for testing. It should be removed and NOT MERGED INTO DEVELOP OR RELEASE braches.");
                 })
             );
 
@@ -113,7 +114,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public void update() => throw new NotImplementedException();
 
-        public void editProfile() 
+        public void editProfile()
         {
         }
 
