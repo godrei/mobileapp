@@ -50,7 +50,7 @@ private Action BuildSolution(string configuration, string platform = "", bool up
 
 private void UploadSymbols()
 {
-    const string args = "Toggl.Daneel/scripts/FirebaseCrashReporting/xamarin_upload_symbols.sh -n Toggl.Daneel -b ./bin/Release -i Toggl.Daneel/Info.plist -p Toggl.Daneel/GoogleService-Info.plist -s Toggl.Daneel/service-account.json";
+    const string args = "Toggl.Daneel/scripts/FirebaseCrashReporting/xamarin_upload_symbols.sh -n Toggl.Daneel -b Toggl.Daneel/bin/Release.AppStore -i Toggl.Daneel/Info.plist -p Toggl.Daneel/GoogleService-Info.plist -s Toggl.Daneel/service-account.json";
     StartProcess("bash", new ProcessSettings { Arguments = args });
 }
 
