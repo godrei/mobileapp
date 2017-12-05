@@ -115,6 +115,30 @@ private TemporaryFileTransformation GetIosInfoConfigurationTransformation()
     };
 }
 
+private TemporaryFileTransformation GetFirebaseCrashReportingServiceAccountTransformation()
+{
+    const string path = "Toggl.Daneel/service-account.json";
+    var privateKeyId = EnvironmentVariable("TOGGL_CRASH_REPORTING_PRIVATE_KEY_ID");
+    var privateKey = EnvironmentVariable("TOGGL_CRASH_REPORTING_PRIVATE_KEY");
+    var clientId = EnvironmentVariable("TOGGL_CRASH_REPORTING_CLIENT_ID");
+    var clientEmail = EnvironmentVariable("TOGGL_CRASH_REPORTING_CLIENT_EMAIL");
+    var certUrl = EnvironmentVariable("TOGGL_CRASH_REPORTING_CLIENT_X509_CERT_URL");
+
+    var filePath = GetFiles(path).Single();
+    var file = TransformTextFile(filePath).ToString();
+
+    return new TemporaryFileTransformation
+    { 
+        Path = path, 
+        Original = file,
+        Temporary = file.Replace("{TOGGL_CRASH_REPORTING_PRIVATE_KEY_ID}", privateKeyId)
+                        .Replace("{TOGGL_CRASH_REPORTING_PRIVATE_KEY}", privateKey)
+                        .Replace("{TOGGL_CRASH_REPORTING_CLIENT_ID}", clientId)
+                        .Replace("{TOGGL_CRASH_REPORTING_CLIENT_EMAIL}", clientEmail)
+                        .Replace("{TOGGL_CRASH_REPORTING_CLIENT_X509_CERT_URL}", certUrl)
+    };
+}
+
 private TemporaryFileTransformation GetIntegrationTestsConfigurationTransformation()
 {   
     const string path = "Toggl.Ultrawave.Tests.Integration/Helper/Configuration.cs";
@@ -134,7 +158,8 @@ var transformations = new List<TemporaryFileTransformation>
 {
     GetIntegrationTestsConfigurationTransformation(),
     GetIosAnalyticsServicesConfigurationTransformation(),
-    GetIosInfoConfigurationTransformation()
+    GetIosInfoConfigurationTransformation(),
+    GetFirebaseCrashReportingServiceAccountTransformation()
 };
 
 Setup(context => transformations.ForEach(transformation => System.IO.File.WriteAllText(transformation.Path, transformation.Temporary)));
