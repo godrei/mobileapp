@@ -45,6 +45,7 @@ private Action BuildSolution(string configuration, string platform = "", bool up
     {
         MSBuild(togglSolution, buildSettings);
         UploadSymbols();
+        DumpUUID();
     };
 }
 
@@ -52,6 +53,12 @@ private void UploadSymbols()
 {
     const string args = "Toggl.Daneel/scripts/FirebaseCrashReporting/xamarin_upload_symbols.sh -n Toggl.Daneel -b Toggl.Daneel/bin/Release.AppStore -i Toggl.Daneel/Info.plist -p Toggl.Daneel/GoogleService-Info.plist -s Toggl.Daneel/service-account.json";
     StartProcess("bash", new ProcessSettings { Arguments = args });
+}
+
+private void DumpUUID()
+{
+    const string args = "--uuid Toggl.Daneel/bin/Release.AppStore/Toggl.Daneel.app/Toggl.Daneel";
+    StartProcess("dwarfdump", args);
 }
 
 //Temporary variable replacement
