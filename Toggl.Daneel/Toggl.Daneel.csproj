@@ -610,6 +610,7 @@
     <Compile Include="ViewControllers\TokenResetViewController.designer.cs">
       <DependentUpon>TokenResetViewController.cs</DependentUpon>
     </Compile>
+    <Compile Include="Binding\TextViewTagListTargetBinding.cs" />
     <Compile Include="Extensions\LayoutConstraintExtensions.cs" />
     <Compile Include="ViewControllers\LoginViewController.cs" />
     <Compile Include="ViewControllers\LoginViewController.designer.cs">
@@ -686,6 +687,7 @@
     <Compile Include="Views\EntityCreation\WorkspaceViewCell.designer.cs">
       <DependentUpon>WorkspaceViewCell.cs</DependentUpon>
     </Compile>
+    <Compile Include="ViewControllers\KeyboardAwareViewController.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">

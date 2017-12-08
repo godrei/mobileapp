@@ -555,6 +555,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Query(Arg.Is<QueryInfo>(
                         arg => arg.SuggestionType == AutocompleteSuggestionType.Projects))
                     .Returns(Observable.Return(suggestions));
+
+                AutocompleteProvider
+                    .ParseFieldInfo(Arg.Any<TextFieldInfo>())
+                    .Returns(info => new QueryInfo(
+                        info.Arg<TextFieldInfo>().Text,
+                        info.Arg<TextFieldInfo>().Text?.Contains("@") ?? false
+                            ? AutocompleteSuggestionType.Projects
+                            : AutocompleteSuggestionType.TimeEntries));
             }
 
             [Fact, LogIfTooSlow]
@@ -620,18 +628,21 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("@", "")]
             [InlineData("@somequery", "")]
             [InlineData("@some query", "")]
-            [InlineData("@some query@query", "")]
+            [InlineData("@some query@query", "@some query")]
             [InlineData("Testing Toggl Apps @", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps @somequery", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps @some query", "Testing Toggl Apps ")]
-            [InlineData("Testing Toggl Apps @some query@query", "Testing Toggl Apps ")]
+            [InlineData("Testing Toggl Apps @some query@query", "Testing Toggl Apps @some query")]
             [InlineData("Testing Toggl Apps@", "Testing Toggl Apps")]
             [InlineData("Testing Toggl Apps@somequery", "Testing Toggl Apps")]
             [InlineData("Testing Toggl Apps@some query", "Testing Toggl Apps")]
-            [InlineData("Testing Toggl Apps@some query@query", "Testing Toggl Apps")]
+            [InlineData("Testing Toggl Apps@some query@query", "Testing Toggl Apps@some query")]
             public void RemovesTheAtSymbolFromTheDescriptionTextIfAlreadyInProjectSuggestionMode(
                 string description, string expected)
             {
+                AutocompleteProvider
+                    .ParseFieldInfo(Arg.Any<TextFieldInfo>())
+                    .Returns(new QueryInfo(description.Substring(expected.Length + 1), AutocompleteSuggestionType.Projects));
                 ViewModel.Prepare(DateTimeOffset.UtcNow);
                 ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
 
@@ -652,6 +663,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 AutocompleteProvider
                     .Query(Arg.Is<TextFieldInfo>(info => info.Text.Contains("#")))
                     .Returns(Observable.Return(suggestions));
+
+                AutocompleteProvider
+                    .ParseFieldInfo(Arg.Any<TextFieldInfo>())
+                    .Returns(info => new QueryInfo(
+                        info.Arg<TextFieldInfo>().Text,
+                        info.Arg<TextFieldInfo>().Text?.Contains("#") ?? false
+                            ? AutocompleteSuggestionType.Tags
+                            : AutocompleteSuggestionType.TimeEntries));
             }
 
             [Fact, LogIfTooSlow]
@@ -704,11 +723,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("#", "")]
             [InlineData("#somequery", "")]
             [InlineData("#some query", "")]
-            [InlineData("#some query#query", "")]
+            [InlineData("#some query#query", "#some query")]
             [InlineData("Testing Toggl Apps #", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps #somequery", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps #some query", "Testing Toggl Apps ")]
-            [InlineData("Testing Toggl Apps #some query#query", "Testing Toggl Apps ")]
+            [InlineData("Testing Toggl Apps #some query#query", "Testing Toggl Apps #some query")]
             [InlineData("Testing Toggl Apps#", "Testing Toggl Apps")]
             [InlineData("Testing Toggl Apps#somequery", "Testing Toggl Apps")]
             [InlineData("Testing Toggl Apps#some query", "Testing Toggl Apps")]
@@ -717,7 +736,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 string description, string expected)
             {
                 ViewModel.Prepare(DateTimeOffset.UtcNow);
-                ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
+                ViewModel.TextFieldInfo = TextFieldInfo.Empty
+                    .WithProjectInfo(WorkspaceId, ProjectId, ProjectName, ProjectColor)
+                    .WithTextAndCursor(description, description.Length);
 
                 ViewModel.ToggleTagSuggestionsCommand.Execute();
 

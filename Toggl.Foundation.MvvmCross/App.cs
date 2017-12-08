@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using System.Reactive.Linq;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
@@ -66,7 +66,8 @@ namespace Toggl.Foundation.MvvmCross
 
             Mvx.RegisterSingleton(dataSource);
 
-            if (accessRestrictionStorage.IsUnauthorized())
+            var user = dataSource.User.Current().Wait();
+            if (accessRestrictionStorage.IsUnauthorized(user.ApiToken))
             {
                 navigationService.Navigate<TokenResetViewModel>();
                 return;

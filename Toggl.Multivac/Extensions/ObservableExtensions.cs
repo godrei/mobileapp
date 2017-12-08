@@ -30,7 +30,13 @@ namespace Toggl.Multivac.Extensions
             var observer = new Observer<T>(onError, onCompleted);
             return observable.Subscribe(observer);
         }
-        
+
+        public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<Exception> onError)
+        {
+            var observer = new Observer<T>(onError, () => { });
+            return observable.Subscribe(observer);
+        }
+
         public static IObservable<T> ConnectedReplay<T>(this IObservable<T> observable)
         {
             var replayed = observable.Replay();

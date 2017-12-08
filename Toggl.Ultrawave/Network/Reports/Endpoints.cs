@@ -7,11 +7,11 @@ namespace Toggl.Ultrawave.Network.Reports
     {
         private readonly Uri baseUrl;
 
-        public ProjectsSummaryEndpoints ProjectsSummaries => new ProjectsSummaryEndpoints(baseUrl);
+        public ProjectEndpoints Projects => new ProjectEndpoints(baseUrl);
 
         public Endpoints(ApiEnvironment environment)
         {
-            baseUrl = ReportsUrls.ForEnvironment(environment);
+            baseUrl = BaseUrls.ForReports(environment);
         }
     }
 }

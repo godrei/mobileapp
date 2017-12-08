@@ -34,6 +34,9 @@ namespace Toggl.Daneel.Extensions
         public static string BindSecureTextEntry(this UITextField self)
             => TextFieldSecureTextEntryTargetBinding.BindingName;
 
+        public static string BindTags(this UITextView self)
+            => TextViewTagListTargetBinding.BindingName;
+
         public static string BindTextFieldInfo(this UITextView self)
             => TextViewTextInfoTargetBinding.BindingName;
 

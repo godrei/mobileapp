@@ -11,6 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SelectProjectViewController">
             <connections>
+                <outlet property="BottomConstraint" destination="lmR-W4-yFV" id="Lh5-bt-ze4"/>
                 <outlet property="CloseButton" destination="52a-eA-uvh" id="b7I-P1-rvN"/>
                 <outlet property="EmptyStateImage" destination="N4r-0Y-VVU" id="laS-dG-J3I"/>
                 <outlet property="EmptyStateLabel" destination="y7h-xi-13f" id="gg7-fK-8XK"/>

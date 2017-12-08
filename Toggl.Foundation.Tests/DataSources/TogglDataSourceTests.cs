@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -9,9 +11,14 @@ using Toggl.Foundation.DataSources;
 using Toggl.PrimeRadiant;
 using Xunit;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Services;
 using Toggl.Foundation.Sync;
+using Toggl.Foundation.Tests.Helpers;
+using Toggl.Foundation.Tests.Sync;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant.Models;
+using Toggl.Ultrawave.Exceptions;
+using Toggl.Ultrawave.Network;
 using ThreadingTask = System.Threading.Tasks.Task;
 
 namespace Toggl.Foundation.Tests.DataSources
@@ -23,12 +30,14 @@ namespace Toggl.Foundation.Tests.DataSources
             protected ITogglDataSource DataSource { get; }
             protected ITogglDatabase Database { get; } = Substitute.For<ITogglDatabase>();
             protected ITimeService TimeService { get; } = Substitute.For<ITimeService>();
-            protected IAccessRestrictionStorage AccessRestrictionStorage { get; } = Substitute.For<IAccessRestrictionStorage>();
             protected ISyncManager SyncManager { get; } = Substitute.For<ISyncManager>();
+            protected IApiErrorHandlingService ApiErrorHandlingService { get; } = Substitute.For<IApiErrorHandlingService>();
+            protected ISubject<SyncProgress> ProgressSubject = new Subject<SyncProgress>();
 
             public TogglDataSourceTest()
             {
-                DataSource = new TogglDataSource(Database, TimeService, AccessRestrictionStorage, _ => SyncManager);
+                SyncManager.ProgressObservable.Returns(ProgressSubject.AsObservable());
+                DataSource = new TogglDataSource(Database, TimeService, ApiErrorHandlingService, _ => SyncManager);
             }
         }
 
@@ -51,14 +60,6 @@ namespace Toggl.Foundation.Tests.DataSources
             }
 
             [Fact, LogIfTooSlow]
-            public void ClearsUnauthorizedAccessFlag()
-            {
-                DataSource.Logout().Wait();
-
-                AccessRestrictionStorage.Received().ClearUnauthorizedAccess();
-            }
-
-            [Fact, LogIfTooSlow]
             public void DoesNotClearTheDatabaseBeforeTheSyncManagerCompletesFreezing()
             {
                 var scheduler = new TestScheduler();
@@ -69,20 +70,6 @@ namespace Toggl.Foundation.Tests.DataSources
                 scheduler.AdvanceBy(TimeSpan.FromDays(1).Ticks);
 
                 Database.DidNotReceive().Clear();
-            }
-
-            [Fact, LogIfTooSlow]
-            public void DoesNotClearTheUnauthorizedAccessFlagBeforeTheDatabaseIsCleared()
-            {
-                var scheduler = new TestScheduler();
-                SyncManager.Freeze().Returns(Observable.Return(SyncState.Sleep));
-                Database.Clear().Returns(Observable.Never<Unit>());
-
-                var observable = DataSource.Logout().SubscribeOn(scheduler).Publish();
-                observable.Connect();
-                scheduler.AdvanceBy(TimeSpan.FromDays(1).Ticks);
-
-                AccessRestrictionStorage.DidNotReceive().ClearUnauthorizedAccess();
             }
 
             [Fact, LogIfTooSlow]
@@ -230,6 +217,75 @@ namespace Toggl.Foundation.Tests.DataSources
                 {
                 }
             }
+        }
+
+        public sealed class SyncErrorHandling : TogglDataSourceTest
+        {
+            private IRequest request => Substitute.For<IRequest>();
+            private IResponse response => Substitute.For<IResponse>();
+
+            [Fact, LogIfTooSlow]
+            public void SetsTheOutdatedClientVersionFlag()
+            {
+                var exception = new ClientDeprecatedException(request, response);
+                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ClientDeprecatedException>()).Returns(true);
+
+                ProgressSubject.OnError(exception);
+
+                ApiErrorHandlingService.Received().TryHandleDeprecationError(Arg.Is(exception));
+                ApiErrorHandlingService.DidNotReceive().TryHandleUnauthorizedError(Arg.Is(exception));
+            }
+
+            [Fact, LogIfTooSlow]
+            public void SetsTheOutdatedApiVersionFlag()
+            {
+                var exception = new ApiDeprecatedException(request, response);
+                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ApiDeprecatedException>()).Returns(true);
+
+                ProgressSubject.OnError(exception);
+
+                ApiErrorHandlingService.Received().TryHandleDeprecationError(Arg.Is(exception));
+                ApiErrorHandlingService.DidNotReceive().TryHandleUnauthorizedError(Arg.Is(exception));
+            }
+
+            [Fact, LogIfTooSlow]
+            public async ThreadingTask SetsTheUnauthorizedAccessFlag()
+            {
+                var exception = new UnauthorizedException(request, response);
+                ApiErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
+
+                ProgressSubject.OnError(exception);
+
+                ApiErrorHandlingService.Received().TryHandleUnauthorizedError(Arg.Is(exception));
+            }
+
+            [Theory, LogIfTooSlow]
+            [MemberData(nameof(SyncManagerTests.TheProgressObservable.ExceptionsRethrownByProgressObservableOnError), MemberType = typeof(SyncManagerTests.TheProgressObservable))]
+            public void DoesNotThrowForAnyExceptionWhichCanBeThrownByTheProgressObservable(Exception exception)
+            {
+                ApiErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
+                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ClientDeprecatedException>()).Returns(true);
+                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ApiDeprecatedException>()).Returns(true);
+
+                Action processingError = () => ProgressSubject.OnError(exception);
+
+                processingError.ShouldNotThrow();
+            }
+
+            [Theory, LogIfTooSlow]
+            [MemberData(nameof(ApiExceptionsWhichAreNotThrowByTheProgressObservable))]
+            public void ThrowsForDifferentException(Exception exception)
+            {
+                Action handling = () => ProgressSubject.OnError(exception);
+
+                handling.ShouldThrow<ArgumentException>();
+            }
+
+            public static IEnumerable<object> ApiExceptionsWhichAreNotThrowByTheProgressObservable()
+                => ApiExceptions.ClientExceptions
+                    .Concat(ApiExceptions.ServerExceptions)
+                    .Where(args => SyncManagerTests.TheProgressObservable.ExceptionsRethrownByProgressObservableOnError()
+                        .All(thrownByProgress => ((object[])args)[0].GetType() != thrownByProgress[0].GetType()));
         }
     }
 }

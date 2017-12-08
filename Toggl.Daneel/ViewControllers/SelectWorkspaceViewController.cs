@@ -1,18 +1,19 @@
 ﻿using System;
 using MvvmCross.Binding.BindingContext;
-using MvvmCross.iOS.Views;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Daneel.ViewSources;
 using Toggl.Foundation.MvvmCross.Converters;
+using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using UIKit;
 
 namespace Toggl.Daneel.ViewControllers
 {
     [ModalCardPresentation]
-    public partial class SelectWorkspaceViewController : MvxViewController<SelectWorkspaceViewModel>
+    public partial class SelectWorkspaceViewController : KeyboardAwareViewController<SelectWorkspaceViewModel>
     {
         public SelectWorkspaceViewController() 
-            : base(nameof(SelectWorkspaceViewController), null)
+            : base(nameof(SelectWorkspaceViewController))
         {
         }
 
@@ -41,7 +42,20 @@ namespace Toggl.Daneel.ViewControllers
 
             bindingSet.Apply();
 
-            SearchTextField.BecomeFirstResponder();
+            if (ViewModel.AllowQuerying)
+                SearchTextField.BecomeFirstResponder();
+        }
+
+        protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
+        {
+            BottomConstraint.Constant = e.FrameEnd.Height;
+            UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
+        }
+
+        protected override void KeyboardWillHide(object sender, UIKeyboardEventArgs e)
+        {
+            BottomConstraint.Constant = 0;
+            UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
         }
     }
 }

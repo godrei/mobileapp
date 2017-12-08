@@ -64,6 +64,7 @@
     <Compile Include="Extensions\TimeEntryExtensions.cs" />
     <Compile Include="Models\Reports\IProjectSummary.cs" />
     <Compile Include="Models\Reports\IProjectsSummary.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

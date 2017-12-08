@@ -296,8 +296,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Property]
-            public void StartATimeEntryWithTheSameValuesOfTheSelectedTimeEntry(string description,
-                long projectId, long? taskId, bool billable)
+            public void StartATimeEntryWithTheSameValuesOfTheSelectedTimeEntry(
+                string description,
+                long projectId,
+                long? taskId,
+                bool billable,
+                NonNull<long[]> tagIds)
             {
                 if (description == null || projectId == 0) return;
 
@@ -308,15 +312,17 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 timeEntry.Billable.Returns(billable);
                 timeEntry.Project.Returns(project);
                 timeEntry.TaskId.Returns(taskId);
+                timeEntry.TagIds.Returns(tagIds.Get);
                 timeEntry.Duration.Returns(100);
                 var timeEntryViewModel = new TimeEntryViewModel(timeEntry);
 
                 ViewModel.ContinueTimeEntryCommand.ExecuteAsync(timeEntryViewModel).Wait();
 
                 DataSource.TimeEntries.Received().Start(Arg.Is<StartTimeEntryDTO>(dto =>
+                    dto.TagIds.SequenceEqual(tagIds.Get) &&
                     dto.Description == description &&
-                    dto.Billable == billable &&
                     dto.ProjectId == projectId &&
+                    dto.Billable == billable &&
                     dto.TaskId == taskId
                 )).Wait();
             }

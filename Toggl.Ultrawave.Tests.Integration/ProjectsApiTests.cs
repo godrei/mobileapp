@@ -5,9 +5,12 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Toggl.Multivac.Models;
-using Toggl.Ultrawave.Models;
+ using Toggl.Ultrawave.Exceptions;
+ using Toggl.Ultrawave.Models;
 using Toggl.Ultrawave.Tests.Integration.BaseTests;
-using Xunit;
+ using Toggl.Ultrawave.Tests.Integration.Helper;
+ using Xunit;
+using ThreadingTask = System.Threading.Tasks.Task;
 
 namespace Toggl.Ultrawave.Tests.Integration
 {
@@ -152,6 +155,84 @@ namespace Toggl.Ultrawave.Tests.Integration
                 && a.ClientId == b.ClientId
                 && a.IsPrivate == b.IsPrivate
                 && a.Color == b.Color;
+        }
+
+        public sealed class TheSearchMethod : AuthenticatedEndpointBaseTests<List<IProject>>
+        {
+            [Fact]
+            public async ThreadingTask ThrowsArgumentNullExceptionForNullIds()
+            {
+                var (togglApi, user) = await SetupTestUser();
+
+                Action searchingNull = () => togglApi.Projects.Search(user.DefaultWorkspaceId, null).Wait();
+
+                searchingNull.ShouldThrow<ArgumentNullException>();
+            }
+
+            [Fact]
+            public async ThreadingTask ThrowsBadRequestExceptionForEmtpyArrayOfIds()
+            {
+                var (togglApi, user) = await SetupTestUser();
+                var projectIds = new long[0];
+
+                Action searchingWithEmptyIds = () => togglApi.Projects.Search(user.DefaultWorkspaceId, projectIds).Wait();
+
+                searchingWithEmptyIds.ShouldThrow<BadRequestException>();
+            }
+
+            [Fact]
+            public async ThreadingTask ReturnsEmtpyArrayForProjectsWhichDontExistOrDoNotBelongToOtherUser()
+            {
+                var (togglApi, user) = await SetupTestUser();
+                var projectIds = new long[] { 1, 2, 3 };
+
+                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId, projectIds);
+
+                projects.Should().HaveCount(0);
+            }
+
+            [Fact]
+            public async ThreadingTask DoesNotFindProjectInAnInaccessibleWorkspace()
+            {
+                var (togglApiA, userA) = await SetupTestUser();
+                var (togglApiB, userB) = await SetupTestUser();
+                var projectA = await togglApiA.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = userA.DefaultWorkspaceId });
+
+                var projects = await togglApiB.Projects.Search(userB.DefaultWorkspaceId, new[] { projectA.Id });
+
+                projects.Should().HaveCount(0);
+            }
+
+            [Fact]
+            public async ThreadingTask DoesNotFindProjectInADifferentWorkspace()
+            {
+                var (togglApi, user) = await SetupTestUser();
+                var secondWorkspace = await WorkspaceHelper.CreateFor(user);
+                var projectA = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
+                var projectB = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
+
+                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId, new[] { projectA.Id, projectB.Id });
+
+                projects.Should().HaveCount(0);
+            }
+
+            [Fact]
+            public async ThreadingTask ReturnsOnlyProjectInTheSearchedWorkspace()
+            {
+                var (togglApi, user) = await SetupTestUser();
+                var secondWorkspace = await WorkspaceHelper.CreateFor(user);
+                var projectA = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
+                var projectB = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
+
+                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId, new[] { projectA.Id, projectB.Id });
+
+                projects.Should().HaveCount(1);
+                projects.Should().Contain(p => p.Id == projectA.Id);
+            }
+
+            protected override IObservable<List<IProject>> CallEndpointWith(ITogglApi togglApi)
+                => togglApi.User.Get()
+                    .SelectMany(user => togglApi.Projects.Search(user.DefaultWorkspaceId, new[] { -1L }));
         }
     }
 }

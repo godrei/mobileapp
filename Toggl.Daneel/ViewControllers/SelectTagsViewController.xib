@@ -11,6 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SelectTagsViewController">
             <connections>
+                <outlet property="BottomConstraint" destination="eha-86-UTU" id="BdL-6R-aaB"/>
                 <outlet property="CloseButton" destination="E3h-ZA-T3J" id="name-outlet-E3h-ZA-T3J"/>
                 <outlet property="EmptyStateImage" destination="sx4-Gh-vgA" id="kCM-JY-sJs"/>
                 <outlet property="EmptyStateLabel" destination="N1a-u9-986" id="rcs-zk-2KC"/>

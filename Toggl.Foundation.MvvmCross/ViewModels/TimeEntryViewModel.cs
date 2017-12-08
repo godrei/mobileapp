@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using MvvmCross.Core.ViewModels;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
@@ -40,6 +41,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public bool CanSync { get; }
 
+        public long[] TagIds { get; }
+
         public TimeEntryViewModel(IDatabaseTimeEntry timeEntry)
         {
             Ensure.Argument.IsNotNull(timeEntry, nameof(timeEntry));
@@ -50,6 +53,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Id = timeEntry.Id;
             Start = timeEntry.Start;
             Billable = timeEntry.Billable;
+            TagIds = timeEntry.TagIds.ToArray();
             Description = timeEntry.Description;
             HasProject = timeEntry.Project != null;
             Duration = TimeSpan.FromSeconds(timeEntry.Duration.Value);

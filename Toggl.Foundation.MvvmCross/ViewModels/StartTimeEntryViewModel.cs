@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
@@ -18,7 +17,6 @@ using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using static Toggl.Foundation.Helper.Constants;
-using static Toggl.Multivac.Extensions.StringExtensions;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -53,23 +51,26 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             {
                 if (IsSuggestingProjects && TextFieldInfo.ProjectId.HasValue) return false;
 
-                var text = CurrentQuery.Trim();
-
-                if (string.IsNullOrEmpty(text))
+                if (string.IsNullOrEmpty(CurrentQuery))
                     return false;
 
                 if (IsSuggestingProjects)
-                    return !Suggestions.Any(c => c.Any(s => s is ProjectSuggestion pS && pS.ProjectName == text))
-                           && text.LengthInBytes() <= MaxProjectNameLengthInBytes;
+                    return !Suggestions.Any(c => c.Any(s => s is ProjectSuggestion pS && pS.ProjectName == CurrentQuery))
+                           && CurrentQuery.LengthInBytes() <= MaxProjectNameLengthInBytes;
 
                 if (IsSuggestingTags)
-                    return !Suggestions.Any(c => c.Any(s => s is TagSuggestion tS && tS.Name == text))
-                           && text.LengthInBytes() <= MaxTagNameLengthInBytes;
+                    return !Suggestions.Any(c => c.Any(s => s is TagSuggestion tS && tS.Name == CurrentQuery))
+                           && CurrentQuery.LengthInBytes() <= MaxTagNameLengthInBytes;
 
                 return false;
             }
         }
 
+        public bool ShowPlaceholder
+            => string.IsNullOrEmpty(TextFieldInfo.Text)
+            && string.IsNullOrEmpty(TextFieldInfo.ProjectName)
+            && TextFieldInfo.Tags.Length == 0;
+        
         public bool UseGrouping { get; set; }
 
         public string CurrentQuery { get; private set; }
@@ -247,7 +248,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task createProject()
         {
-            var projectId = await navigationService.Navigate<EditProjectViewModel, string, long?>(CurrentQuery.Trim());
+            var projectId = await navigationService.Navigate<EditProjectViewModel, string, long?>(CurrentQuery);
             if (projectId == null) return;
 
             var project = await dataSource.Projects.GetById(projectId.Value);
@@ -259,7 +260,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task createTag()
         {
             var createdTag = await dataSource.Tags
-                .Create(CurrentQuery.Trim(), TextFieldInfo.WorkspaceId.Value);
+                .Create(CurrentQuery, TextFieldInfo.WorkspaceId.Value);
             var tagSuggestion = new TagSuggestion(createdTag);
             await SelectSuggestionCommand.ExecuteAsync(tagSuggestion);
         }
@@ -318,7 +319,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 infoSubject.AsObservable()
                     .StartWith(TextFieldInfo)
                     .Select(dataSource.AutocompleteProvider.ParseFieldInfo)
-                    .Do(queryInfo => CurrentQuery = queryInfo.Text)
+                    .Do(onParsedQuery)
                     .SelectMany(dataSource.AutocompleteProvider.Query)
                     .Merge(queryByTypeObservable)
                     .Subscribe(onSuggestions);
@@ -349,6 +350,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             if (IsSuggestingTags)
             {
                 TextFieldInfo = TextFieldInfo.RemoveTagQueryFromDescriptionIfNeeded();
+                IsSuggestingTags = false;
                 return;
             }
 
@@ -361,6 +363,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             if (IsSuggestingProjects)
             {
                 TextFieldInfo = TextFieldInfo.RemoveProjectQueryFromDescriptionIfNeeded();
+                IsSuggestingProjects = false;
                 return;
             }
 
@@ -447,20 +450,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await navigationService.Close(this);
         }
 
+        private void onParsedQuery(QueryInfo parsedQuery)
+        {
+            CurrentQuery = parsedQuery.Text?.Trim() ?? "";
+            IsSuggestingTags = parsedQuery.SuggestionType == AutocompleteSuggestionType.Tags;
+            IsSuggestingProjects = parsedQuery.SuggestionType == AutocompleteSuggestionType.Projects;
+        }
+
         private void onSuggestions(IEnumerable<AutocompleteSuggestion> suggestions)
         {
-            var firstQuerySymbolIndex = TextFieldInfo.Text.IndexOfAny(new char[] { QuerySymbols.Tags, QuerySymbols.Projects });
-            if (firstQuerySymbolIndex >= 0)
-            {
-                var firstQuerySymbol = TextFieldInfo.Text[firstQuerySymbolIndex];
-                IsSuggestingTags = firstQuerySymbol == QuerySymbols.Tags;
-                IsSuggestingProjects = !TextFieldInfo.ProjectId.HasValue && firstQuerySymbol == QuerySymbols.Projects;
-            }
-            else
-            {
-                IsSuggestingTags = IsSuggestingProjects = false;
-            }
-
             Suggestions.Clear();
 
             var groupedSuggestions = groupSuggestions(suggestions).ToList();
@@ -468,12 +466,23 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             UseGrouping = groupedSuggestions.Count > 1;
             Suggestions.AddRange(groupedSuggestions);
 
+            RaisePropertyChanged(nameof(SuggestCreation));
         }
 
         private IEnumerable<WorkspaceGroupedCollection<AutocompleteSuggestion>> groupSuggestions(
             IEnumerable<AutocompleteSuggestion> suggestions)
         {
             var firstSuggestion = suggestions.FirstOrDefault();
+            if (firstSuggestion == null && IsSuggestingProjects && TextFieldInfo.WorkspaceId.HasValue)
+            {
+                // This ensures that "No Project" suggestion is shown even when no project
+                // suggestion matches the search query.
+                var collection = new WorkspaceGroupedCollection<AutocompleteSuggestion>(
+                    "", new[] { ProjectSuggestion.NoProject(TextFieldInfo.WorkspaceId.Value, "") });
+
+                return new[] { collection };
+            }
+                
             if (firstSuggestion is ProjectSuggestion)
                 return suggestions.GroupByWorkspaceAddingNoProject();
 

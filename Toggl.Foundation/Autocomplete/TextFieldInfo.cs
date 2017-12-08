@@ -71,7 +71,7 @@ namespace Toggl.Foundation.Autocomplete
 
         public TextFieldInfo RemoveTagQueryFromDescriptionIfNeeded()
         {
-            var indexOfTagQuerySymbol = Text.IndexOf(QuerySymbols.Tags);
+            var indexOfTagQuerySymbol = Text.LastIndexOf(QuerySymbols.Tags);
             if (indexOfTagQuerySymbol < 0) return this;
 
             var newText = Text.Substring(0, indexOfTagQuerySymbol);
@@ -80,7 +80,7 @@ namespace Toggl.Foundation.Autocomplete
 
         public TextFieldInfo RemoveProjectQueryFromDescriptionIfNeeded()
         {
-            var indexOfProjectQuerySymbol = Text.IndexOf(QuerySymbols.Projects);
+            var indexOfProjectQuerySymbol = Text.LastIndexOf(QuerySymbols.Projects);
             if (indexOfProjectQuerySymbol < 0) return this;
 
             var newText = Text.Substring(0, indexOfProjectQuerySymbol);

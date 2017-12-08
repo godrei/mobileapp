@@ -56,6 +56,8 @@ namespace Toggl.Daneel.Extensions
 
             //There neeeds to be a space before the dot, otherwise the colors don't work
             var result = new NSMutableAttributedString(" ");
+            result.AddAttribute(UIStringAttributeKey.Font, UIFont.SystemFontOfSize(0), new NSRange(0, 1));
+
             var attachmentString = NSAttributedString.FromAttachment(attachment);
             result.Append(attachmentString);
 

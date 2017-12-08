@@ -9,5 +9,6 @@ namespace Toggl.Ultrawave.ApiClients
         IObservable<List<IProject>> GetAll();
         IObservable<List<IProject>> GetAllSince(DateTimeOffset threshold);
         IObservable<IProject> Create(IProject project);
+        IObservable<List<IProject>> Search(long workspaceId, long[] projectIds);
     }
 }

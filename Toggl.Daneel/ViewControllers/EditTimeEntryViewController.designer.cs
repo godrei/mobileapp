@@ -67,7 +67,7 @@ namespace Toggl.Daneel.ViewControllers
 		UIKit.UILabel StartTimeLabel { get; set; }
 
 		[Outlet]
-		UIKit.UILabel TagsLabel { get; set; }
+		UIKit.UITextView TagsTextView { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
@@ -156,9 +156,9 @@ namespace Toggl.Daneel.ViewControllers
 				StartTimeLabel = null;
 			}
 
-			if (TagsLabel != null) {
-				TagsLabel.Dispose ();
-				TagsLabel = null;
+			if (TagsTextView != null) {
+				TagsTextView.Dispose ();
+				TagsTextView = null;
 			}
 		}
 	}

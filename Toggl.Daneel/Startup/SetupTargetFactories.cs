@@ -58,6 +58,11 @@ namespace Toggl.Daneel
             );
 
             registry.RegisterCustomBindingFactory<UITextView>(
+                TextViewTagListTargetBinding.BindingName,
+                view => new TextViewTagListTargetBinding(view)
+            );
+
+            registry.RegisterCustomBindingFactory<UITextView>(
                 TextViewTextInfoTargetBinding.BindingName,
                 view => new TextViewTextInfoTargetBinding(view)
             );

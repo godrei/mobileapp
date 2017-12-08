@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using PropertyChanged;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.Sync;
@@ -21,7 +22,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
         private readonly IMvxNavigationService navigationService;
-        private readonly IApiErrorHandlingService apiErrorHandlingService;
 
         public TimeSpan CurrentTimeEntryElapsedTime { get; private set; } = TimeSpan.Zero;
 
@@ -41,7 +41,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public string CurrentTimeEntryClient { get; private set; }
 
-        public bool IsSyncing { get; private set; }
+        public SyncProgress SyncingProgress { get; private set; }
+
+        [DependsOn(nameof(SyncingProgress))]
+        public bool ShowSyncIndicator => SyncingProgress == SyncProgress.Syncing;
 
         public bool SpiderIsVisible { get; set; } = true;
 
@@ -60,18 +63,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public MainViewModel(
             ITogglDataSource dataSource,
             ITimeService timeService,
-            IMvxNavigationService navigationService,
-            IApiErrorHandlingService apiErrorHandlingService)
+            IMvxNavigationService navigationService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
-            Ensure.Argument.IsNotNull(apiErrorHandlingService, nameof(apiErrorHandlingService));
 
             this.dataSource = dataSource;
             this.timeService = timeService;
             this.navigationService = navigationService;
-            this.apiErrorHandlingService = apiErrorHandlingService;
 
             RefreshCommand = new MvxCommand(refresh);
             OpenReportsCommand = new MvxAsyncCommand(openReports);
@@ -96,7 +96,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var syncManagerDisposable =
                 dataSource.SyncManager.ProgressObservable
-                    .Subscribe(progress => IsSyncing = progress == SyncProgress.Syncing, onSyncingError);
+                    .Subscribe(progress => SyncingProgress = progress);
 
             var spiderDisposable =
                 dataSource.TimeEntries.IsEmpty
@@ -151,14 +151,5 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private Task editTimeEntry()
             => navigationService.Navigate<EditTimeEntryViewModel, long>(CurrentTimeEntryId.Value);
-
-        private void onSyncingError(Exception exception)
-        {
-            if (!apiErrorHandlingService.TryHandleDeprecationError(exception)
-                && !apiErrorHandlingService.TryHandleUnauthorizedError(exception))
-            {
-                throw new ArgumentException(nameof(exception));
-            }
-        }
     }
 }

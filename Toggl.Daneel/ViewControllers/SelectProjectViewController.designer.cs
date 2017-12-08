@@ -13,6 +13,9 @@ namespace Toggl.Daneel.ViewControllers
 	partial class SelectProjectViewController
 	{
 		[Outlet]
+		UIKit.NSLayoutConstraint BottomConstraint { get; set; }
+
+		[Outlet]
 		UIKit.UIButton CloseButton { get; set; }
 
 		[Outlet]
@@ -34,6 +37,16 @@ namespace Toggl.Daneel.ViewControllers
 				CloseButton = null;
 			}
 
+			if (EmptyStateImage != null) {
+				EmptyStateImage.Dispose ();
+				EmptyStateImage = null;
+			}
+
+			if (EmptyStateLabel != null) {
+				EmptyStateLabel.Dispose ();
+				EmptyStateLabel = null;
+			}
+
 			if (ProjectsTableView != null) {
 				ProjectsTableView.Dispose ();
 				ProjectsTableView = null;
@@ -44,14 +57,9 @@ namespace Toggl.Daneel.ViewControllers
 				TextField = null;
 			}
 
-			if (EmptyStateLabel != null) {
-				EmptyStateLabel.Dispose ();
-				EmptyStateLabel = null;
-			}
-
-			if (EmptyStateImage != null) {
-				EmptyStateImage.Dispose ();
-				EmptyStateImage = null;
+			if (BottomConstraint != null) {
+				BottomConstraint.Dispose ();
+				BottomConstraint = null;
 			}
 		}
 	}

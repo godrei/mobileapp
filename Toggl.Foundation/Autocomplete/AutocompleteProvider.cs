@@ -33,7 +33,7 @@ namespace Toggl.Foundation.Autocomplete
         public QueryInfo ParseFieldInfo(TextFieldInfo info)
         {
             if (string.IsNullOrEmpty(info.Text))
-                return new QueryInfo(info.Text, AutocompleteSuggestionType.TimeEntries);
+                return new QueryInfo(info.Text ?? "", AutocompleteSuggestionType.TimeEntries);
 
             var querySymbols = info.ProjectId != null ? QuerySymbols.ProjectSelected : QuerySymbols.All;
 

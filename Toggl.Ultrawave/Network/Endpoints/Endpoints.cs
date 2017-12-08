@@ -23,7 +23,7 @@ namespace Toggl.Ultrawave.Network
 
         public Endpoints(ApiEnvironment environment)
         {
-            baseUrl = ApiUrls.ForEnvironment(environment);
+            baseUrl = BaseUrls.ForApi(environment);
             ReportsEndpoints = new ReportsEndpoints(environment);
         }
     }

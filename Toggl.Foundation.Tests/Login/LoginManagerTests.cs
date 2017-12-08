@@ -16,8 +16,7 @@ using User = Toggl.Ultrawave.Models.User;
 using FoundationUser = Toggl.Foundation.Models.User;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.Multivac.Models;
-using Microsoft.Reactive.Testing;
-using System.Reactive.Concurrency;
+using Toggl.Foundation.DataSources;
 
 namespace Toggl.Foundation.Tests.Login
 {
@@ -27,21 +26,22 @@ namespace Toggl.Foundation.Tests.Login
         {
             protected const string Password = "theirobotmoviesucked123";
             protected static readonly Email Email = "susancalvin@psychohistorian.museum".ToEmail();
-            
+
             protected readonly IUser User = new User { Id = 10, ApiToken = "ABCDEFG" };
             protected readonly ITogglApi Api = Substitute.For<ITogglApi>();
             protected readonly IApiFactory ApiFactory = Substitute.For<IApiFactory>();
             protected readonly ITogglDatabase Database = Substitute.For<ITogglDatabase>();
             protected readonly IGoogleService GoogleService = Substitute.For<IGoogleService>();
-            protected readonly ITimeService TimeService = Substitute.For<ITimeService>();
             protected readonly IAccessRestrictionStorage AccessRestrictionStorage = Substitute.For<IAccessRestrictionStorage>();
-            protected readonly IScheduler Scheduler = new TestScheduler();
+            protected readonly ITogglDataSource DataSource = Substitute.For<ITogglDataSource>();
 
             protected readonly ILoginManager LoginManager;
 
+            protected ITogglDataSource CreateDataSource(ITogglApi api) => DataSource;
+
             protected LoginManagerTest()
             {
-                LoginManager = new LoginManager(ApiFactory, Database, TimeService, GoogleService, Scheduler, AccessRestrictionStorage);
+                LoginManager = new LoginManager(ApiFactory, Database, GoogleService, AccessRestrictionStorage, CreateDataSource);
 
                 Api.User.Get().Returns(Observable.Return(User));
                 Api.User.GetWithGoogle().Returns(Observable.Return(User));
@@ -54,18 +54,22 @@ namespace Toggl.Foundation.Tests.Login
         public sealed class Constructor : LoginManagerTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(SixParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useApiFactory, bool useDatabase, bool useTimeService, bool useGoogleService, bool useScheduler, bool useAccessRestrictionStorage)
+            [ClassData(typeof(FiveParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(
+                bool useApiFactory,
+                bool useDatabase,
+                bool useGoogleService,
+                bool useAccessRestrictionStorage,
+                bool useCreateDataSource)
             {
                 var database = useDatabase ? Database : null;
                 var apiFactory = useApiFactory ? ApiFactory : null;
-                var timeService = useTimeService ? TimeService : null;
                 var googleService = useGoogleService ? GoogleService : null;
-                var scheduler = useScheduler ? Scheduler : null;
                 var accessRestrictionStorage = useAccessRestrictionStorage ? AccessRestrictionStorage : null;
+                var createDataSource = useCreateDataSource ? CreateDataSource : (Func<ITogglApi, ITogglDataSource>)null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new LoginManager(apiFactory, database, timeService, googleService, scheduler, accessRestrictionStorage);
+                    () => new LoginManager(apiFactory, database, googleService, accessRestrictionStorage, createDataSource);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -144,16 +148,6 @@ namespace Toggl.Foundation.Tests.Login
                         .Login(Email, Password)
                         .SingleAsync();
             }
-
-            [Fact, LogIfTooSlow]
-            public async Task ClearsUnathorizedAccessFlag()
-            {
-                await LoginManager
-                    .Login(Email, Password)
-                    .SingleAsync();
-
-                AccessRestrictionStorage.Received().ClearUnauthorizedAccess();
-            }
         }
 
         public sealed class TheResetPasswordMethod : LoginManagerTest
@@ -213,17 +207,6 @@ namespace Toggl.Foundation.Tests.Login
                 var result = LoginManager.GetDataSourceIfLoggedIn();
 
                 result.Should().NotBeNull();
-            }
-
-            [Fact, LogIfTooSlow]
-            public void DoesNotClearUnathorizedAccessFlag()
-            {
-                var observable = Observable.Return<IDatabaseUser>(FoundationUser.Clean(User));
-                Database.User.Single().Returns(observable);
-
-                LoginManager.GetDataSourceIfLoggedIn();
-
-                AccessRestrictionStorage.DidNotReceive().ClearUnauthorizedAccess();
             }
         }
 
@@ -299,16 +282,6 @@ namespace Toggl.Foundation.Tests.Login
                         .SignUp(Email, Password)
                         .SingleAsync();
             }
-
-            [Fact, LogIfTooSlow]
-            public async Task ClearsUnathorizedAccessFlag()
-            {
-                await LoginManager
-                    .SignUp(Email, Password)
-                    .SingleAsync();
-
-                AccessRestrictionStorage.Received().ClearUnauthorizedAccess();
-            }
         }
         
         public sealed class TheRefreshTokenMethod : LoginManagerTest
@@ -363,16 +336,6 @@ namespace Toggl.Foundation.Tests.Login
                 await LoginManager
                         .RefreshToken(Password)
                         .SingleAsync();
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task ClearsUnathorizedAccessFlag()
-            {
-                await LoginManager
-                    .RefreshToken(Password)
-                    .SingleAsync();
-
-                AccessRestrictionStorage.Received().ClearUnauthorizedAccess();
             }
         }
 
@@ -433,16 +396,6 @@ namespace Toggl.Foundation.Tests.Login
                 await LoginManager
                         .LoginWithGoogle()
                         .SingleAsync();
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task ClearsUnathorizedAccessFlag()
-            {
-                await LoginManager
-                    .LoginWithGoogle()
-                    .SingleAsync();
-
-                AccessRestrictionStorage.Received().ClearUnauthorizedAccess();
             }
         }
     }

@@ -90,12 +90,12 @@ namespace Toggl.Daneel.ViewControllers
 
             bindingSet.Bind(SyncIndicatorView)
                       .For(v => v.BindVisibility())
-                      .To(vm => vm.IsSyncing)
+                      .To(vm => vm.ShowSyncIndicator)
                       .WithConversion(visibilityConverter);
 
             bindingSet.Bind(MainPagedScrollView)
-                      .For(v => v.IsSyncing)
-                      .To(vm => vm.IsSyncing);
+                      .For(v => v.SyncProgress)
+                      .To(vm => vm.SyncingProgress);
 
             //Text
             bindingSet.Bind(CurrentTimeEntryDescriptionLabel).To(vm => vm.CurrentTimeEntryDescription);

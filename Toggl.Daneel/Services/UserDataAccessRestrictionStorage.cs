@@ -9,7 +9,7 @@ namespace Toggl.Daneel.Services
         private readonly Version version;
         private const string OutdatedClient = "OutdatedClient";
         private const string OutdatedApi = "OutdatedApi";
-        private const string UnauthorizedAccess = "UnauthorizedAccess";
+        private const string UnauthorizedAccess = "UnauthorizedAccessForApiToken";
 
         public UserDataAccessRestrictionStorage(Version version)
         {
@@ -22,11 +22,8 @@ namespace Toggl.Daneel.Services
         public void SetApiOutdated()
             => NSUserDefaults.StandardUserDefaults.SetString(version.ToString(), OutdatedApi);
 
-        public void SetUnauthorizedAccess()
-            => NSUserDefaults.StandardUserDefaults.SetBool(true, UnauthorizedAccess);
-
-        public void ClearUnauthorizedAccess()
-            => NSUserDefaults.StandardUserDefaults.SetBool(false, UnauthorizedAccess);
+        public void SetUnauthorizedAccess(string apiToken)
+            => NSUserDefaults.StandardUserDefaults.SetString(apiToken, UnauthorizedAccess);
 
         public bool IsClientOutdated()
             => isOutdated(OutdatedClient);
@@ -34,8 +31,8 @@ namespace Toggl.Daneel.Services
         public bool IsApiOutdated()
             => isOutdated(OutdatedApi);
 
-        public bool IsUnauthorized()
-            => NSUserDefaults.StandardUserDefaults.BoolForKey(UnauthorizedAccess);
+        public bool IsUnauthorized(string apiToken)
+            => apiToken == NSUserDefaults.StandardUserDefaults.StringForKey(UnauthorizedAccess);
 
         private bool isOutdated(string key)
         {

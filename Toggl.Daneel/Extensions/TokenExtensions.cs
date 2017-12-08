@@ -6,6 +6,9 @@ using Toggl.Multivac.Extensions;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.MvvmCross.Helper;
 using UIKit;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
 
 namespace Toggl.Daneel.Extensions
 {
@@ -13,6 +16,9 @@ namespace Toggl.Daneel.Extensions
     {
         private const int lineHeight = 24;
         private const int maxTextLength = 50;
+
+        private const int textFieldInfoTokenLeftMargin = 6;
+        private const int textFieldInfoTokenRightMargin = 0;
 
         private static readonly nfloat textVerticalOffset;
         private static readonly NSParagraphStyle paragraphStyle;
@@ -59,6 +65,17 @@ namespace Toggl.Daneel.Extensions
         public static string TruncatedAt(this string self, int location)
             => self.Length <= location ? self : $"{self.UnicodeSafeSubstring(0, location - 3)}...";
 
+        public static TokenTextAttachment GetTagToken(this string tag, int leftMargin, int rightMargin)
+            => new TokenTextAttachment(
+                new NSMutableAttributedString(tag.TruncatedAt(maxTextLength), tagAttributes),
+                textVerticalOffset,
+                regularFont.Descender,
+                leftMargin,
+                rightMargin);
+
+        public static IEnumerable<TokenTextAttachment> GetTagTokens(this IEnumerable<string> tags, int leftMargin, int rightMargin)
+            => tags.Select(tag => tag.GetTagToken(leftMargin, rightMargin));
+
         private static void addProjectAttachmentsIfNeeded(TextFieldInfo info, NSMutableAttributedString finalString)
         {
             if (string.IsNullOrEmpty(info.ProjectColor)) return;
@@ -71,7 +88,14 @@ namespace Toggl.Daneel.Extensions
                 ForegroundColor = color
             });
 
-            var textAttachment = new TokenTextAttachment(projectName, textVerticalOffset, color, regularFont.Descender);
+            var textAttachment = new TokenTextAttachment(
+                projectName,
+                textVerticalOffset,
+                color,
+                regularFont.Descender,
+                textFieldInfoTokenLeftMargin,
+                textFieldInfoTokenRightMargin
+            );
             var tokenString = new NSMutableAttributedString(NSAttributedString.FromAttachment(textAttachment));
             var attributes = new UIStringAttributes { ParagraphStyle = paragraphStyle };
             attributes.Dictionary[Project] = new NSObject();
@@ -82,21 +106,21 @@ namespace Toggl.Daneel.Extensions
 
         private static void addTagAttachmentsIfNeeded(TextFieldInfo info, NSMutableAttributedString finalString)
         {
-            if (info.Tags.Length == 0) return;
+            var tagTokens = info
+                .Tags
+                .Select(tag => tag.Name)
+                .GetTagTokens(textFieldInfoTokenLeftMargin, textFieldInfoTokenRightMargin)
+                .Select(NSAttributedString.FromAttachment)
+                .Select(tagToken => new NSMutableAttributedString(tagToken));
 
-            for (var i = 0; i < info.Tags.Length; i++)
+            int i = 0;
+            foreach (var tagToken in tagTokens)
             {
-                var tag = info.Tags[i];
-                var tagName = new NSMutableAttributedString(tag.Name.TruncatedAt(maxTextLength), tagAttributes);
-
-                var textAttachment = new TokenTextAttachment(tagName, textVerticalOffset, regularFont.Descender);
-
-                var tokenString = new NSMutableAttributedString(NSAttributedString.FromAttachment(textAttachment));
                 var attributes = new UIStringAttributes { ParagraphStyle = paragraphStyle };
                 attributes.Dictionary[TagIndex] = new NSNumber(i);
-                tokenString.AddAttributes(attributes, new NSRange(0, tokenString.Length));
-
-                finalString.Append(tokenString);
+                tagToken.AddAttributes(attributes, new NSRange(0, tagToken.Length));
+                finalString.Append(tagToken);
+                i++;
             }
         }
     }

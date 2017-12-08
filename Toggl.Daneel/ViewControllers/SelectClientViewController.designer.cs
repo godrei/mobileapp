@@ -13,6 +13,9 @@ namespace Toggl.Daneel.ViewControllers
 	partial class SelectClientViewController
 	{
 		[Outlet]
+		UIKit.NSLayoutConstraint BottomConstraint { get; set; }
+
+		[Outlet]
 		UIKit.UIButton CloseButton { get; set; }
 
 		[Outlet]
@@ -36,6 +39,11 @@ namespace Toggl.Daneel.ViewControllers
 			if (SuggestionsTableView != null) {
 				SuggestionsTableView.Dispose ();
 				SuggestionsTableView = null;
+			}
+
+			if (BottomConstraint != null) {
+				BottomConstraint.Dispose ();
+				BottomConstraint = null;
 			}
 		}
 	}

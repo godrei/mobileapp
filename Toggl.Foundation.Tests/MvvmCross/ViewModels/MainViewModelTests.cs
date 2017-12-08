@@ -1,21 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck.Xunit;
 using NSubstitute;
-using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
-using Toggl.Foundation.Tests.Helpers;
-using Toggl.Foundation.Tests.Sync;
 using Toggl.PrimeRadiant.Models;
-using Toggl.Ultrawave.Exceptions;
-using Toggl.Ultrawave.Network;
 using Xunit;
 using TimeEntry = Toggl.Foundation.Models.TimeEntry;
 
@@ -25,12 +18,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
     {
         public abstract class MainViewModelTest : BaseViewModelTests<MainViewModel>
         {
-            protected IApiErrorHandlingService ApiErrorHandlingService { get; } = Substitute.For<IApiErrorHandlingService>();
-
             protected ISubject<SyncProgress> ProgressSubject { get; } = new Subject<SyncProgress>();
 
             protected override MainViewModel CreateViewModel()
-                => new MainViewModel(DataSource, TimeService, NavigationService, ApiErrorHandlingService);
+                => new MainViewModel(DataSource, TimeService, NavigationService);
 
             protected override void AdditionalSetup()
             {
@@ -45,16 +36,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheConstructor : MainViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(FourParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useTimeService, bool useNavigationService, bool useDeprecationHandlingService)
+            [ClassData(typeof(ThreeParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useTimeService, bool useNavigationService)
             {
                 var dataSource = useDataSource ? DataSource : null;
                 var timeService = useTimeService ? TimeService : null;
                 var navigationService = useNavigationService ? NavigationService : null;
-                var deprecationHandlingService = useDeprecationHandlingService ? ApiErrorHandlingService : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new MainViewModel(dataSource, timeService, navigationService, deprecationHandlingService);
+                    () => new MainViewModel(dataSource, timeService, navigationService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -267,82 +257,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected override bool ExpectedValue => true;
 
             protected override bool ExpectedEmptyValue => false;
-        }
-
-        public sealed class SyncErrorHandling : MainViewModelTest
-        {
-            private IRequest request => Substitute.For<IRequest>();
-            private IResponse response => Substitute.For<IResponse>();
-
-            [Fact, LogIfTooSlow]
-            public async Task SetsTheOutdatedClientVersionFlag()
-            {
-                await ViewModel.Initialize();
-                var exception = new ClientDeprecatedException(request, response);
-                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ClientDeprecatedException>()).Returns(true);
-
-                ProgressSubject.OnError(exception);
-
-                ApiErrorHandlingService.Received().TryHandleDeprecationError(Arg.Is(exception));
-                ApiErrorHandlingService.DidNotReceive().TryHandleUnauthorizedError(Arg.Is(exception));
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task SetsTheOutdatedApiVersionFlag()
-            {
-                await ViewModel.Initialize();
-                var exception = new ApiDeprecatedException(request, response);
-                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ApiDeprecatedException>()).Returns(true);
-
-                ProgressSubject.OnError(exception);
-
-                ApiErrorHandlingService.Received().TryHandleDeprecationError(Arg.Is(exception));
-                ApiErrorHandlingService.DidNotReceive().TryHandleUnauthorizedError(Arg.Is(exception));
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task SetsTheUnauthorizedAccessFlag()
-            {
-                await ViewModel.Initialize();
-                var exception = new UnauthorizedException(request, response);
-                ApiErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
-
-                ProgressSubject.OnError(exception);
-
-                ApiErrorHandlingService.Received().TryHandleUnauthorizedError(Arg.Is(exception));
-            }
-
-            [Theory, LogIfTooSlow]
-            [MemberData(nameof(SyncManagerTests.TheProgressObservable.ExceptionsRethrownByProgressObservableOnError), MemberType = typeof(SyncManagerTests.TheProgressObservable))]
-            public async Task DoesNotThrowForAnyExceptionWhichCanBeThrownByTheProgressObservable(Exception exception)
-            {
-                await ViewModel.Initialize();
-                ApiErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
-                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ClientDeprecatedException>()).Returns(true);
-                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ApiDeprecatedException>()).Returns(true);
-
-                Action processingError = () => ProgressSubject.OnError(exception);
-
-                processingError.ShouldNotThrow();
-            }
-
-            [Fact, LogIfTooSlow]
-            [MemberData(nameof(ApiExceptionsWhichAreNotThrowByTheProgressObservable))]
-            public async Task ThrowsForDifferentException()
-            {
-                await ViewModel.Initialize();
-                var exception = new Exception();
-
-                Action handling = () => ProgressSubject.OnError(exception);
-
-                handling.ShouldThrow<ArgumentException>();
-            }
-
-            public static IEnumerable<object> ApiExceptionsWhichAreNotThrowByTheProgressObservable()
-                => ApiExceptions.ClientExceptions
-                    .Concat(ApiExceptions.ServerExceptions)
-                    .Where(args => SyncManagerTests.TheProgressObservable.ExceptionsRethrownByProgressObservableOnError()
-                        .All(thrownByProgress => ((object[])args)[0].GetType() != thrownByProgress[0].GetType()));
         }
     }
 }

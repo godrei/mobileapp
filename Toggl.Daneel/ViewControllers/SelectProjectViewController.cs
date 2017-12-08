@@ -1,20 +1,21 @@
 ﻿using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.Core.ViewModels;
-using MvvmCross.iOS.Views;
 using Toggl.Daneel.Extensions;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Daneel.ViewSources;
 using Toggl.Foundation.Autocomplete.Suggestions;
+using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
 namespace Toggl.Daneel.ViewControllers
 {
     [ModalCardPresentation]
-    public sealed partial class SelectProjectViewController : MvxViewController<SelectProjectViewModel>
+    public sealed partial class SelectProjectViewController : KeyboardAwareViewController<SelectProjectViewModel>
     {
-        public SelectProjectViewController() : base(nameof(SelectProjectViewController), null)
+        public SelectProjectViewController() 
+            : base(nameof(SelectProjectViewController))
         {
         }
 
@@ -64,6 +65,18 @@ namespace Toggl.Daneel.ViewControllers
                       .To(vm => vm.SelectProjectCommand);
             
             bindingSet.Apply();
+        }
+
+        protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
+        {
+            BottomConstraint.Constant = e.FrameEnd.Height;
+            UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
+        }
+
+        protected override void KeyboardWillHide(object sender, UIKeyboardEventArgs e)
+        {
+            BottomConstraint.Constant = 0;
+            UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
         }
 
         private void toggleTaskSuggestions(ProjectSuggestion parameter)

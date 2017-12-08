@@ -11,6 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SelectClientViewController">
             <connections>
+                <outlet property="BottomConstraint" destination="DhT-DH-jbf" id="fmp-zR-uFU"/>
                 <outlet property="CloseButton" destination="zcP-q5-zvc" id="V1f-8y-ewt"/>
                 <outlet property="SearchTextField" destination="SXB-BA-XID" id="1gI-Pn-qtD"/>
                 <outlet property="SuggestionsTableView" destination="InZ-8m-67m" id="ZLi-fQ-JgX"/>
@@ -88,6 +89,6 @@
     </objects>
     <resources>
         <image name="icClose" width="10" height="10"/>
-        <image name="search" width="16" height="16"/>
+        <image name="search" width="13" height="12"/>
     </resources>
 </document>

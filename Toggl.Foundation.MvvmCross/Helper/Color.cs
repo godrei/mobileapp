@@ -45,6 +45,8 @@ namespace Toggl.Foundation.MvvmCross.Helper
             public static readonly MvxColor CurrentTimeEntryClientColor = new MvxColor(94, 91, 91);
 
             public static readonly MvxColor Syncing = new MvxColor(181, 188, 192);
+            public static readonly MvxColor Offline = Syncing;
+            public static readonly MvxColor SyncFailed = new MvxColor(247, 64, 73);
             public static readonly MvxColor SyncCompleted = lightishGreen;
         }
 

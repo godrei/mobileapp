@@ -15,7 +15,6 @@ using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
-using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Daneel.ViewControllers
 {
@@ -120,10 +119,6 @@ namespace Toggl.Daneel.ViewControllers
                       .To(vm => vm.StartTime)
                       .WithConversion(timeConverter);
 
-            bindingSet.Bind(TagsLabel)
-                      .To(vm => vm.Tags)
-                      .WithConversion(new CollectionToStringValueConverter<string>());
-
             //Commands
             bindingSet.Bind(CloseButton).To(vm => vm.CloseCommand);
             bindingSet.Bind(DeleteButton).To(vm => vm.DeleteCommand);
@@ -144,7 +139,7 @@ namespace Toggl.Daneel.ViewControllers
                       .For(v => v.BindTap())
                       .To(vm => vm.SelectStartDateTimeCommand);
 
-            bindingSet.Bind(TagsLabel)
+            bindingSet.Bind(TagsTextView)
                       .For(v => v.BindTap())
                       .To(vm => vm.SelectTagsCommand);
 
@@ -173,7 +168,7 @@ namespace Toggl.Daneel.ViewControllers
                       .To(vm => vm.HasTags)
                       .WithConversion(visibilityConverter);
 
-            bindingSet.Bind(TagsLabel)
+            bindingSet.Bind(TagsTextView)
                       .For(v => v.BindVisible())
                       .To(vm => vm.HasTags)
                       .WithConversion(inverterVisibilityConverter);
@@ -190,6 +185,19 @@ namespace Toggl.Daneel.ViewControllers
                       .WithConversion(new BoolToConstantValueConverter<nfloat>(0.5f, 1));
 
             bindingSet.Apply();
+        }
+
+        public override void ViewDidLayoutSubviews()
+        {
+            base.ViewDidLayoutSubviews();
+            
+            //This binding needs to be created, when TagsTextView has it's
+            //proper size. In ViewDidLoad() TagsTextView width isn't initialized
+            //yet, which results in displaying less tags than possible
+            this.CreateBinding(TagsTextView)
+                .For(v => v.BindTags())
+                .To<EditTimeEntryViewModel>(vm => vm.Tags)
+                .Apply();
         }
 
         public override void ViewWillLayoutSubviews()
@@ -209,6 +217,8 @@ namespace Toggl.Daneel.ViewControllers
             PreferredContentSize = View.Frame.Size;
             BillableSwitch.Resize();
             prepareDescriptionField();
+            centerTextVertically(TagsTextView);
+            TagsTextView.TextContainer.LineFragmentPadding = 0;
 
             if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
             {
@@ -224,6 +234,12 @@ namespace Toggl.Daneel.ViewControllers
         {
             DescriptionTextView.TintColor = Color.StartTimeEntry.Cursor.ToNativeColor();
             DescriptionTextView.PlaceholderText = Resources.AddDescription;
+        }
+
+        private void centerTextVertically(UITextView textView)
+        {
+            var topOffset = (textView.Bounds.Height - textView.ContentSize.Height) / 2;
+            textView.ContentInset = new UIEdgeInsets(topOffset, 0, 0, 0);
         }
     }
 }

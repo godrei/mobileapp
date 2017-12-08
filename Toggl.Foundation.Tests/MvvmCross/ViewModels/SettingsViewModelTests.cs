@@ -21,14 +21,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
     {
         public abstract class SettingsViewModelTest : BaseViewModelTests<SettingsViewModel>
         {
-            protected ISubject<SyncState> StateObservableSubject;
+            protected ISubject<SyncProgress> ProgressSubject;
 
             protected override void AdditionalSetup()
             {
-                StateObservableSubject = new Subject<SyncState>();
+                ProgressSubject = new Subject<SyncProgress>();
                 var syncManager = Substitute.For<ISyncManager>();
-                var observable = StateObservableSubject.AsObservable();
-                syncManager.StateObservable.Returns(observable);
+                syncManager.ProgressObservable.Returns(ProgressSubject.AsObservable());
                 DataSource.SyncManager.Returns(syncManager);
             }
 
@@ -57,47 +56,52 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheFlags : SettingsViewModelTest
         {
             [Property]
-            public void SetsIsRunningSyncCorrectly(NonEmptyArray<SyncState> statuses)
+            public void SetsIsRunningSyncCorrectly(NonEmptyArray<SyncProgress> statuses)
             {
                 foreach (var state in statuses.Get)
                 {
-                    StateObservableSubject.OnNext(state);
-                    ViewModel.IsRunningSync.Should().Be(state != SyncState.Sleep);
+                    ProgressSubject.OnNext(state);
+                    ViewModel.IsRunningSync.Should().Be(state == SyncProgress.Syncing);
                 }
             }
 
             [Property]
-            public void SetsIsSyncedCorrectly(NonEmptyArray<SyncState> statuses)
+            public void SetsIsSyncedCorrectly(NonEmptyArray<SyncProgress> statuses)
             {
                 foreach (var state in statuses.Get)
                 {
-                    StateObservableSubject.OnNext(state);
-                    ViewModel.IsSynced.Should().Be(state == SyncState.Sleep);
+                    if (state == SyncProgress.Unknown)
+                        continue;
+
+                    ProgressSubject.OnNext(state);
+                    ViewModel.IsSynced.Should().Be(state == SyncProgress.Synced);
                 }
             }
 
             [Property]
-            public void SetsTheIsRunningSyncAndIsSyncedFlagsToOppositeValues(NonEmptyArray<SyncState> statuses)
+            public void DoesNotEverSetBothIsRunningSyncAndIsSyncedBothToTrue(NonEmptyArray<SyncProgress> statuses)
             {
                 foreach (var state in statuses.Get)
                 {
-                    StateObservableSubject.OnNext(state);
-                    ViewModel.IsRunningSync.Should().Be(!ViewModel.IsSynced);
+                    ProgressSubject.OnNext(state);
+                    (ViewModel.IsRunningSync && ViewModel.IsSynced).Should().BeFalse();
                 }
             }
 
             [Property]
-            public void DoesNotSetTheIsLoggingOutFlagIfTheLogoutCommandIsNotExecuted(NonEmptyArray<SyncState> statuses)
+            public void DoesNotSetTheIsLoggingOutFlagIfTheLogoutCommandIsNotExecuted(
+                NonEmptyArray<SyncProgress> statuses)
             {
                 foreach (var state in statuses.Get)
                 {
-                    StateObservableSubject.OnNext(state);
+                    ProgressSubject.OnNext(state);
                     ViewModel.IsLoggingOut.Should().BeFalse();
                 }
             }
 
             [Property]
-            public void DoesNotUnsetTheIsLoggingOutFlagAfterItIsSetNoMatterWhatStatusesAreObserved(NonEmptyArray<SyncState> statuses)
+            public void DoesNotUnsetTheIsLoggingOutFlagAfterItIsSetNoMatterWhatStatusesAreObserved(
+                NonEmptyArray<SyncProgress> statuses)
             {
                 DataSource.Logout().Returns(Observable.Never<Unit>());
 
@@ -105,13 +109,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 foreach (var state in statuses.Get)
                 {
-                    StateObservableSubject.OnNext(state);
+                    ProgressSubject.OnNext(state);
                     ViewModel.IsLoggingOut.Should().BeTrue();
                 }
             }
 
             [Property]
-            public void SetsTheIsRunningSyncAndIsSyncedFlagsToFalseAfterTheIsLoggingInFlagIsSetAndDoesNotSetThemToTrueNoMatterWhatStatusesAreObserved(NonEmptyArray<SyncState> statuses)
+            public void SetsTheIsRunningSyncAndIsSyncedFlagsToFalseAfterTheIsLoggingInFlagIsSetAndDoesNotSetThemToTrueNoMatterWhatStatusesAreObserved(NonEmptyArray<SyncProgress> statuses)
             {
                 DataSource.Logout().Returns(Observable.Never<Unit>());
 
@@ -119,7 +123,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 foreach (var state in statuses.Get)
                 {
-                    StateObservableSubject.OnNext(state);
+                    ProgressSubject.OnNext(state);
                     ViewModel.IsRunningSync.Should().BeFalse();
                     ViewModel.IsSynced.Should().BeFalse();
                 }
@@ -158,7 +162,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public void ChecksIfThereAreUnsyncedDataWhenTheSyncProcessFinishes()
             {
-                StateObservableSubject.OnNext(SyncState.Sleep);
+                ProgressSubject.OnNext(SyncProgress.Synced);
 
                 DataSource.Received().HasUnsyncedData();
             }
@@ -167,7 +171,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void SetsTheIsSyncedFlagAfterTheSyncProcessHasFinishedAndThereIsNoTimeEntryToPush()
             {
                 DataSource.HasUnsyncedData().Returns(Observable.Return(false));
-                StateObservableSubject.OnNext(SyncState.Sleep);
+                ProgressSubject.OnNext(SyncProgress.Synced);
 
                 ViewModel.IsSynced.Should().BeTrue();
             }
@@ -176,19 +180,17 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void UnsetsTheIsSyncedFlagWhenTheSyncProcessIsNotRunningButThrereIsSomeTimeEntryToPush()
             {
                 DataSource.HasUnsyncedData().Returns(Observable.Return(true));
-                StateObservableSubject.OnNext(SyncState.Sleep);
+                ProgressSubject.OnNext(SyncProgress.Synced);
 
                 ViewModel.IsSynced.Should().BeFalse();
             }
 
-            [Theory, LogIfTooSlow]
-            [InlineData(SyncState.Pull)]
-            [InlineData(SyncState.Push)]
-            public void UnsetsTheIsSyncedFlagWhenThereIsNothingToPushButTheSyncProcessStartsAgain(SyncState state)
+            [Fact, LogIfTooSlow]
+            public void UnsetsTheIsSyncedFlagWhenThereIsNothingToPushButTheSyncProcessStartsAgain()
             {
                 DataSource.HasUnsyncedData().Returns(Observable.Return(false));
-                StateObservableSubject.OnNext(SyncState.Sleep);
-                StateObservableSubject.OnNext(state);
+                ProgressSubject.OnNext(SyncProgress.Synced);
+                ProgressSubject.OnNext(SyncProgress.Syncing);
 
                 ViewModel.IsSynced.Should().BeFalse();
             }
@@ -207,7 +209,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task ShowsConfirmationDialogWhenThereIsNothingToPushButSyncIsRunning()
             {
                 DataSource.HasUnsyncedData().Returns(Observable.Return(false));
-                StateObservableSubject.OnNext(SyncState.Pull);
+                ProgressSubject.OnNext(SyncProgress.Syncing);
 
                 await ViewModel.LogoutCommand.ExecuteAsync();
 
@@ -218,7 +220,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task ShowsConfirmationDialogWhenThereIsSomethingToPushButSyncIsNotRunning()
             {
                 DataSource.HasUnsyncedData().Returns(Observable.Return(true));
-                StateObservableSubject.OnNext(SyncState.Sleep);
+                ProgressSubject.OnNext(SyncProgress.Syncing);
 
                 await ViewModel.LogoutCommand.ExecuteAsync();
 
@@ -228,7 +230,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task DoesNotProceedWithLogoutWhenUserClicksCancelButtonInTheDialog()
             {
-                StateObservableSubject.OnNext(SyncState.Pull);
+                ProgressSubject.OnNext(SyncProgress.Syncing);
                 DialogService.Confirm(
                     Arg.Any<string>(),
                     Arg.Any<string>(),
@@ -245,7 +247,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ProceedsWithLogoutWhenUserClicksSignOutButtonInTheDialog()
             {
-                StateObservableSubject.OnNext(SyncState.Pull);
+                ProgressSubject.OnNext(SyncProgress.Syncing);
                 DialogService.Confirm(
                     Arg.Any<string>(),
                     Arg.Any<string>(),
@@ -262,7 +264,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             private void doNotShowConfirmationDialog()
             {
                 DataSource.HasUnsyncedData().Returns(Observable.Return(false));
-                StateObservableSubject.OnNext(SyncState.Sleep);
+                ProgressSubject.OnNext(SyncProgress.Synced);
             }
         }
 

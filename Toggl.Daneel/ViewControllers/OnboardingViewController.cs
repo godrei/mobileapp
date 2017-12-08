@@ -136,18 +136,18 @@ namespace Toggl.Daneel.ViewControllers
             PhoneContents.AddSubview(trackPagePlaceholder);
             PhoneContents.AddSubview(logPagePlaceholder);
             PhoneContents.AddSubview(summaryPagePlaceholder);
-
-            setPlaceholderConstraints(trackPagePlaceholder);
-            setPlaceholderConstraints(logPagePlaceholder);
-            setPlaceholderConstraints(summaryPagePlaceholder);
         }
 
-        private void setPlaceholderConstraints(UIView view)
+        public override void ViewDidLayoutSubviews()
         {
-            view.TopAnchor.ConstraintEqualTo(PhoneContents.TopAnchor).Active = true;
-            view.BottomAnchor.ConstraintEqualTo(PhoneContents.BottomAnchor).Active = true;
-            view.LeadingAnchor.ConstraintEqualTo(PhoneContents.LeadingAnchor).Active = true;
-            view.TrailingAnchor.ConstraintEqualTo(PhoneContents.TrailingAnchor).Active = true;
+            base.ViewDidLayoutSubviews();
+
+            if (trackPagePlaceholder != null)
+                trackPagePlaceholder.Frame = PhoneContents.Bounds;
+            if (logPagePlaceholder != null)
+                logPagePlaceholder.Frame = PhoneContents.Bounds;
+            if (summaryPagePlaceholder != null)
+                summaryPagePlaceholder.Frame = PhoneContents.Bounds;
         }
     }
 }

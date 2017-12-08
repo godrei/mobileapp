@@ -4,10 +4,9 @@
     {
         void SetClientOutdated();
         void SetApiOutdated();
-        void SetUnauthorizedAccess();
-        void ClearUnauthorizedAccess();
+        void SetUnauthorizedAccess(string apiToken);
         bool IsClientOutdated();
         bool IsApiOutdated();
-        bool IsUnauthorized();
+        bool IsUnauthorized(string apiToken);
     }
 }

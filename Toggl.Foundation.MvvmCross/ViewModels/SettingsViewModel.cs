@@ -76,11 +76,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.navigationService = navigationService;
 
             disposeBag.Add(dataSource.SyncManager
-                .StateObservable
-                .Subscribe(async state =>
+                .ProgressObservable
+                .Subscribe(async progress =>
                 {
-                    IsRunningSync = IsLoggingOut == false && state != SyncState.Sleep;
-                    IsSynced = IsLoggingOut == false && await isSynced();
+                    IsRunningSync = IsLoggingOut == false && progress == SyncProgress.Syncing;
+                    IsSynced = IsLoggingOut == false && progress == SyncProgress.Synced && await isSynced();
                 })
             );
 
@@ -119,7 +119,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public async Task editWorkspace()
         {
-            var parameters = WorkspaceParameters.Create(workspaceId, Resources.SetDefaultWorkspaces, allowQuerying: false);
+            var parameters = WorkspaceParameters.Create(workspaceId, Resources.SetDefaultWorkspace, allowQuerying: false);
             var selectedWorkspaceId =
                 await navigationService
                     .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(parameters);

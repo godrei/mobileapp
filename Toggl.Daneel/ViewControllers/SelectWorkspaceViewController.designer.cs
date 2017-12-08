@@ -13,6 +13,9 @@ namespace Toggl.Daneel.ViewControllers
 	partial class SelectWorkspaceViewController
 	{
 		[Outlet]
+		UIKit.NSLayoutConstraint BottomConstraint { get; set; }
+
+		[Outlet]
 		UIKit.UIButton CloseButton { get; set; }
 
 		[Outlet]
@@ -29,14 +32,9 @@ namespace Toggl.Daneel.ViewControllers
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (SuggestionsTableViewConstraint != null) {
-				SuggestionsTableViewConstraint.Dispose ();
-				SuggestionsTableViewConstraint = null;
-			}
-
-			if (TitleLabel != null) {
-				TitleLabel.Dispose ();
-				TitleLabel = null;
+			if (BottomConstraint != null) {
+				BottomConstraint.Dispose ();
+				BottomConstraint = null;
 			}
 
 			if (CloseButton != null) {
@@ -52,6 +50,16 @@ namespace Toggl.Daneel.ViewControllers
 			if (SuggestionsTableView != null) {
 				SuggestionsTableView.Dispose ();
 				SuggestionsTableView = null;
+			}
+
+			if (SuggestionsTableViewConstraint != null) {
+				SuggestionsTableViewConstraint.Dispose ();
+				SuggestionsTableViewConstraint = null;
+			}
+
+			if (TitleLabel != null) {
+				TitleLabel.Dispose ();
+				TitleLabel = null;
 			}
 		}
 	}

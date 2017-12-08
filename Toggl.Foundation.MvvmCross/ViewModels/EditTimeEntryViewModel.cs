@@ -174,7 +174,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             tickingDisposable = timeService
                 .CurrentDateTimeObservable
-                .Subscribe(_ => RaisePropertyChanged(nameof(Duration)));
+                .Subscribe((DateTimeOffset _) => RaisePropertyChanged(nameof(Duration)));
         }
 
         private async Task delete()

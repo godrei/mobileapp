@@ -70,6 +70,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Theory, LogIfTooSlow]
+            [InlineData(true)]
+            [InlineData(false)]
             public void SetsTheAllowsQueryingProperty(bool allowsQuerying)
             {
                 var parameters = WorkspaceParameters.Create(10, "", allowsQuerying);

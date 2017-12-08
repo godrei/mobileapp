@@ -3,8 +3,10 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using Toggl.Foundation.Autocomplete;
+using Toggl.Foundation.Services;
 using Toggl.Foundation.Sync;
 using Toggl.Multivac;
+using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant;
 
 namespace Toggl.Foundation.DataSources
@@ -12,20 +14,23 @@ namespace Toggl.Foundation.DataSources
     public sealed class TogglDataSource : ITogglDataSource
     {
         private readonly ITogglDatabase database;
-        private readonly IAccessRestrictionStorage accessRestrictionStorage;
+        private readonly IApiErrorHandlingService apiErrorHandlingService;
+
+        private IDisposable errorHandlingDisposable;
 
         public TogglDataSource(
             ITogglDatabase database,
             ITimeService timeService,
-            IAccessRestrictionStorage accessRestrictionStorage,
+            IApiErrorHandlingService apiErrorHandlingService,
             Func<ITogglDataSource, ISyncManager> createSyncManager)
         {
             Ensure.Argument.IsNotNull(database, nameof(database));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
-            Ensure.Argument.IsNotNull(accessRestrictionStorage, nameof(accessRestrictionStorage));
+            Ensure.Argument.IsNotNull(apiErrorHandlingService, nameof(apiErrorHandlingService));
+            Ensure.Argument.IsNotNull(createSyncManager, nameof(createSyncManager));
 
             this.database = database;
-            this.accessRestrictionStorage = accessRestrictionStorage;
+            this.apiErrorHandlingService = apiErrorHandlingService;
 
             User = new UserDataSource(database.User);
             Tags = new TagsDataSource(database.IdProvider, database.Tags, timeService);
@@ -37,6 +42,8 @@ namespace Toggl.Foundation.DataSources
 
             AutocompleteProvider = new AutocompleteProvider(database);
             SyncManager = createSyncManager(this);
+
+            errorHandlingDisposable = SyncManager.ProgressObservable.Subscribe(onSyncError);
         }
 
         public IUserSource User { get; }
@@ -61,6 +68,12 @@ namespace Toggl.Foundation.DataSources
                 hasUnsyncedData(database.Workspaces))
                 .Any(hasUnsynced => hasUnsynced);
 
+        public IObservable<Unit> Logout()
+            => SyncManager.Freeze()
+                .FirstAsync()
+                .SelectMany(_ => database.Clear())
+                .FirstAsync();
+
         private IObservable<bool> hasUnsyncedData<TModel>(IRepository<TModel> repository)
             where TModel : IDatabaseSyncable
             => repository
@@ -68,11 +81,13 @@ namespace Toggl.Foundation.DataSources
                 .Select(unsynced => unsynced.Any())
                 .SingleAsync();
 
-        public IObservable<Unit> Logout()
-            => SyncManager.Freeze()
-                .FirstAsync()
-                .SelectMany(_ => database.Clear())
-                .Do(_ => accessRestrictionStorage.ClearUnauthorizedAccess())
-                .FirstAsync();
+        private void onSyncError(Exception exception)
+        {
+            if (apiErrorHandlingService.TryHandleDeprecationError(exception) == false
+                && apiErrorHandlingService.TryHandleUnauthorizedError(exception) == false)
+            {
+                throw new ArgumentException($"{nameof(TogglDataSource)} could not handle unknown sync error {exception.GetType().FullName}.", exception);
+            }
+        }
     }
 }

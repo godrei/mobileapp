@@ -3,10 +3,12 @@ using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.Binding.iOS.Views;
-using MvvmCross.Plugins.Color;
+using MvvmCross.Plugins.Color.iOS;
 using MvvmCross.Plugins.Visibility;
+using Toggl.Daneel.Combiners;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.MvvmCross.Converters;
+using Toggl.Foundation.MvvmCross.Helper;
 using UIKit;
 
 namespace Toggl.Daneel.Views
@@ -35,27 +37,26 @@ namespace Toggl.Daneel.Views
 
             this.DelayBind(() =>
             {
-                var colorConverter = new MvxRGBValueConverter();
                 var visibilityConverter = new MvxVisibilityValueConverter();
-                var timeSpanConverter = new TimeSpanToDurationValueConverter();
                 var descriptionTopDistanceValueConverter = new BoolToConstantValueConverter<nfloat>(HasProjectDistance, NoProjectDistance);
+                var projectTaskClientCombiner = new ProjectTaskClientValueCombiner(
+                    ProjectLabel.Font.CapHeight,
+                    Color.Suggestions.ClientColor.ToNativeColor(),
+                    true
+                );
 
                 var bindingSet = this.CreateBindingSet<StartTimeEntryViewCell, TimeEntrySuggestion>();
 
                 //Text
-                bindingSet.Bind(ProjectLabel).To(vm => vm.ProjectName);
                 bindingSet.Bind(DescriptionLabel).To(vm => vm.Description);
 
-                //Color
                 bindingSet.Bind(ProjectLabel)
-                          .For(v => v.TextColor)
-                          .To(vm => vm.ProjectColor)
-                          .WithConversion(colorConverter);
-
-                bindingSet.Bind(ProjectDotView)
-                          .For(v => v.BackgroundColor)
-                          .To(vm => vm.ProjectColor)
-                          .WithConversion(colorConverter);
+                    .For(v => v.AttributedText)
+                    .ByCombining(projectTaskClientCombiner,
+                        v => v.ProjectName,
+                        v => v.TaskName,
+                        v => v.ClientName,
+                        v => v.ProjectColor);
 
                 //Visibility
                 bindingSet.Bind(DescriptionTopDistanceConstraint)
@@ -64,11 +65,6 @@ namespace Toggl.Daneel.Views
                           .WithConversion(descriptionTopDistanceValueConverter);
 
                 bindingSet.Bind(ProjectLabel)
-                          .For(v => v.BindVisibility())
-                          .To(vm => vm.HasProject)
-                          .WithConversion(visibilityConverter);
-
-                bindingSet.Bind(ProjectDotView)
                           .For(v => v.BindVisibility())
                           .To(vm => vm.HasProject)
                           .WithConversion(visibilityConverter);

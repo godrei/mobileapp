@@ -7,6 +7,7 @@ using MvvmCross.Plugins.Color.iOS;
 using Toggl.Daneel.Extensions;
 using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.Helper;
+using Toggl.Foundation.Sync;
 using UIKit;
 
 namespace Toggl.Daneel.Views
@@ -18,19 +19,22 @@ namespace Toggl.Daneel.Views
         private static readonly float scrollThreshold = SyncStateViewHeight + (SyncStateViewHeight / 2);
 
         private readonly UIColor syncingColor = Color.Main.Syncing.ToNativeColor();
+        private readonly UIColor syncFailedColor = Color.Main.SyncFailed.ToNativeColor();
+        private readonly UIColor offlineColor = Color.Main.Offline.ToNativeColor();
         private readonly UIColor syncCompletedColor = Color.Main.SyncCompleted.ToNativeColor();
 
-        private bool isSyncing;
+        private SyncProgress syncProgress;
         private bool needsRefresh;
         private bool shouldCalculateOnDeceleration;
+        private bool isSyncing => syncProgress == SyncProgress.Syncing;
 
-        public bool IsSyncing
+        public SyncProgress SyncProgress
         {
-            get => isSyncing;
+            get => syncProgress;
             set
             {
-                if (value == isSyncing) return;
-                isSyncing = value;
+                if (value == syncProgress) return;
+                syncProgress = value;
                 updateViews(value);
             }
         }
@@ -75,7 +79,7 @@ namespace Toggl.Daneel.Views
             var needsMorePulling = Math.Abs(offset) < scrollThreshold;
             needsRefresh = !needsMorePulling;
 
-            if (IsSyncing) return;
+            if (isSyncing) return;
 
             Animate(Animation.Timings.EnterTiming, () =>
                 SyncStateLabel.Text = needsMorePulling ? Resources.PullDownToRefresh : Resources.ReleaseToRefresh);
@@ -109,7 +113,7 @@ namespace Toggl.Daneel.Views
             needsRefresh = false;
             shouldCalculateOnDeceleration = false;
 
-            if (IsSyncing)
+            if (isSyncing)
             {
                 scrollToIfInFirstPage(new CGPoint(0, -SyncStateViewHeight));
                 return;
@@ -118,26 +122,58 @@ namespace Toggl.Daneel.Views
             RefreshCommand.Execute();
         }
 
-        private async void updateViews(bool value)
+        private async void updateViews(SyncProgress value)
         {
-            if (value)
-            {
-                Animate(Animation.Timings.EnterTiming, () =>
-                {
-                    SyncStateLabel.Text = Resources.Syncing;
-                    SyncStateView.BackgroundColor = syncingColor;
-                });
+            NSAttributedString text;
+            UIColor backgroundColor;
+            bool hideIndicator = true;
 
-                scrollToIfInFirstPage(new CGPoint(0, -SyncStateViewHeight));
-                return;
+            switch (value)
+            {
+                case SyncProgress.Unknown:
+                    return;
+
+                case SyncProgress.Syncing:
+                    text = new NSAttributedString(Resources.Syncing);
+                    backgroundColor = syncingColor;
+                    hideIndicator = false;
+                    break;
+
+                case SyncProgress.OfflineModeDetected:
+                    text = new NSAttributedString(Resources.Offline);
+                    backgroundColor = offlineColor;
+                    hideIndicator = false;
+                    break;
+
+                case SyncProgress.Synced:
+                    text = Resources.SyncCompleted.EndingWithTick(SyncStateLabel.Font.CapHeight);
+                    backgroundColor = syncCompletedColor;
+                    break;
+
+                case SyncProgress.Failed:
+                    text = new NSAttributedString(Resources.SyncFailed);
+                    backgroundColor = syncFailedColor;
+                    break;
+
+                default:
+                    throw new ArgumentException(nameof(value));
             }
 
             Animate(Animation.Timings.EnterTiming, () =>
             {
-                SyncStateLabel.AttributedText = Resources.SyncCompleted.EndingWithTick(SyncStateLabel.Font.CapHeight);
-                SyncStateView.BackgroundColor = syncCompletedColor;
+                SyncStateLabel.AttributedText = text;
+                SyncStateView.BackgroundColor = backgroundColor;
             });
 
+            scrollToIfInFirstPage(new CGPoint(0, -SyncStateViewHeight));
+
+            if (!hideIndicator) return;
+
+            await hideSyncIndicator();
+        }
+
+        private async Task hideSyncIndicator()
+        {
             await Task.Delay(Animation.Timings.HideSyncStateViewDelay);
             scrollToIfInFirstPage(CGPoint.Empty);
         }

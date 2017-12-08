@@ -24,7 +24,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
             {
                 var apiClient = Substitute.For<IApiClient>();
                 var serializer = Substitute.For<IJsonSerializer>();
-                var endpoint = Endpoint.Get(ApiUrls.ForEnvironment(ApiEnvironment.Staging), "");
+                var endpoint = Endpoint.Get(BaseUrls.ForApi(ApiEnvironment.Staging), "");
 
                 apiClient.Send(Arg.Any<Request>()).Returns(x => new Response("It lives", true, "text/plain", new List<KeyValuePair<string, IEnumerable<string>>>(), OK));
 
@@ -58,7 +58,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
                 apiClient.Send(Arg.Any<Request>()).Returns(x => new Response("It lives", true, "text/plain", new List<KeyValuePair<string, IEnumerable<string>>>(), OK));
 
                 var credentials = Credentials.WithPassword("susancalvin@psychohistorian.museum".ToEmail(), "theirobotmoviesucked123");
-                var endpoint = Endpoint.Get(ApiUrls.ForEnvironment(ApiEnvironment.Staging), "");
+                var endpoint = Endpoint.Get(BaseUrls.ForApi(ApiEnvironment.Staging), "");
                 var testApi = new TestApi(endpoint, apiClient, serializer, credentials, endpoint);
 
                 var observable = testApi.TestCreateObservable<string>(endpoint, Enumerable.Empty<HttpHeader>(), "");
@@ -74,7 +74,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
                 apiClient.Send(Arg.Any<Request>()).Returns(x => new Response(rawResponse, true, "text/plain", new List<KeyValuePair<string, IEnumerable<string>>>(), OK));
 
                 var credentials = Credentials.WithPassword("susancalvin@psychohistorian.museum".ToEmail(), "theirobotmoviesucked123");
-                var endpoint = Endpoint.Get(ApiUrls.ForEnvironment(ApiEnvironment.Staging), "");
+                var endpoint = Endpoint.Get(BaseUrls.ForApi(ApiEnvironment.Staging), "");
                 var testApi = new TestApi(endpoint, apiClient, serializer, credentials, endpoint);
 
                 var observable = testApi.TestCreateObservable<string>(endpoint, Enumerable.Empty<HttpHeader>(), "");

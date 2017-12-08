@@ -66,7 +66,7 @@
     <Compile Include="Network\Endpoints\StatusEndpoints.cs" />
     <Compile Include="Network\Endpoints\UserEndpoints.cs" />
     <Compile Include="Network\Endpoints\WorkspaceFeaturesEndpoints.cs" />
-    <Compile Include="Network\Reports\ProjectsSummaryEndpoints.cs" />
+    <Compile Include="Network\Reports\ProjectEndpoints.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ITogglApi.cs" />
     <Compile Include="Serialization\Attributes\RequiresFeatureAttribute.cs" />
@@ -96,7 +96,7 @@
     <Compile Include="Network\Response.cs" />
     <Compile Include="Extensions\HttpExtensions.cs" />
     <Compile Include="ApiEnvironment.cs" />
-    <Compile Include="Helpers\ApiUrls.cs" />
+    <Compile Include="Helpers\BaseUrls.cs" />
     <Compile Include="Network\Request.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="ApiClients\BaseApi.cs" />
@@ -138,7 +138,6 @@
     <Compile Include="Models\Reports\ProjectSummary.cs" />
     <Compile Include="Models\Reports\ProjectsSummary.cs" />
     <Compile Include="Network\Reports\Endpoints.cs" />
-    <Compile Include="Helpers\ReportsUrls.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Multivac\Toggl.Multivac.csproj">

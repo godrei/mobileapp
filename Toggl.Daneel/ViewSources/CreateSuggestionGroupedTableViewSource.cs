@@ -14,7 +14,19 @@ namespace Toggl.Daneel.ViewSources
 
         public string Text { get; set; }
 
-        public bool SuggestCreation { get; set; }
+        private bool suggestCreation;
+        public bool SuggestCreation
+        {
+            get => suggestCreation;
+            set
+            {
+                if (suggestCreation != value)
+                {
+                    suggestCreation = value;
+                    ReloadTableData();
+                }
+            }
+        }
 
         public IMvxCommand CreateCommand { get; set; }
 

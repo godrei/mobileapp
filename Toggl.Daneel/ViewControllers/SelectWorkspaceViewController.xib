@@ -11,6 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SelectWorkspaceViewController">
             <connections>
+                <outlet property="BottomConstraint" destination="Rgf-Cd-VPl" id="okG-KN-22M"/>
                 <outlet property="CloseButton" destination="94q-32-ilW" id="4yA-cp-4sm"/>
                 <outlet property="SearchTextField" destination="pKP-3u-mLF" id="tsl-Fl-JSB"/>
                 <outlet property="SuggestionsTableView" destination="B7I-ux-qEU" id="wgR-bE-slN"/>

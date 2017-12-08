@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using FluentAssertions;
 using MvvmCross.Core.Navigation;
 using NSubstitute;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Foundation.Services;
 using Toggl.Foundation.Tests.Generators;
+using Toggl.Multivac;
 using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Models;
 using Toggl.Ultrawave.Exceptions;
 using Toggl.Ultrawave.Network;
 using Xunit;
@@ -19,9 +24,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             protected readonly IMvxNavigationService NavigationService;
             protected readonly IAccessRestrictionStorage AccessRestrictionStorage;
             protected readonly IApiErrorHandlingService ApiErrorHandlingService;
+            protected readonly IDatabaseUser User;
 
             public BaseApiErrorHandlingServiceTests()
             {
+                User = Substitute.For<IDatabaseUser>();
+                var token = Guid.NewGuid().ToString();
+                User.ApiToken.Returns(token);
                 NavigationService = Substitute.For<IMvxNavigationService>();
                 AccessRestrictionStorage = Substitute.For<IAccessRestrictionStorage>();
                 ApiErrorHandlingService =
@@ -136,7 +145,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
 
         public sealed class TheUnauthorizedException : BaseApiErrorHandlingServiceTests
         {
-            private UnauthorizedException exception => new UnauthorizedException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
+            private UnauthorizedException exception => new UnauthorizedException(createRequest(), Substitute.For<IResponse>());
+
+            private IRequest createRequest()
+            {
+                var request = Substitute.For<IRequest>();
+                var headers = new[] { Credentials.WithApiToken(User.ApiToken).Header };
+                request.Headers.Returns(headers);
+                return request;
+            }
 
             [Fact, LogIfTooSlow]
             public void ReturnsTrueForClientDeprecatedException()
@@ -151,7 +168,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             {
                 ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
 
-                AccessRestrictionStorage.Received().SetUnauthorizedAccess();
+                AccessRestrictionStorage.Received().SetUnauthorizedAccess(Arg.Is(User.ApiToken));
             }
 
             [Fact, LogIfTooSlow]
@@ -160,6 +177,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
                 ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
 
                 NavigationService.Received().Navigate<TokenResetViewModel>();
+            }
+
+            [Fact, LogIfTooSlow]
+            internal void ReturnsTrueButDoesNotNavigateOrSetUnathorizedAccessFlagWhenTheApiTokenCannotBeExtractedFromTheRequest()
+            {
+                var request = Substitute.For<IRequest>();
+                request.Headers.Returns(new HttpHeader[0]);
+                var exceptionWithoutApiToken = new UnauthorizedException(request, Substitute.For<IResponse>());
+
+                var handled = ApiErrorHandlingService.TryHandleUnauthorizedError(exceptionWithoutApiToken);
+
+                handled.Should().BeTrue();
+                NavigationService.DidNotReceive().Navigate<TokenResetViewModel>();
+                AccessRestrictionStorage.DidNotReceive().SetUnauthorizedAccess(Arg.Any<string>());
             }
         }
 
@@ -180,7 +211,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             {
                 ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
 
-                AccessRestrictionStorage.DidNotReceive().SetUnauthorizedAccess();
+                AccessRestrictionStorage.DidNotReceive().SetUnauthorizedAccess(Arg.Any<string>());
             }
 
             [Fact, LogIfTooSlow]

@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using CoreText;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Binding.iOS;
-using MvvmCross.iOS.Views;
 using MvvmCross.Plugins.Color.iOS;
 using MvvmCross.Plugins.Visibility;
 using Toggl.Daneel.Extensions;
@@ -19,10 +17,10 @@ using UIKit;
 namespace Toggl.Daneel.ViewControllers
 {
     [ModalCardPresentation]
-    public partial class StartTimeEntryViewController : MvxViewController<StartTimeEntryViewModel>
+    public sealed partial class StartTimeEntryViewController : KeyboardAwareViewController<StartTimeEntryViewModel>
     {
         public StartTimeEntryViewController() 
-            : base(nameof(StartTimeEntryViewController), null)
+            : base(nameof(StartTimeEntryViewController))
         {
         }
 
@@ -31,9 +29,6 @@ namespace Toggl.Daneel.ViewControllers
             base.ViewDidLoad();
 
             prepareViews();
-
-            UIKeyboard.Notifications.ObserveWillShow(keyboardWillShow);
-            UIKeyboard.Notifications.ObserveWillHide(keyboardWillHide);
 
             var source = new StartTimeEntryTableViewSource(SuggestionsTableView);
             SuggestionsTableView.Source = source;
@@ -131,9 +126,8 @@ namespace Toggl.Daneel.ViewControllers
                       .WithConversion(invertedVisibilityConverter);
 
             bindingSet.Bind(PlaceholderLabel)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.TextFieldInfo.Text)
-                      .WithConversion(invertedVisibilityConverter);
+                      .For(v => v.BindVisible())
+                      .To(vm => vm.ShowPlaceholder);
 
             //Commands
             bindingSet.Bind(DoneButton).To(vm => vm.DoneCommand);
@@ -147,13 +141,13 @@ namespace Toggl.Daneel.ViewControllers
             bindingSet.Apply();
         }
 
-        private void keyboardWillShow(object sender, UIKeyboardEventArgs e)
+        protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
         {
             BottomDistanceConstraint.Constant = e.FrameEnd.Height;
             UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
         }
 
-        private void keyboardWillHide(object sender, UIKeyboardEventArgs e)
+        protected override void KeyboardWillHide(object sender, UIKeyboardEventArgs e)
         {
             BottomDistanceConstraint.Constant = 0;
             UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());

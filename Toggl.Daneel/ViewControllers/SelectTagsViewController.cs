@@ -1,18 +1,19 @@
 ﻿using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
-using MvvmCross.iOS.Views;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Daneel.ViewSources;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 using Toggl.Daneel.Extensions;
+using Toggl.Foundation.MvvmCross.Helper;
 
 namespace Toggl.Daneel.ViewControllers
 {
     [ModalCardPresentation]
-    public sealed partial class SelectTagsViewController : MvxViewController<SelectTagsViewModel>
+    public sealed partial class SelectTagsViewController : KeyboardAwareViewController<SelectTagsViewModel>
     {
-        public SelectTagsViewController() : base(nameof(SelectTagsViewController), null)
+        public SelectTagsViewController() 
+            : base(nameof(SelectTagsViewController))
         {
         }
 
@@ -64,6 +65,18 @@ namespace Toggl.Daneel.ViewControllers
                       .To(vm => vm.SelectTagCommand);
 
             bindingSet.Apply();
+        }
+
+        protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
+        {
+            BottomConstraint.Constant = e.FrameEnd.Height;
+            UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
+        }
+
+        protected override void KeyboardWillHide(object sender, UIKeyboardEventArgs e)
+        {
+            BottomConstraint.Constant = 0;
+            UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
         }
     }
 }

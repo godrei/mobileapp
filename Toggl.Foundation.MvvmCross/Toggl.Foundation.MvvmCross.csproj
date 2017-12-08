@@ -38,7 +38,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ApiErrorHandlingService.cs" />
-    <Compile Include="Services\IApiErrorHandlingService.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="App.cs" />
     <Compile Include="ViewModels\TimeEntriesLogViewModel.cs" />
@@ -89,6 +88,7 @@
     <Compile Include="Services\IBrowserService.cs" />
     <Compile Include="ViewModels\TokenResetViewModel.cs" />
     <Compile Include="ViewModels\ReportsViewModel.cs" />
+    <Compile Include="Parameters\DateRangeParameter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Interfaces">

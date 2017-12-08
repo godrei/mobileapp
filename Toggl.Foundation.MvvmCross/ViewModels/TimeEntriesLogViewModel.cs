@@ -184,9 +184,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     TaskId = timeEntryViewModel.TaskId,
                     WorkspaceId = user.DefaultWorkspaceId,
                     Billable = timeEntryViewModel.Billable,
-                    StartTime = timeService.CurrentDateTime, 
+                    StartTime = timeService.CurrentDateTime,
                     ProjectId = timeEntryViewModel.ProjectId,
-                    Description = timeEntryViewModel.Description
+                    Description = timeEntryViewModel.Description,
+                    TagIds = timeEntryViewModel.TagIds
                 })
                 .SelectMany(dataSource.TimeEntries.Start)
                 .Do(_ => dataSource.SyncManager.PushSync());

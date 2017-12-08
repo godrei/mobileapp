@@ -124,6 +124,12 @@ Please try again.</value>
     <data name="Syncing">
         <value>Syncing...</value>
     </data>
+    <data name="SyncFailed">
+        <value>Syncing failed</value>
+    </data>
+    <data name="Offline">
+        <value>Offline</value>
+    </data>
     <data name="PullDownToRefresh">
         <value>Pull down to refresh</value>
     </data>
@@ -186,8 +192,8 @@ time entries will appear here.</value>
     <data name="Workspaces">
         <value>Workspaces</value>
     </data>
-    <data name="SetDefaultWorkspaces">
-        <value>Set default workspaces</value>
+    <data name="SetDefaultWorkspace">
+        <value>Set default workspace</value>
     </data>
     <data name="AddTags">
         <value>Add a tag</value>
@@ -221,5 +227,8 @@ time entries will appear here.</value>
     </data>
     <data name="GoogleSignUp">
         <value>Sign up with Google</value>
+    </data>
+    <data name="ThisWeek">
+        <value>This week</value>
     </data>
 </root>

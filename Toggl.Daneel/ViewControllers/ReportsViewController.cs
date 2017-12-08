@@ -28,7 +28,7 @@ namespace Toggl.Daneel.ViewControllers
             //Text
             bindingSet.Bind(this)
                       .For(v => v.Title)
-                      .To(vm => vm.CurrentPeriodString);
+                      .To(vm => vm.CurrentDateRangeString);
 
             //Visibility
             bindingSet.Bind(EmptyStateView)

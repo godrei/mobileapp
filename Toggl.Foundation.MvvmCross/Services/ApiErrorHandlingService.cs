@@ -1,6 +1,7 @@
 ﻿using System;
 using MvvmCross.Core.Navigation;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Foundation.Services;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 using Toggl.Ultrawave.Exceptions;
@@ -42,10 +43,15 @@ namespace Toggl.Foundation.MvvmCross.Services
 
         public bool TryHandleUnauthorizedError(Exception error)
         {
-            if (error is UnauthorizedException)
+            if (error is UnauthorizedException unauthorized)
             {
-                accessRestrictionStorage.SetUnauthorizedAccess();
-                navigationService.Navigate<TokenResetViewModel>();
+                var token = unauthorized.ApiToken;
+                if (token != null)
+                {
+                    accessRestrictionStorage.SetUnauthorizedAccess(token);
+                    navigationService.Navigate<TokenResetViewModel>();
+                }
+
                 return true;
             }
 

@@ -21,8 +21,6 @@ namespace Toggl.Foundation.Sync
         public bool IsRunningSync { get; private set; }
 
         public SyncState State => orchestrator.State;
-        [Obsolete]
-        public IObservable<SyncState> StateObservable => orchestrator.StateObservable;
         public IObservable<SyncProgress> ProgressObservable { get; }
 
         public SyncManager(ISyncStateQueue queue, IStateMachineOrchestrator orchestrator)
@@ -145,7 +143,8 @@ namespace Toggl.Foundation.Sync
         }
 
         private IObservable<SyncState> syncStatesUntilAndIncludingSleep()
-            => StateObservable.TakeWhile(s => s != Sleep)
+            => orchestrator.StateObservable
+                .TakeWhile(s => s != Sleep)
                 .Concat(Observable.Return(Sleep))
                 .ConnectedReplay();
     }

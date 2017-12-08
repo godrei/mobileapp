@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -23,25 +24,6 @@
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Oft-Bf-1MY">
-                        <rect key="frame" x="16" y="29" width="6" height="6"/>
-                        <color key="backgroundColor" red="0.7725490196" green="0.41960784309999999" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="6" id="6vp-XB-ZeC"/>
-                            <constraint firstAttribute="height" constant="6" id="dhR-w6-Ykw"/>
-                        </constraints>
-                        <userDefinedRuntimeAttributes>
-                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                <integer key="value" value="3"/>
-                            </userDefinedRuntimeAttribute>
-                        </userDefinedRuntimeAttributes>
-                    </view>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Meetings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nf8-vf-DjH">
-                        <rect key="frame" x="26" y="24" width="56" height="16"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
-                        <color key="textColor" red="0.7725490196" green="0.41960784309999999" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                        <nil key="highlightedColor"/>
-                    </label>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="850">
                         <rect key="frame" x="0.0" y="46.5" width="320" height="1"/>
                         <color key="backgroundColor" red="0.90980392156862744" green="0.90980392156862744" blue="0.90980392156862744" alpha="1" colorSpace="calibratedRGB"/>
@@ -49,14 +31,18 @@
                             <constraint firstAttribute="height" constant="1" id="851"/>
                         </constraints>
                     </view>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Meetings" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nf8-vf-DjH">
+                        <rect key="frame" x="16" y="24" width="56" height="16"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                        <color key="textColor" red="0.7725490196" green="0.41960784309999999" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
                 </subviews>
                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 <constraints>
+                    <constraint firstItem="nf8-vf-DjH" firstAttribute="top" secondItem="yRs-cg-MFt" secondAttribute="bottom" id="8Vg-zy-mHa"/>
+                    <constraint firstItem="nf8-vf-DjH" firstAttribute="leading" secondItem="yRs-cg-MFt" secondAttribute="leading" id="Dif-Yb-bks"/>
                     <constraint firstItem="850" firstAttribute="leading" secondItem="YTl-1W-gDM" secondAttribute="leading" id="MD4-3i-vOg"/>
-                    <constraint firstItem="nf8-vf-DjH" firstAttribute="leading" secondItem="Oft-Bf-1MY" secondAttribute="trailing" constant="4" id="ORv-Y4-npX"/>
-                    <constraint firstItem="nf8-vf-DjH" firstAttribute="centerY" secondItem="Oft-Bf-1MY" secondAttribute="centerY" id="R4Y-Pd-pFH"/>
-                    <constraint firstItem="Oft-Bf-1MY" firstAttribute="leading" secondItem="yRs-cg-MFt" secondAttribute="leading" id="SBa-Zf-8cf"/>
-                    <constraint firstItem="Oft-Bf-1MY" firstAttribute="top" secondItem="yRs-cg-MFt" secondAttribute="bottom" constant="5" id="imX-mb-VLc"/>
                     <constraint firstAttribute="bottom" secondItem="850" secondAttribute="bottom" id="rEc-Ls-IpH"/>
                     <constraint firstAttribute="trailing" secondItem="850" secondAttribute="trailing" id="x2E-5M-CEm"/>
                 </constraints>
@@ -68,7 +54,6 @@
             <connections>
                 <outlet property="DescriptionLabel" destination="yRs-cg-MFt" id="name-outlet-yRs-cg-MFt"/>
                 <outlet property="DescriptionTopDistanceConstraint" destination="zQf-hl-11e" id="name-outlet-zQf-hl-11e"/>
-                <outlet property="ProjectDotView" destination="Oft-Bf-1MY" id="name-outlet-Oft-Bf-1MY"/>
                 <outlet property="ProjectLabel" destination="nf8-vf-DjH" id="name-outlet-nf8-vf-DjH"/>
             </connections>
             <point key="canvasLocation" x="68" y="46"/>

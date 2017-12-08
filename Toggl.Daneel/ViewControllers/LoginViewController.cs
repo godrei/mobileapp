@@ -2,7 +2,6 @@
 using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
-using MvvmCross.iOS.Views;
 using MvvmCross.iOS.Views.Presenters.Attributes;
 using MvvmCross.Plugins.Color.iOS;
 using Toggl.Daneel.Extensions;
@@ -15,7 +14,7 @@ using UIKit;
 namespace Toggl.Daneel.ViewControllers
 {
     [MvxChildPresentation]
-    public partial class LoginViewController : MvxViewController<LoginViewModel>
+    public partial class LoginViewController : KeyboardAwareViewController<LoginViewModel>
     {
         private const int forgotPasswordLabelOffset = 27;
 
@@ -26,7 +25,7 @@ namespace Toggl.Daneel.ViewControllers
             new UIBarButtonItem { Title = Resources.LoginNextButton, TintColor = UIColor.White };
     
         public LoginViewController() 
-            : base(nameof(LoginViewController), null)
+            : base(nameof(LoginViewController))
         {
         }
 
@@ -35,9 +34,6 @@ namespace Toggl.Daneel.ViewControllers
             base.ViewDidLoad();
   
             prepareViews();
-
-            UIKeyboard.Notifications.ObserveWillShow(keyboardWillShow);
-            UIKeyboard.Notifications.ObserveWillHide(keyboardWillHide);
 
             var invertedBoolConverter = new BoolToConstantValueConverter<bool>(false, true);
 
@@ -139,7 +135,7 @@ namespace Toggl.Daneel.ViewControllers
             //State
             bindingSet.Bind(EmailTextField)
                       .For(v => v.BindFocus())
-                      .To(vm => vm.IsEmailPage);
+                      .To(vm => vm.IsEmailFocused);
             
             bindingSet.Bind(PasswordTextField)
                       .For(v => v.BindFocus())
@@ -162,13 +158,13 @@ namespace Toggl.Daneel.ViewControllers
             NavigationController.NavigationBar.UserInteractionEnabled = true;
         }
 
-        private void keyboardWillShow(object sender, UIKeyboardEventArgs e)
+        protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
         {
             BottomConstraint.Constant = e.FrameEnd.Height + forgotPasswordLabelOffset;
             UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
         }
 
-        private void keyboardWillHide(object sender, UIKeyboardEventArgs e)
+        protected override void KeyboardWillHide(object sender, UIKeyboardEventArgs e)
         {
             BottomConstraint.Constant = forgotPasswordLabelOffset;
             UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());

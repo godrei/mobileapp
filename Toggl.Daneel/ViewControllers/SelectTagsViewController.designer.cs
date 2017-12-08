@@ -13,6 +13,9 @@ namespace Toggl.Daneel.ViewControllers
 	partial class SelectTagsViewController
 	{
 		[Outlet]
+		UIKit.NSLayoutConstraint BottomConstraint { get; set; }
+
+		[Outlet]
 		[GeneratedCode ("iOS Designer", "1.0")]
 		UIKit.UIButton CloseButton { get; set; }
 
@@ -41,6 +44,16 @@ namespace Toggl.Daneel.ViewControllers
 				CloseButton = null;
 			}
 
+			if (EmptyStateImage != null) {
+				EmptyStateImage.Dispose ();
+				EmptyStateImage = null;
+			}
+
+			if (EmptyStateLabel != null) {
+				EmptyStateLabel.Dispose ();
+				EmptyStateLabel = null;
+			}
+
 			if (SaveButton != null) {
 				SaveButton.Dispose ();
 				SaveButton = null;
@@ -56,14 +69,9 @@ namespace Toggl.Daneel.ViewControllers
 				TextField = null;
 			}
 
-			if (EmptyStateImage != null) {
-				EmptyStateImage.Dispose ();
-				EmptyStateImage = null;
-			}
-
-			if (EmptyStateLabel != null) {
-				EmptyStateLabel.Dispose ();
-				EmptyStateLabel = null;
+			if (BottomConstraint != null) {
+				BottomConstraint.Dispose ();
+				BottomConstraint = null;
 			}
 		}
 	}

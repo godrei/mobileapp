@@ -62,18 +62,6 @@ namespace Toggl.Foundation.Tests.Sync
             }
         }
 
-        public sealed class TheStateObservable : SyncManagerTestBase
-        {
-            [Fact, LogIfTooSlow]
-            public void ShouldReturnObservableFromOrchestrator()
-            {
-                var expectedObservable = Substitute.For<IObservable<SyncState>>();
-                Orchestrator.StateObservable.Returns(expectedObservable);
-
-                SyncManager.StateObservable.Should().Be(expectedObservable);
-            }
-        }
-
         public abstract class ThreadSafeQueingMethodTests : SyncManagerTestBase
         {
             protected abstract void CallMethod();

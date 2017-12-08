@@ -12,7 +12,6 @@ namespace Toggl.Daneel
         private const int lineHeight = 24;
         private const int tokenHeight = 22;
         private const int tokenPadding = 6;
-        private const int interTokenSpacing = 6;
         private const float tokenCornerRadius = 6.0f;
         private const int tokenVerticallOffset = (lineHeight - tokenHeight) / 2;
 
@@ -23,24 +22,31 @@ namespace Toggl.Daneel
 
         private static readonly UIColor borderColor = Color.StartTimeEntry.TokenBorder.ToNativeColor();
 
-        public TokenTextAttachment(NSAttributedString tokenStringToDraw, 
-            nfloat textVerticalOffset, nfloat fontDescender)
+        public TokenTextAttachment(
+            NSAttributedString tokenStringToDraw, 
+            nfloat textVerticalOffset,
+            nfloat fontDescender,
+            int leftMargin,
+            int rightMargin)
         {
-            var size = new CGSize(tokenStringToDraw.Size.Width + interTokenSpacing + (tokenPadding * 2), lineHeight);
+            var size = new CGSize(
+                tokenStringToDraw.Size.Width + leftMargin + rightMargin + (tokenPadding * 2),
+                lineHeight
+            );
             UIGraphics.BeginImageContextWithOptions(size, false, 0.0f);
             using (var context = UIGraphics.GetCurrentContext())
             {
                 var tokenPath = UIBezierPath.FromRoundedRect(new CGRect(
-                    x: interTokenSpacing,
+                    x: leftMargin,
                     y: tokenVerticallOffset,
-                    width: size.Width - interTokenSpacing,
+                    width: size.Width - leftMargin - rightMargin,
                     height: tokenHeight
                 ), tokenCornerRadius);
                 context.AddPath(tokenPath.CGPath);
                 context.SetStrokeColor(borderColor.CGColor);
                 context.StrokePath();
 
-                tokenStringToDraw.DrawString(new CGPoint(interTokenSpacing + tokenPadding, textVerticalOffset));
+                tokenStringToDraw.DrawString(new CGPoint(leftMargin + tokenPadding, textVerticalOffset));
 
                 var image = UIGraphics.GetImageFromCurrentImageContext();
                 UIGraphics.EndImageContext();
@@ -50,19 +56,24 @@ namespace Toggl.Daneel
             FontDescender = fontDescender;
         }
 
-        public TokenTextAttachment(NSAttributedString projectStringToDraw, 
-            nfloat textVerticalOffset, UIColor projectColor, nfloat fontDescender)
+        public TokenTextAttachment(
+            NSAttributedString projectStringToDraw, 
+            nfloat textVerticalOffset,
+            UIColor projectColor,
+            nfloat fontDescender,
+            int leftMargin,
+            int rightMargin)
         {
             const int circleWidth = dotDiameter + dotPadding;
-            var totalWidth = projectStringToDraw.Size.Width + circleWidth + interTokenSpacing + (tokenPadding * 2);
+            var totalWidth = projectStringToDraw.Size.Width + circleWidth + leftMargin + rightMargin + (tokenPadding * 2);
             var size = new CGSize(totalWidth, lineHeight);
             UIGraphics.BeginImageContextWithOptions(size, false, 0.0f);
             using (var context = UIGraphics.GetCurrentContext())
             {
                 var tokenPath = UIBezierPath.FromRoundedRect(new CGRect(
-                    x: interTokenSpacing,
+                    x: leftMargin,
                     y: tokenVerticallOffset,
-                    width: totalWidth - interTokenSpacing,
+                    width: totalWidth - leftMargin - rightMargin,
                     height: tokenHeight
                 ), tokenCornerRadius);
                 context.AddPath(tokenPath.CGPath);
@@ -70,7 +81,7 @@ namespace Toggl.Daneel
                 context.FillPath();
 
                 var dot = UIBezierPath.FromRoundedRect(new CGRect(
-                    x: dotPadding + interTokenSpacing,
+                    x: dotPadding + leftMargin,
                     y: dotYOffset,
                     width: dotDiameter,
                     height: dotDiameter
@@ -79,7 +90,7 @@ namespace Toggl.Daneel
                 context.SetFillColor(projectColor.CGColor);
                 context.FillPath();
 
-                projectStringToDraw.DrawString(new CGPoint(circleWidth + interTokenSpacing + tokenPadding, textVerticalOffset));
+                projectStringToDraw.DrawString(new CGPoint(circleWidth + leftMargin + tokenPadding, textVerticalOffset));
 
                 var image = UIGraphics.GetImageFromCurrentImageContext();
                 UIGraphics.EndImageContext();

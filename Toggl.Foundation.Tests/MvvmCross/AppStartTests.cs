@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MvvmCross.Core.Navigation;
@@ -10,6 +11,7 @@ using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Models;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross
@@ -82,9 +84,10 @@ namespace Toggl.Foundation.Tests.MvvmCross
             [Fact, LogIfTooSlow]
             public void ShowsTheReLoginViewIfTheUserRevokedTheApiToken()
             {
-                AccessRestrictionStorage.IsUnauthorized().Returns(true);
+                AccessRestrictionStorage.IsUnauthorized(Arg.Any<string>()).Returns(true);
 
                 AppStart.Start();
+                Task.Delay(10).Wait();
 
                 SyncManager.DidNotReceive().ForceFullSync();
                 NavigationService.Received().Navigate<TokenResetViewModel>();
@@ -93,7 +96,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
             [Fact, LogIfTooSlow]
             public void ShowsTheOutdatedViewIfTheTokenWasRevokedAndTheAppIsOutdated()
             {
-                AccessRestrictionStorage.IsUnauthorized().Returns(true);
+                AccessRestrictionStorage.IsUnauthorized(Arg.Any<string>()).Returns(true);
                 AccessRestrictionStorage.IsClientOutdated().Returns(true);
 
                 AppStart.Start();
@@ -107,7 +110,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
             [Fact, LogIfTooSlow]
             public void ShowsTheOutdatedViewIfTheTokenWasRevokedAndTheApiIsOutdated()
             {
-                AccessRestrictionStorage.IsUnauthorized().Returns(true);
+                AccessRestrictionStorage.IsUnauthorized(Arg.Any<string>()).Returns(true);
                 AccessRestrictionStorage.IsApiOutdated().Returns(true);
 
                 AppStart.Start();
@@ -117,6 +120,28 @@ namespace Toggl.Foundation.Tests.MvvmCross
                 NavigationService.Received().Navigate<OutdatedAppViewModel>();
                 NavigationService.DidNotReceive().Navigate<TokenResetViewModel>();
                 LoginManager.DidNotReceive().GetDataSourceIfLoggedIn();
+            }
+
+            [Fact, LogIfTooSlow]
+            public void DoesNotShowTheUnauthorizedAccessViewIfUsersApiTokenChanged()
+            {
+                var oldApiToken = Guid.NewGuid().ToString();
+                var newApiToken = Guid.NewGuid().ToString();
+                var user = Substitute.For<IDatabaseUser>();
+                var dataSource = Substitute.For<ITogglDataSource>();
+                var userSource = Substitute.For<IUserSource>();
+                user.ApiToken.Returns(newApiToken);
+                userSource.Current().Returns(Observable.Return(user));
+                dataSource.User.Returns(userSource);
+                LoginManager.GetDataSourceIfLoggedIn().Returns(dataSource);
+                AccessRestrictionStorage.IsUnauthorized(Arg.Is(oldApiToken)).Returns(true);
+                AccessRestrictionStorage.IsApiOutdated().Returns(false);
+                AccessRestrictionStorage.IsClientOutdated().Returns(false);
+
+                AppStart.Start();
+                Task.Delay(10).Wait();
+
+                NavigationService.Received().Navigate<MainViewModel>();
             }
 
             [Fact, LogIfTooSlow]

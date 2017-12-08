@@ -21,7 +21,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             (Color.Onboarding.TrackPageBackgroundColor, Color.Onboarding.TrackPageBorderColor),
             (Color.Onboarding.LogPageBackgroundColor, Color.Onboarding.LogPageBorderColor),
+            #if DEBUG
             (Color.Onboarding.SummaryPageBackgroundColor, Color.Onboarding.SummaryPageBorderColor),
+            #endif
             (Color.Onboarding.LoginPageBackgroundColor, MvxColors.Transparent)
         };
 
@@ -96,7 +98,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             => navigationService.Navigate<LoginViewModel, LoginType>(LoginType.SignUp);
 
         private void skip()
-            => CurrentPage = LoginPage;
+            => CurrentPage = PageInfo.Length - 1;
 
         private bool nextCanExecute() => !IsLastPage;
 

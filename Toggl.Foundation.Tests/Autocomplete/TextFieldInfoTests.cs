@@ -170,6 +170,20 @@ namespace Toggl.Foundation.Tests.Autocomplete
             }
 
             [Fact, LogIfTooSlow]
+            public void RemovesTheProjectQueryFromTheLastAtSymbolIsPresent()
+            {
+                var newDescription = $"{Description}@something";
+                var longDescription = $"{newDescription}@else";
+
+                var textFieldInfo = TextFieldInfo.Empty
+                    .WithTextAndCursor(longDescription, longDescription.Length)
+                    .WithProjectInfo(WorkspaceId, ProjectId, ProjectName, ProjectColor)
+                    .RemoveProjectQueryFromDescriptionIfNeeded();
+
+                textFieldInfo.Text.Should().Be(newDescription);
+            }
+
+            [Fact, LogIfTooSlow]
             public void DoesNotChangeAnyPropertyIfThereIsNoProjectQueryInTheDescription()
             {
                 var textFieldInfo = CreateDefaultTextFieldInfo();
@@ -184,7 +198,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
         public sealed class RemoveTagQueryFromDescriptionIfNeeded : TextFieldInfoTest
         {
             [Fact, LogIfTooSlow]
-            public void RemovesTheProjectQueryIfAnyHashtagSymbolIsPresent()
+            public void RemovesTheTagQueryIfAnyHashtagSymbolIsPresent()
             {
                 var newDescription = $"{Description}#something";
 
@@ -196,8 +210,21 @@ namespace Toggl.Foundation.Tests.Autocomplete
             }
 
             [Fact, LogIfTooSlow]
-            public void DoesNotChangeAnyPropertyIfThereIsNoProjectQueryInTheDescription()
+            public void RemovesTheTagQueryFromTheLastAtSymbolIsPresent()
             {
+                var newDescription = $"{Description}#something";
+                var longDescription = $"{newDescription}#else";
+
+                var textFieldInfo = TextFieldInfo.Empty
+                    .WithTextAndCursor(longDescription, longDescription.Length)
+                    .RemoveTagQueryFromDescriptionIfNeeded();
+
+                textFieldInfo.Text.Should().Be(newDescription);
+            }
+
+            [Fact, LogIfTooSlow]
+            public void DoesNotChangeAnyPropertyIfThereIsNoTagQueryInTheDescription()
+            { 
                 var textFieldInfo = CreateDefaultTextFieldInfo();
 
                 var newTextFieldInfo =

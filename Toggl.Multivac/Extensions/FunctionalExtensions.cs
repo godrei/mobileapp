@@ -18,5 +18,14 @@ namespace Toggl.Multivac.Extensions
                 action(item);
             }
         }
+
+        public static IEnumerable<T> Do<T>(this IEnumerable<T> self, Action<T> action)
+        {
+            Ensure.Argument.IsNotNull(self, nameof(self));
+            Ensure.Argument.IsNotNull(action, nameof(action));
+
+            self.ForEach(action);
+            return self;
+        }
     }
 }
