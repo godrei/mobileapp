@@ -8,6 +8,7 @@ namespace Toggl.Foundation.MvvmCross.Services
         void EnterBackground();
         void EnterForeground();
 
+        IObservable<Unit> AppBecameActive { get; }
         IObservable<Unit> AppBecameActiveAfterAtLeast(TimeSpan timeInBackground);
     }
 }

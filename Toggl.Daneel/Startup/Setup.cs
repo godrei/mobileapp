@@ -81,7 +81,7 @@ namespace Toggl.Daneel
             var accessRestrictionStorage = new UserDataAccessRestrictionStorage(Version.Parse(version.ToString()));
             var apiErrorHandlingService = new ApiErrorHandlingService(navigationService, accessRestrictionStorage);
 
-            var backgroundService = new BackgroundService(timeService);
+            var backgroundService = new BackgroundService(timeService, TimeSpan.FromMinutes(5));
             Mvx.RegisterSingleton<IBackgroundService>(backgroundService);
 
             Func<ITogglDataSource, ISyncManager> createSyncManager(ITogglApi api)

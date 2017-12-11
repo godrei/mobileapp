@@ -18,7 +18,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             public BackgroundServiceTest()
             {
                 TimeService = Substitute.For<ITimeService>();
-                BackgroundService = new BackgroundService(TimeService);
+                BackgroundService = new BackgroundService(TimeService, TimeSpan.Zero);
             }
         }
 
@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact]
             public void ThrowsWhenTheArgumentIsNull()
             {
-                Action constructor = () => new BackgroundService(null);
+                Action constructor = () => new BackgroundService(null, TimeSpan.Zero);
 
                 constructor.ShouldThrow<ArgumentNullException>();
             }
