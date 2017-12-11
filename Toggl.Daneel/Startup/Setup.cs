@@ -88,7 +88,7 @@ namespace Toggl.Daneel
                 => dataSource => TogglSyncManager.CreateSyncManager(database, api, dataSource, timeService, scheduler);
 
             ITogglDataSource createDataSource(ITogglApi api)
-                => new TogglDataSource(database, timeService, apiErrorHandlingService, createSyncManager(api));
+                => new TogglDataSource(database, timeService, apiErrorHandlingService, backgroundService, createSyncManager(api));
 
             var loginManager = new LoginManager(apiFactory, database, googleService, accessRestrictionStorage, createDataSource);
 

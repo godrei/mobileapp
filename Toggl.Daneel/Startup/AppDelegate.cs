@@ -2,7 +2,7 @@
 using MvvmCross.iOS.Platform;
 using MvvmCross.Platform;
 using Foundation;
-using Toggl.Foundation.MvvmCross.Services;
+using Toggl.Foundation.Services;
 using UIKit;
 
 namespace Toggl.Daneel
