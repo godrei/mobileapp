@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Toggl.Multivac;
 
-namespace Toggl.Foundation.MvvmCross.Services
+namespace Toggl.Foundation.Services
 {
     public sealed class BackgroundService : IBackgroundService
     {

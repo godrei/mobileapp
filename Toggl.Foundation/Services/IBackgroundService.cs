@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reactive;
 
-namespace Toggl.Foundation.MvvmCross.Services
+namespace Toggl.Foundation.Services
 {
     public interface IBackgroundService
     {

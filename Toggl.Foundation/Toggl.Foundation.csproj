@@ -62,7 +62,9 @@
     <Compile Include="DataSources\TimeEntriesDataSource.cs" />
     <Compile Include="Login\IApiFactory.cs" />
     <Compile Include="Login\LoginManager.cs" />
+    <Compile Include="Services\BackgroundService.cs" />
     <Compile Include="Services\IApiErrorHandlingService.cs" />
+    <Compile Include="Services\IBackgroundService.cs" />
     <Compile Include="Sync\ConflictResolution\AlwaysOverwrite.cs" />
     <Compile Include="Sync\ConflictResolution\IConflictResolver.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\ClientSyncSelector.cs" />
