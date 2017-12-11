@@ -306,7 +306,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             Mvx.RegisterSingleton(dataSource);
 
-            await dataSource.SyncManager.ForceFullSync();
+            await dataSource.StartSyncing();
 
             IsLoading = false;
 
