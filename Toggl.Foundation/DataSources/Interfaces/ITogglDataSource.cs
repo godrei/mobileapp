@@ -18,7 +18,9 @@ namespace Toggl.Foundation.DataSources
         ISyncManager SyncManager { get; }
         IAutocompleteProvider AutocompleteProvider { get; }
 
+        IObservable<Unit> StartSyncing();
         IObservable<bool> HasUnsyncedData();
+
         IObservable<Unit> Logout();
     }
 }

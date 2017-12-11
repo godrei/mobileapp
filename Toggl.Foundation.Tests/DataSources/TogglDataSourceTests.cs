@@ -31,13 +31,14 @@ namespace Toggl.Foundation.Tests.DataSources
             protected ITogglDatabase Database { get; } = Substitute.For<ITogglDatabase>();
             protected ITimeService TimeService { get; } = Substitute.For<ITimeService>();
             protected ISyncManager SyncManager { get; } = Substitute.For<ISyncManager>();
+            protected IBackgroundService BackgroundService { get; } = Substitute.For<IBackgroundService>();
             protected IApiErrorHandlingService ApiErrorHandlingService { get; } = Substitute.For<IApiErrorHandlingService>();
             protected ISubject<SyncProgress> ProgressSubject = new Subject<SyncProgress>();
 
             public TogglDataSourceTest()
             {
                 SyncManager.ProgressObservable.Returns(ProgressSubject.AsObservable());
-                DataSource = new TogglDataSource(Database, TimeService, ApiErrorHandlingService, _ => SyncManager);
+                DataSource = new TogglDataSource(Database, TimeService, ApiErrorHandlingService, BackgroundService, _ => SyncManager);
             }
         }
 
@@ -105,6 +106,52 @@ namespace Toggl.Foundation.Tests.DataSources
 
                 emitsUnitValue.Should().BeTrue();
                 completed.Should().BeTrue();
+            }
+        }
+
+        public sealed class TheStartSyncingMethod : TogglDataSourceTest
+        {
+            [Fact]
+            public void SubscribesSyncManagerToTheBackgroundServiceSignal()
+            {
+                DataSource.StartSyncing();
+
+                SyncManager.Received().ForceFullSyncOnSignal(Arg.Is<IObservable<Unit>>(arg => arg == BackgroundService.AppBecameActive));
+            }
+
+            [Fact]
+            public void CallsForceFullSync()
+            {
+                DataSource.StartSyncing();
+
+                SyncManager.Received().ForceFullSync();
+            }
+
+            [Fact]
+            public void ReturnsAnObservableWhichEmitsWhenTheForceFullSyncObservableEmits()
+            {
+                bool emitted = false;
+                var forceFullSyncSubject = new Subject<SyncState>();
+                SyncManager.ForceFullSync().Returns(forceFullSyncSubject.AsObservable());
+
+                var observable = DataSource.StartSyncing();
+                observable.Subscribe(_ => emitted = true);
+                forceFullSyncSubject.OnNext(SyncState.Pull);
+
+                emitted.Should().BeTrue();
+            }
+
+            [Fact]
+            public void ReturnsAnObservableWhichDoesNotEmitWhenTheForceFullSyncObservableDoesNotEmit()
+            {
+                bool emitted = false;
+                var forceFullSyncSubject = new Subject<SyncState>();
+                SyncManager.ForceFullSync().Returns(forceFullSyncSubject.AsObservable());
+
+                var observable = DataSource.StartSyncing();
+                observable.Subscribe(_ => emitted = true);
+
+                emitted.Should().BeFalse();
             }
         }
 

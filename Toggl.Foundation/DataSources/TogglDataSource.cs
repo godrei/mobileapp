@@ -15,6 +15,7 @@ namespace Toggl.Foundation.DataSources
     {
         private readonly ITogglDatabase database;
         private readonly IApiErrorHandlingService apiErrorHandlingService;
+        private readonly IBackgroundService backgroundService;
 
         private IDisposable errorHandlingDisposable;
 
@@ -22,15 +23,18 @@ namespace Toggl.Foundation.DataSources
             ITogglDatabase database,
             ITimeService timeService,
             IApiErrorHandlingService apiErrorHandlingService,
+            IBackgroundService backgroundService,
             Func<ITogglDataSource, ISyncManager> createSyncManager)
         {
             Ensure.Argument.IsNotNull(database, nameof(database));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(apiErrorHandlingService, nameof(apiErrorHandlingService));
+            Ensure.Argument.IsNotNull(backgroundService, nameof(backgroundService));
             Ensure.Argument.IsNotNull(createSyncManager, nameof(createSyncManager));
 
             this.database = database;
             this.apiErrorHandlingService = apiErrorHandlingService;
+            this.backgroundService = backgroundService;
 
             User = new UserDataSource(database.User);
             Tags = new TagsDataSource(database.IdProvider, database.Tags, timeService);
@@ -56,6 +60,15 @@ namespace Toggl.Foundation.DataSources
 
         public ISyncManager SyncManager { get; }
         public IAutocompleteProvider AutocompleteProvider { get; }
+
+        public IObservable<Unit> StartSyncing()
+        {
+            SyncManager.ForceFullSyncOnSignal(
+                backgroundService.AppBecameActive);
+
+            return SyncManager.ForceFullSync()
+                .Select(_ => Unit.Default);
+        }
 
         public IObservable<bool> HasUnsyncedData()
             => Observable.Merge(
