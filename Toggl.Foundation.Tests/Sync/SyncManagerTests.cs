@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -687,6 +688,76 @@ namespace Toggl.Foundation.Tests.Sync
                 Orchestrator.Received().Start(Arg.Is(Push));
             }
 
+        }
+
+        public sealed class TheForceFullSyncOnSignalMethod : SyncManagerTestBase
+        {
+            [Fact]
+            public void DoesNotCallForceFullSyncWhenNoValueIsEmitted()
+            {
+                var observable = Observable.Never<Unit>();
+
+                SyncManager.ForceFullSyncOnSignal(observable);
+
+                Orchestrator.DidNotReceive().Start(Arg.Any<SyncState>());
+            }
+
+            [Fact]
+            public void CallsForceFullSyncWhenAValueIsEmitted()
+            {
+                var subject = new Subject<Unit>();
+                Queue.When(q => q.QueuePullSync())
+                    .Do(_ => Queue.Dequeue().Returns(Pull));
+
+                SyncManager.ForceFullSyncOnSignal(subject.AsObservable());
+                subject.OnNext(Unit.Default);
+
+                Queue.Received().QueuePullSync();
+                Orchestrator.Received().Start(Arg.Is(Pull));
+            }
+
+            [Fact]
+            public void UnsubscribesFromTheFirstSignalWhenCalledForTheSecondTime()
+            {
+                var subjectA = new Subject<Unit>();
+                var observableB = Observable.Never<Unit>();
+
+                SyncManager.ForceFullSyncOnSignal(subjectA.AsObservable());
+                SyncManager.ForceFullSyncOnSignal(observableB);
+
+                subjectA.OnNext(Unit.Default);
+
+                Queue.DidNotReceive().QueuePullSync();
+                Orchestrator.DidNotReceive().Start(Arg.Any<SyncState>());
+            }
+
+            [Fact]
+            public void UnsubscribesFromTheSignalWhenFreezing()
+            {
+                var subject = new Subject<Unit>();
+
+                SyncManager.ForceFullSyncOnSignal(subject.AsObservable());
+                SyncManager.Freeze();
+
+                subject.OnNext(Unit.Default);
+
+                Queue.DidNotReceive().QueuePullSync();
+                Orchestrator.DidNotReceive().Start(Arg.Any<SyncState>());
+            }
+
+            [Fact]
+            public void DoesNotStartTheStateMachineAfterItWasFrozen()
+            {
+                var subject = new Subject<Unit>();
+                Queue.When(q => q.QueuePullSync())
+                    .Do(_ => Queue.Dequeue().Returns(Pull));
+
+                SyncManager.Freeze();
+                SyncManager.ForceFullSyncOnSignal(subject.AsObservable());
+                subject.OnNext(Unit.Default);
+
+                Orchestrator.DidNotReceive().Start(Arg.Is<SyncState>(state => state != Sleep));
+            }
         }
     }
 }
