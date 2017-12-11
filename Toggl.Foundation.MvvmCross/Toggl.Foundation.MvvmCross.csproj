@@ -38,6 +38,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ApiErrorHandlingService.cs" />
+    <Compile Include="Services\BackgroundService.cs" />
+    <Compile Include="Services\IBackgroundService.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="App.cs" />
     <Compile Include="ViewModels\TimeEntriesLogViewModel.cs" />
