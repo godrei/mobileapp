@@ -2,11 +2,11 @@
 using FluentAssertions;
 using FsCheck;
 using NSubstitute;
-using Toggl.Foundation.MvvmCross.Services;
 using Xunit;
 using FsCheck.Xunit;
+using Toggl.Foundation.Services;
 
-namespace Toggl.Foundation.Tests.MvvmCross.Services
+namespace Toggl.Foundation.Tests.Services
 {
     public sealed class BackgroundServiceTests
     {
