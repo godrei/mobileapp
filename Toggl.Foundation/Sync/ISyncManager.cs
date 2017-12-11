@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive;
 
 namespace Toggl.Foundation.Sync
 {
@@ -10,6 +11,8 @@ namespace Toggl.Foundation.Sync
 
         IObservable<SyncState> PushSync();
         IObservable<SyncState> ForceFullSync();
+        void ForceFullSyncOnSignal(IObservable<Unit> signalSource);
+
         IObservable<SyncState> Freeze();
     }
 }
