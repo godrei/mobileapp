@@ -13,12 +13,10 @@ namespace Toggl.Foundation.Tests.Services
         public abstract class BackgroundServiceTest
         {
             protected readonly ITimeService TimeService;
-            protected readonly IBackgroundService BackgroundService;
 
             public BackgroundServiceTest()
             {
                 TimeService = Substitute.For<ITimeService>();
-                BackgroundService = new BackgroundService(TimeService, TimeSpan.Zero);
             }
         }
 
@@ -42,11 +40,12 @@ namespace Toggl.Foundation.Tests.Services
             public void DoesNotEmitAnythingWhenItHasNotEnterBackgroundFirst()
             {
                 bool emitted = false;
-                BackgroundService
-                    .AppBecameActiveAfterAtLeast(TimeSpan.Zero)
+                var backgroundService = new BackgroundService(TimeService, TimeSpan.Zero);
+                backgroundService
+                    .AppBecameActive
                     .Subscribe(_ => emitted = true);
 
-                BackgroundService.EnterForeground();
+                backgroundService.EnterForeground();
 
                 emitted.Should().BeFalse();
             }
@@ -55,13 +54,14 @@ namespace Toggl.Foundation.Tests.Services
             public void EmitsValueWhenEnteringForegroundAfterBeingInBackground()
             {
                 bool emitted = false;
+                var backgroundService = new BackgroundService(TimeService, TimeSpan.Zero);
                 TimeService.CurrentDateTime.Returns(now);
-                BackgroundService
-                    .AppBecameActiveAfterAtLeast(TimeSpan.Zero)
+                backgroundService
+                    .AppBecameActive
                     .Subscribe(_ => emitted = true);
 
-                BackgroundService.EnterBackground();
-                BackgroundService.EnterForeground();
+                backgroundService.EnterBackground();
+                backgroundService.EnterForeground();
 
                 emitted.Should().BeTrue();
             }
@@ -70,16 +70,17 @@ namespace Toggl.Foundation.Tests.Services
             public void DoesNotEmitAnythingWhenTheEnterForegroundIsCalledMultipleTimes()
             {
                 bool emitted = false;
+                var backgroundService = new BackgroundService(TimeService, limit);
                 TimeService.CurrentDateTime.Returns(now);
-                BackgroundService.EnterBackground();
+                backgroundService.EnterBackground();
                 TimeService.CurrentDateTime.Returns(now.Add(limit).AddMinutes(1));
-                BackgroundService.EnterForeground();
+                backgroundService.EnterForeground();
                 TimeService.CurrentDateTime.Returns(now.Add(limit).AddMinutes(1).Add(limit).AddMinutes(1));
-                BackgroundService
-                    .AppBecameActiveAfterAtLeast(limit)
+                backgroundService
+                    .AppBecameActive
                     .Subscribe(_ => emitted = true);
 
-                BackgroundService.EnterForeground();
+                backgroundService.EnterForeground();
 
                 emitted.Should().BeFalse();
             }
@@ -88,14 +89,15 @@ namespace Toggl.Foundation.Tests.Services
             public void EmitsAValueWhenEnteringForegroundAfterBeingInBackgroundForMoreThanTheLimit(NonNegativeInt limit, NonNegativeInt extraWaitingTime)
             {
                 bool emitted = false;
-                BackgroundService
-                    .AppBecameActiveAfterAtLeast(TimeSpan.FromMinutes(limit.Get))
+                var backgroundService = new BackgroundService(TimeService, TimeSpan.FromMinutes(limit.Get));
+                backgroundService
+                    .AppBecameActive
                     .Subscribe(_ => emitted = true);
                 TimeService.CurrentDateTime.Returns(now);
 
-                BackgroundService.EnterBackground();
+                backgroundService.EnterBackground();
                 TimeService.CurrentDateTime.Returns(now.AddMinutes(limit.Get).AddMinutes(extraWaitingTime.Get));
-                BackgroundService.EnterForeground();
+                backgroundService.EnterForeground();
 
                 emitted.Should().BeTrue();
             }
@@ -107,16 +109,16 @@ namespace Toggl.Foundation.Tests.Services
 
                 var limit = Math.Max(a.Get, b.Get);
                 var waitingTime = Math.Min(a.Get, b.Get);
-
+                var backgroundService = new BackgroundService(TimeService, TimeSpan.FromMinutes(limit));
                 bool emitted = false;
-                BackgroundService
-                    .AppBecameActiveAfterAtLeast(TimeSpan.FromMinutes(limit))
+                backgroundService
+                    .AppBecameActive
                     .Subscribe(_ => emitted = true);
                 TimeService.CurrentDateTime.Returns(now);
 
-                BackgroundService.EnterBackground();
+                backgroundService.EnterBackground();
                 TimeService.CurrentDateTime.Returns(now.AddMinutes(waitingTime));
-                BackgroundService.EnterForeground();
+                backgroundService.EnterForeground();
 
                 emitted.Should().BeFalse();
             }

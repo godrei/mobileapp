@@ -9,17 +9,17 @@ namespace Toggl.Foundation.Services
     public sealed class BackgroundService : IBackgroundService
     {
         private readonly ITimeService timeService;
-        private readonly TimeSpan defaultTimeInBackground;
+        private readonly TimeSpan timeInBackground;
 
         private DateTimeOffset? lastEnteredBackground { get; set; }
         private ISubject<TimeSpan> appBecameActiveSubject { get; }
 
-        public BackgroundService(ITimeService timeService, TimeSpan defaultTimeInBackground)
+        public BackgroundService(ITimeService timeService, TimeSpan timeInBackground)
         {
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
 
             this.timeService = timeService;
-            this.defaultTimeInBackground = defaultTimeInBackground;
+            this.timeInBackground = timeInBackground;
 
             appBecameActiveSubject = new Subject<TimeSpan>();
             lastEnteredBackground = null;
@@ -39,9 +39,6 @@ namespace Toggl.Foundation.Services
         }
 
         public IObservable<Unit> AppBecameActive
-            => AppBecameActiveAfterAtLeast(defaultTimeInBackground);
-
-        public IObservable<Unit> AppBecameActiveAfterAtLeast(TimeSpan timeInBackground)
             => appBecameActiveSubject
                 .AsObservable()
                 .Where(actualTimeSpentInBackground => actualTimeSpentInBackground >= timeInBackground)

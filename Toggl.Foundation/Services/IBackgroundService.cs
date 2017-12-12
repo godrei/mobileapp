@@ -9,6 +9,5 @@ namespace Toggl.Foundation.Services
         void EnterForeground();
 
         IObservable<Unit> AppBecameActive { get; }
-        IObservable<Unit> AppBecameActiveAfterAtLeast(TimeSpan timeInBackground);
     }
 }
