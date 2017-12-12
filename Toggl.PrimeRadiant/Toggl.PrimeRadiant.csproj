@@ -58,6 +58,7 @@
     <Compile Include="Models\IDatabaseWorkspaceFeature.cs" />
     <Compile Include="Models\IDatabaseWorkspaceFeatureCollection.cs" />
     <Compile Include="ConflictResolutionMode.cs" />
+    <Compile Include="Settings\ISettingsStorage.cs" />
     <Compile Include="SyncStatus.cs" />
     <Compile Include="UpdateResult\IConflictResolutionResult.cs" />
     <Compile Include="UpdateResult\CreateResult.cs" />
