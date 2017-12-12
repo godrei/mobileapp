@@ -18,6 +18,9 @@ namespace Toggl.Foundation.DataSources
         private readonly IBackgroundService backgroundService;
 
         private IDisposable errorHandlingDisposable;
+        private IDisposable signalDisposable;
+
+        private bool isLoggedIn;
 
         public TogglDataSource(
             ITogglDatabase database,
@@ -48,6 +51,7 @@ namespace Toggl.Foundation.DataSources
             SyncManager = createSyncManager(this);
 
             errorHandlingDisposable = SyncManager.ProgressObservable.Subscribe(onSyncError);
+            isLoggedIn = true;
         }
 
         public IUserSource User { get; }
@@ -63,8 +67,12 @@ namespace Toggl.Foundation.DataSources
 
         public IObservable<Unit> StartSyncing()
         {
-            SyncManager.ForceFullSyncOnSignal(
-                backgroundService.AppBecameActive);
+            if (isLoggedIn == false)
+                throw new InvalidOperationException("Cannot start syncing after the user logged out of the app.");
+
+            signalDisposable?.Dispose();
+            signalDisposable = backgroundService.AppBecameActive
+                .Subscribe((Unit _) => SyncManager.ForceFullSync());
 
             return SyncManager.ForceFullSync()
                 .Select(_ => Unit.Default);
@@ -84,6 +92,8 @@ namespace Toggl.Foundation.DataSources
         public IObservable<Unit> Logout()
             => SyncManager.Freeze()
                 .FirstAsync()
+                .Do(_ => isLoggedIn = false)
+                .Do(_ => stopSyncingOnSignal())
                 .SelectMany(_ => database.Clear())
                 .FirstAsync();
 
@@ -101,6 +111,11 @@ namespace Toggl.Foundation.DataSources
             {
                 throw new ArgumentException($"{nameof(TogglDataSource)} could not handle unknown sync error {exception.GetType().FullName}.", exception);
             }
+
+            stopSyncingOnSignal();
         }
+
+        private void stopSyncingOnSignal()
+            => signalDisposable?.Dispose();
     }
 }
