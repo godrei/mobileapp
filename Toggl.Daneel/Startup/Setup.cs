@@ -80,9 +80,9 @@ namespace Toggl.Daneel
             var googleService = new GoogleService();
             var apiFactory = new ApiFactory(environment, userAgent);
 
-            var userDefaultsStorage = new UserDefaultsStorage(timeService, Version.Parse(version.ToString()));
-            var deprecationHandlingService = new ApiErrorHandlingService(navigationService, userDefaultsStorage);
-            var apiErrorHandlingService = new ApiErrorHandlingService(navigationService, userDefaultsStorage);
+            var userDefaultsStorage = new UserDefaultsStorage();
+            var settingsStorage = new SettingsStorageService(timeService, userDefaultsStorage, Version.Parse(version.ToString()));
+            var apiErrorHandlingService = new ApiErrorHandlingService(navigationService, settingsStorage);
 
             Func<ITogglDataSource, ISyncManager> createSyncManager(ITogglApi api)
                 => dataSource => TogglSyncManager.CreateSyncManager(database, api, dataSource, timeService, scheduler);
@@ -92,8 +92,8 @@ namespace Toggl.Daneel
 
             Mvx.RegisterSingleton<ITimeService>(timeService);
             Mvx.RegisterSingleton<IBrowserService>(new BrowserService());
-            Mvx.RegisterSingleton<IOnboardingStorage>(userDefaultsStorage);
-            Mvx.RegisterSingleton<IAccessRestrictionStorage>(userDefaultsStorage);
+            Mvx.RegisterSingleton<IOnboardingStorage>(settingsStorage);
+            Mvx.RegisterSingleton<IAccessRestrictionStorage>(settingsStorage);
             Mvx.RegisterSingleton<IDialogService>(new DialogService((ITopViewControllerProvider)Presenter));
             Mvx.RegisterSingleton<ISuggestionProviderContainer>(
                 new SuggestionProviderContainer(
@@ -103,8 +103,8 @@ namespace Toggl.Daneel
             Mvx.RegisterSingleton<IApiErrorHandlingService>(apiErrorHandlingService);
 
             var togglApp = app as App;
-            var loginManager = new LoginManager(apiFactory, database, googleService, userDefaultsStorage, createDataSource);
-            togglApp.Initialize(loginManager, navigationService, userDefaultsStorage);
+            var loginManager = new LoginManager(apiFactory, database, googleService, settingsStorage, createDataSource);
+            togglApp.Initialize(loginManager, navigationService, settingsStorage);
         }
     }
 }
