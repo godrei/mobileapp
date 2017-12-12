@@ -114,9 +114,12 @@ namespace Toggl.Foundation.Tests.DataSources
             [Fact]
             public void SubscribesSyncManagerToTheBackgroundServiceSignal()
             {
+                var observable = Substitute.For<IObservable<Unit>>();
+                BackgroundService.AppBecameActive.Returns(observable);
+
                 DataSource.StartSyncing();
 
-                SyncManager.Received().ForceFullSyncOnSignal(Arg.Is<IObservable<Unit>>(arg => arg == BackgroundService.AppBecameActive));
+                observable.ReceivedWithAnyArgs().Subscribe(null);
             }
 
             [Fact]
@@ -152,6 +155,69 @@ namespace Toggl.Foundation.Tests.DataSources
                 observable.Subscribe(_ => emitted = true);
 
                 emitted.Should().BeFalse();
+            }
+
+            [Fact]
+            public void CallsForceFullSyncOnlyOnceWhenTheObservableDoesNotEmitAnyValues()
+            {
+                var observable = Observable.Never<Unit>();
+                BackgroundService.AppBecameActive.Returns(observable);
+
+                DataSource.StartSyncing();
+
+                SyncManager.Received(1).ForceFullSync();
+            }
+
+            [Fact]
+            public void CallsForceFullSyncWhenAValueIsEmitted()
+            {
+                var subject = new Subject<Unit>();
+                BackgroundService.AppBecameActive.Returns(subject.AsObservable());
+
+                DataSource.StartSyncing();
+                subject.OnNext(Unit.Default);
+
+                SyncManager.Received(2).ForceFullSync();
+            }
+
+            [Fact]
+            public void UnsubscribesFromTheFirstSignalWhenCalledForTheSecondTime()
+            {
+                var subjectA = new Subject<Unit>();
+                BackgroundService.AppBecameActive.Returns(subjectA.AsObservable());
+                DataSource.StartSyncing();
+                var observableB = Observable.Never<Unit>();
+                BackgroundService.AppBecameActive.Returns(observableB);
+                SyncManager.ClearReceivedCalls();
+
+                DataSource.StartSyncing();
+                subjectA.OnNext(Unit.Default);
+
+                SyncManager.Received(1).ForceFullSync();
+            }
+
+            [Fact]
+            public async ThreadingTask UnsubscribesFromTheSignalAfterLogout()
+            {
+                var subject = new Subject<Unit>();
+                BackgroundService.AppBecameActive.Returns(subject.AsObservable());
+
+                await DataSource.StartSyncing();
+                await DataSource.Logout();
+
+                subject.OnNext(Unit.Default);
+
+                await SyncManager.Received(1).ForceFullSync();
+            }
+
+            [Fact]
+            public async ThreadingTask ThrowsWhenStartSyncingIsCalledAfterLoggingOut()
+            {
+                await DataSource.Logout();
+
+                Action startSyncing = () => DataSource.StartSyncing().Wait();
+
+                startSyncing.ShouldThrow<InvalidOperationException>();
             }
         }
 
@@ -327,6 +393,23 @@ namespace Toggl.Foundation.Tests.DataSources
 
                 handling.ShouldThrow<ArgumentException>();
             }
+
+            [Fact]
+            public void UnsubscribesFromTheBackgroundServiceObservableWhenExceptionIsCaught()
+            {
+                var subject = new Subject<Unit>();
+                BackgroundService.AppBecameActive.Returns(subject.AsObservable());
+                DataSource.StartSyncing();
+                SyncManager.ClearReceivedCalls();
+                var exception = new UnauthorizedException(request, response);
+                ApiErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
+
+                ProgressSubject.OnError(exception);
+                subject.OnNext(Unit.Default);
+
+                SyncManager.DidNotReceive().ForceFullSync();
+            }
+
 
             public static IEnumerable<object> ApiExceptionsWhichAreNotThrowByTheProgressObservable()
                 => ApiExceptions.ClientExceptions
