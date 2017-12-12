@@ -11,8 +11,6 @@ namespace Toggl.Foundation.Sync
 
         IObservable<SyncState> PushSync();
         IObservable<SyncState> ForceFullSync();
-        void ForceFullSyncOnSignal(IObservable<Unit> signalSource);
-
         IObservable<SyncState> Freeze();
     }
 }

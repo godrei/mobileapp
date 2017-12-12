@@ -16,7 +16,6 @@ namespace Toggl.Foundation.Sync
         private readonly IStateMachineOrchestrator orchestrator;
 
         private bool isFrozen;
-        private IDisposable signalDisposable;
 
         private readonly ISubject<SyncProgress> progress;
 
@@ -58,13 +57,6 @@ namespace Toggl.Foundation.Sync
             }
         }
 
-        public void ForceFullSyncOnSignal(IObservable<Unit> signalSource)
-        {
-            signalDisposable?.Dispose();
-
-            signalDisposable = signalSource.Subscribe((Unit _) => ForceFullSync());
-        }
-
         public IObservable<SyncState> Freeze()
         {
             lock (stateLock)
@@ -73,7 +65,6 @@ namespace Toggl.Foundation.Sync
                 {
                     isFrozen = true;
                     orchestrator.Freeze();
-                    signalDisposable?.Dispose();
                 }
 
                 return IsRunningSync
