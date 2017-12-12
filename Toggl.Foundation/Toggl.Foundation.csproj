@@ -63,6 +63,7 @@
     <Compile Include="Login\IApiFactory.cs" />
     <Compile Include="Login\LoginManager.cs" />
     <Compile Include="Services\IApiErrorHandlingService.cs" />
+    <Compile Include="Services\SettingsStorageService.cs" />
     <Compile Include="Sync\ConflictResolution\AlwaysOverwrite.cs" />
     <Compile Include="Sync\ConflictResolution\IConflictResolver.cs" />
     <Compile Include="Sync\ConflictResolution\Selectors\ClientSyncSelector.cs" />
