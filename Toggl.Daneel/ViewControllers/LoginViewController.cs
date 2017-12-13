@@ -143,12 +143,6 @@ namespace Toggl.Daneel.ViewControllers
 
             bindingSet.Apply();
 
-            if (ViewModel.IsSignUp)
-            {
-                GoogleSignInImage.Hidden = true;
-                GoogleSignInButton.Hidden = true;
-            }
-
             EmailTextField.BecomeFirstResponder();
         }
 
