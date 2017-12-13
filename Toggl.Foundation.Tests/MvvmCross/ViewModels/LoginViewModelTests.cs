@@ -37,22 +37,36 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 Substitute.For<IApiErrorHandlingService>();
 
             protected override LoginViewModel CreateViewModel()
-                => new LoginViewModel(LoginManager, NavigationService, PasswordManagerService, ApiErrorHandlingService);
+                => new LoginViewModel(LoginManager,
+                                      OnboardingStorage,
+                                      NavigationService, 
+                                      PasswordManagerService, 
+                                      ApiErrorHandlingService);
         }
 
         public sealed class TheConstructor : LoginViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(FourParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool userLoginManager, bool userNavigationService, bool usePasswordManagerService, bool useDeprecationHandlingService)
+            [ClassData(typeof(FiveParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(
+                bool userLoginManager, 
+                bool useOnboardingStorage,
+                bool userNavigationService, 
+                bool usePasswordManagerService, 
+                bool useDeprecationHandlingService)
             {
                 var loginManager = userLoginManager ? LoginManager : null;
+                var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
                 var navigationService = userNavigationService ? NavigationService : null;
                 var passwordManagerService = usePasswordManagerService ? PasswordManagerService : null;
                 var deprecationHandlingService = useDeprecationHandlingService ? ApiErrorHandlingService : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new LoginViewModel(loginManager, navigationService, passwordManagerService, deprecationHandlingService);
+                    () => new LoginViewModel(loginManager, 
+                                             onboardingStorage, 
+                                             navigationService, 
+                                             passwordManagerService, 
+                                             deprecationHandlingService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();

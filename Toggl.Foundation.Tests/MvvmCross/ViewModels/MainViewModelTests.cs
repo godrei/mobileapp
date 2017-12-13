@@ -4,13 +4,13 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck.Xunit;
+using MvvmCross.Platform.Core;
 using NSubstitute;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
-using TimeEntry = Toggl.Foundation.Models.TimeEntry;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -21,7 +21,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected ISubject<SyncProgress> ProgressSubject { get; } = new Subject<SyncProgress>();
 
             protected override MainViewModel CreateViewModel()
-                => new MainViewModel(DataSource, TimeService, NavigationService);
+                => new MainViewModel(DataSource, TimeService, OnboardingStorage, NavigationService);
 
             protected override void AdditionalSetup()
             {
@@ -36,15 +36,19 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheConstructor : MainViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(ThreeParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useTimeService, bool useNavigationService)
+            [ClassData(typeof(FourParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, 
+                                                        bool useTimeService, 
+                                                        bool useOnboardingStorage,
+                                                        bool useNavigationService)
             {
                 var dataSource = useDataSource ? DataSource : null;
                 var timeService = useTimeService ? TimeService : null;
                 var navigationService = useNavigationService ? NavigationService : null;
+                var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new MainViewModel(dataSource, timeService, navigationService);
+                    () => new MainViewModel(dataSource, timeService, onboardingStorage, navigationService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -248,15 +252,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected override string ExpectedValue => Client;
 
             protected override string ExpectedEmptyValue => "";
-        }
-
-        public sealed class TheHasCurrentTimeEntryProperty : CurrentTimeEntrypropertyTest<bool>
-        {
-            protected override bool ActualValue => ViewModel.HasCurrentTimeEntry;
-
-            protected override bool ExpectedValue => true;
-
-            protected override bool ExpectedEmptyValue => false;
         }
     }
 }

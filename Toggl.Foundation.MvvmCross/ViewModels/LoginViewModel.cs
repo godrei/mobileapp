@@ -12,6 +12,7 @@ using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.Services;
 using Toggl.Multivac;
+using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave.Exceptions;
 using EmailType = Toggl.Multivac.Email;
 
@@ -27,6 +28,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public const string TermsOfServiceUrl = "https://toggl.com/legal/terms";
 
         private readonly ILoginManager loginManager;
+        private readonly IOnboardingStorage onboardingStorage;
         private readonly IMvxNavigationService navigationService;
         private readonly IPasswordManagerService passwordManagerService;
         private readonly IApiErrorHandlingService apiErrorHandlingService;
@@ -135,16 +137,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public LoginViewModel(
             ILoginManager loginManager,
+            IOnboardingStorage onboardingStorage,
             IMvxNavigationService navigationService,
             IPasswordManagerService passwordManagerService,
             IApiErrorHandlingService apiErrorHandlingService)
         {
             Ensure.Argument.IsNotNull(loginManager, nameof(loginManager));
+            Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(passwordManagerService, nameof(passwordManagerService));
             Ensure.Argument.IsNotNull(apiErrorHandlingService, nameof(apiErrorHandlingService));
 
             this.loginManager = loginManager;
+            this.onboardingStorage = onboardingStorage;
             this.navigationService = navigationService;
             this.passwordManagerService = passwordManagerService;
             this.apiErrorHandlingService = apiErrorHandlingService;
@@ -310,6 +315,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await dataSource.SyncManager.ForceFullSync();
 
             IsLoading = false;
+
+            onboardingStorage.SetIsNewUser(IsSignUp);
 
             await navigationService.Navigate<MainViewModel>();
         }

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Reactive.Linq;
-using Toggl.Foundation.Sync;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.Ultrawave.Exceptions;
 
-namespace Toggl.Foundation.Tests.Sync.States
+namespace Toggl.Foundation.Sync.States
 {
     internal abstract class BaseUnsyncableEntityState<TModel>
         where TModel : IBaseModel, IDatabaseSyncable

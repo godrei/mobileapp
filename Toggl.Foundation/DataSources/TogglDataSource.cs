@@ -8,6 +8,7 @@ using Toggl.Foundation.Sync;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Settings;
 
 namespace Toggl.Foundation.DataSources
 {

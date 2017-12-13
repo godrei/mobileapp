@@ -25,21 +25,25 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public abstract class TimeEntriesLogViewModelTest : BaseViewModelTests<TimeEntriesLogViewModel>
         {
             protected override TimeEntriesLogViewModel CreateViewModel()
-                => new TimeEntriesLogViewModel(DataSource, TimeService, NavigationService);
+                => new TimeEntriesLogViewModel(DataSource, TimeService, OnboardingStorage, NavigationService);
         }
 
         public sealed class TheConstructor : TimeEntriesLogViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(ThreeParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useTimeService, bool useNavigationService)
+            [ClassData(typeof(FourParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, 
+                                                        bool useTimeService, 
+                                                        bool useOnboardingStorage, 
+                                                        bool useNavigationService)
             {
                 var dataSource = useDataSource ? DataSource : null;
                 var timeService = useTimeService ? TimeService : null;
+                var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
                 var navigationService = useNavigationService ? NavigationService : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new TimeEntriesLogViewModel(dataSource, timeService, navigationService);
+                    () => new TimeEntriesLogViewModel(dataSource, timeService, onboardingStorage, navigationService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -49,17 +53,21 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheEmptyStateTitleProperty : TimeEntriesLogViewModelTest
         {
             [Fact, LogIfTooSlow]
-            public void ReturnsTheWelcomeStringIfTheIsWelcomePropertyIsTrue()
+            public async ThreadingTask ReturnsTheWelcomeStringIfTheIsNewUserPropertyIsTrue()
             {
-                ViewModel.IsWelcome = true;
+                OnboardingStorage.IsNewUser().Returns(true);
+
+                await ViewModel.Initialize();
 
                 ViewModel.EmptyStateTitle.Should().Be(Resources.TimeEntriesLogEmptyStateWelcomeTitle);
             }
 
             [Fact, LogIfTooSlow]
-            public void ReturnsTheDefaultStringIfTheIsWelcomePropertyIsFalse()
+            public async ThreadingTask ReturnsTheDefaultStringIfTheIsNewUserPropertyIsFalse()
             {
-                ViewModel.IsWelcome = false;
+                OnboardingStorage.IsNewUser().Returns(false);
+
+                await ViewModel.Initialize();
 
                 ViewModel.EmptyStateTitle.Should().Be(Resources.TimeEntriesLogEmptyStateTitle);
             }
@@ -68,17 +76,21 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheEmptyStateTextProperty : TimeEntriesLogViewModelTest
         {
             [Fact, LogIfTooSlow]
-            public void ReturnsTheWelcomeStringIfTheIsWelcomePropertyIsTrue()
+            public async ThreadingTask ReturnsTheWelcomeStringIfTheIsNewUserPropertyIsTrue()
             {
-                ViewModel.IsWelcome = true;
+                OnboardingStorage.IsNewUser().Returns(true);
+
+                await ViewModel.Initialize();
 
                 ViewModel.EmptyStateText.Should().Be(Resources.TimeEntriesLogEmptyStateWelcomeText);
             }
 
             [Fact, LogIfTooSlow]
-            public void ReturnsTheDefaultStringIfTheIsWelcomePropertyIsFalse()
+            public async ThreadingTask ReturnsTheDefaultStringIfTheIsNewUserPropertyIsFalse()
             {
-                ViewModel.IsWelcome = false;
+                OnboardingStorage.IsNewUser().Returns(false);
+
+                await ViewModel.Initialize();
 
                 ViewModel.EmptyStateText.Should().Be(Resources.TimeEntriesLogEmptyStateText);
             }
@@ -205,6 +217,28 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     ViewModel.TimeEntries.Any(c => c.Any(te => te.Id == 21)).Should().BeFalse();
                     ViewModel.TimeEntries.Aggregate(0, (acc, te) => acc + te.Count).Should().Be(InitialAmountOfTimeEntries);
                 }
+
+                [Fact, LogIfTooSlow]
+                public async ThreadingTask SetsTheIsWelcomePropertyToFalse()
+                {
+                    OnboardingStorage.IsNewUser().Returns(true);
+                    await ViewModel.Initialize();
+
+                    TimeEntryCreatedSubject.OnNext(NewTimeEntry.With((long)TimeSpan.FromHours(1).TotalSeconds));
+
+                    ViewModel.IsWelcome.Should().BeFalse();
+                }
+
+                [Fact, LogIfTooSlow]
+                public async ThreadingTask SetsTheUserIsNotNewFlagToFalseInTheStorage()
+                {
+                    OnboardingStorage.IsNewUser().Returns(true);
+                    await ViewModel.Initialize();
+
+                    TimeEntryCreatedSubject.OnNext(NewTimeEntry.With((long)TimeSpan.FromHours(1).TotalSeconds));
+
+                    OnboardingStorage.Received().SetIsNewUser(false);
+                }
             }
 
             public sealed class WhenReceivingAnEventFromTheTimeEntryUpdatedObservable : TimeEntryDataSourceObservableTest
@@ -328,7 +362,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public async void InitiatesPushSyncWhenThereIsARunningTimeEntry()
+            public async ThreadingTask InitiatesPushSyncWhenThereIsARunningTimeEntry()
             {
                 var timeEntryViewModel = createTimeEntryViewModel();
 
@@ -338,7 +372,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public async void DoesNotInitiatePushSyncWhenStartingFails()
+            public async ThreadingTask DoesNotInitiatePushSyncWhenStartingFails()
             {
                 var timeEntryViewModel = createTimeEntryViewModel();
                 DataSource.TimeEntries.Start(Arg.Any<StartTimeEntryDTO>())

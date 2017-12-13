@@ -1,4 +1,6 @@
-﻿namespace Toggl.Multivac
+﻿using System;
+
+namespace Toggl.Multivac
 {
     public enum BeginningOfWeek
     {
@@ -9,5 +11,11 @@
         Thursday = 4,
         Friday = 5,
         Saturday = 6
+    }
+
+    public static class BeginningOfWeekExtensions
+    {
+        public static DayOfWeek ToDayOfWeekEnum(this BeginningOfWeek self)
+            => (DayOfWeek)self;
     }
 }

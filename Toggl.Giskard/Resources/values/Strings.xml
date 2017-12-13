@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="SignUp">NEW TO TOGGL</string>
+    <string name="Login">LOG IN</string>
+    <string name="AppName">Toggl</string>
+    <string name="EmailAddress">Email address</string>
+</resources>

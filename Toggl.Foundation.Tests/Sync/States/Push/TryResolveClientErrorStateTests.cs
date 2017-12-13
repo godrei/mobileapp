@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.Sync;
-using Toggl.Foundation.Sync.States.Push;
+using Toggl.Foundation.Sync.States;
 using Xunit;
 using Toggl.Foundation.Tests.Helpers;
 using Toggl.PrimeRadiant;

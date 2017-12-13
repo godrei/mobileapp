@@ -1,7 +1,6 @@
 ﻿using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.iOS.Views;
-using MvvmCross.Plugins.Visibility;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Daneel.ViewSources;
 using Toggl.Foundation;
@@ -35,9 +34,20 @@ namespace Toggl.Daneel.ViewControllers
             //Suggestions table view
             bindingSet.Bind(tableViewSource).To(vm => vm.Suggestions);
             bindingSet.Bind(WelcomeView)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.IsEmpty)
-                      .WithConversion(new MvxVisibilityValueConverter());
+                      .For(v => v.BindVisible())
+                      .To(vm => vm.ShowWelcomeBack);
+            
+            bindingSet.Bind(NewUserTitleLabel)
+                      .For(v => v.BindVisible())
+                      .To(vm => vm.IsNewUser);
+            
+            bindingSet.Bind(NewUserDescriptionLabel)
+                      .For(v => v.BindVisible())
+                      .To(vm => vm.IsNewUser);
+
+            bindingSet.Bind(tableViewSource)
+                      .For(v => v.IsWelcome)
+                      .To(vm => vm.IsNewUser);
 
             bindingSet.Bind(tableViewSource)
                       .For(v => v.StartTimeEntryCommand)

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    local:MvxBind="BackgroundColor BackgroundColor"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_alignParentBottom="true"
+        android:layout_height="48dp"
+        android:layout_width="match_parent">
+        <Button
+            local:MvxBind="Click SignUpCommand"
+            android:background="@android:color/transparent"
+            android:text="@string/SignUp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_width="0dp" />
+        <Button
+            local:MvxBind="Click LoginCommand"
+            android:text="@string/Login"
+            android:background="@android:color/transparent"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_width="0dp" />
+    </LinearLayout>
+</RelativeLayout>

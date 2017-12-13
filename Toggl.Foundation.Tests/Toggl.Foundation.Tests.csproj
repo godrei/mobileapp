@@ -200,6 +200,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Autocomplete\QueryInfoTests.cs" />
     <Compile Include="Helpers\ApiExceptions.cs" />
     <Compile Include="MvvmCross\Services\ApiErrorHandlingServiceTests.cs" />
     <Compile Include="MvvmCross\ViewModels\EditDurationViewModelTests.cs" />
@@ -290,6 +291,10 @@
     <Compile Include="MvvmCross\ViewModels\OutdatedAppViewModelTests.cs" />
     <Compile Include="MvvmCross\ViewModels\TokenResetViewModelTests.cs" />
     <Compile Include="MvvmCross\ViewModels\ReportsViewModelTests.cs" />
+    <Compile Include="MvvmCross\ViewModels\ReportsCalendarViewModelTests.cs" />
+    <Compile Include="Reports\ReportsProviderTests.cs" />
+    <Compile Include="Reports\ProjectSummaryReportTests.cs" />
+    <Compile Include="MvvmCross\ViewModels\CalendarPageViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MvvmCross\ViewModels\StartTimeEntryViewModelTests.cs" />

@@ -5,7 +5,7 @@ using Foundation;
 using MvvmCross.Binding.ExtensionMethods;
 using MvvmCross.Binding.iOS.Views;
 using MvvmCross.Core.ViewModels;
-using Toggl.Daneel.Views;
+using Toggl.Daneel.Views;   
 using Toggl.Foundation;
 using Toggl.Foundation.Suggestions;
 using Toggl.Multivac.Extensions;
@@ -17,10 +17,13 @@ namespace Toggl.Daneel.ViewSources
     {
         private const int rowHeight = 64;
         private const int headerHeight = 45;
+        private const int emptyRowCount = 3;
         private const string cellIdentifier = nameof(SuggestionsViewCell);
         private const string emptyCellIdentifier = nameof(SuggestionsEmptyViewCell);
 
         private int maxNumberOfSuggestions;
+
+        public bool IsWelcome { get; set; }
 
         public IMvxAsyncCommand<Suggestion> StartTimeEntryCommand { get; set; }
 
@@ -40,6 +43,8 @@ namespace Toggl.Daneel.ViewSources
 
         public override UIView GetViewForHeader(UITableView tableView, nint section)
         {
+            if (IsWelcome) return null;
+
             var totalWidth = UIScreen.MainScreen.Bounds.Width;
             var header = new UIView(new CGRect(0, 0, totalWidth, 45))
             {
@@ -71,7 +76,12 @@ namespace Toggl.Daneel.ViewSources
         public override nint NumberOfSections(UITableView tableView) => 1;
 
         public override nint RowsInSection(UITableView tableview, nint section)
-            => ItemsSource.Count().Clamp(0, maxNumberOfSuggestions);
+        {
+            var count = ItemsSource.Count();
+            if (IsWelcome && count == 0) return emptyRowCount;
+
+            return ItemsSource.Count().Clamp(0, maxNumberOfSuggestions);
+        }
 
         protected override object GetItemAt(NSIndexPath indexPath)
         {
@@ -85,6 +95,7 @@ namespace Toggl.Daneel.ViewSources
 
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => rowHeight;
 
-        public override nfloat GetHeightForHeader(UITableView tableView, nint section) => headerHeight;
+        public override nfloat GetHeightForHeader(UITableView tableView, nint section) 
+            => IsWelcome ? 0 : headerHeight;
     }
 }

@@ -7,6 +7,7 @@ using NSubstitute;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac.Extensions;
+using Toggl.PrimeRadiant.Settings;
 using MonthPredicate = System.Func<int, bool>;
 using TimeEntry = Toggl.Foundation.Models.TimeEntry;
 
@@ -27,8 +28,9 @@ namespace Toggl.Foundation.Tests.Generators
                 {
                     var source = Substitute.For<ITogglDataSource>();
                     var timeService = Substitute.For<ITimeService>();
+                    var onboardingStorage = Substitute.For<IOnboardingStorage>();
                     var navigationService = Substitute.For<IMvxNavigationService>();
-                    var viewModel = new TimeEntriesLogViewModel(source, timeService, navigationService);
+                    var viewModel = new TimeEntriesLogViewModel(source, timeService, onboardingStorage, navigationService);
 
                     var year = yearGenerator.Sample(0, 1).First();
 

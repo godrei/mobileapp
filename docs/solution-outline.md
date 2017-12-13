@@ -53,15 +53,14 @@ Dependencies: Multivac, Foundation
 This project contains shared view models for all our app, and uses MvvmCross for IoC, UI bindings, and navigation within the individual apps. Only business logic related directly to specific UI components that cannot be handled easily in Foundation is dealt with here. Otherwise the project is kept as light as possible.
 This allows us to use a lot of UI behaviour between the apps, and keep the platform specific code minimal.
 
-
 ## :sunny: Daneel
+## :robot: Giskard
 
-Daneel is the Toggl iOS app.
+Daneel is the Toggl iOS app and Giskard is the Toggl Android app.
 
 Dependencies: Foundation.MvvmCross
 
-This project contains storyboards and minimal UI code binding to the view models of Foundation.MvvmCross. The only non-UI code in this project, are platform specific features that can not be handled otherwise.
-
+These projects contain .storyboard/.xib/.axml files and minimal UI code binding to the view models of Foundation.MvvmCross. The only non-UI code in this project are platform specific features that can not be handled otherwise.
 
 ## :vertical_traffic_light: Tests
 

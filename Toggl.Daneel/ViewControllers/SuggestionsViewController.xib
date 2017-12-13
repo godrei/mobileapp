@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SuggestionsViewController">
             <connections>
+                <outlet property="NewUserDescriptionLabel" destination="RDB-9s-6ng" id="KPO-wU-VVO"/>
+                <outlet property="NewUserTitleLabel" destination="vCi-z5-UyG" id="Qrb-eO-5oH"/>
                 <outlet property="SuggestionsTableView" destination="pTb-lb-7NH" id="name-outlet-pTb-lb-7NH"/>
                 <outlet property="WelcomeTextLabel" destination="Xgn-SJ-K2l" id="name-outlet-Xgn-SJ-K2l"/>
-                <outlet property="WelcomeTitleLabel" destination="Kl6-M5-oC1" id="name-outlet-Kl6-M5-oC1"/>
+                <outlet property="WelcomeTitleLabel" destination="Kl6-M5-oC1" id="OW3-kh-1Hm"/>
                 <outlet property="WelcomeView" destination="5Fq-dl-pgx" id="name-outlet-5Fq-dl-pgx"/>
                 <outlet property="view" destination="2" id="RRd-Eg-VrN"/>
             </connections>
@@ -26,6 +29,21 @@
                     <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </tableView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hey there!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vCi-z5-UyG">
+                    <rect key="frame" x="144" y="250" width="86.5" height="21"/>
+                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="18"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RDB-9s-6ng">
+                    <rect key="frame" x="38.5" y="283" width="297" height="61"/>
+                    <string key="text">Start your timer from the green button.
+Your most used time entries
+will appear here.</string>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" red="0.70980392156862748" green="0.73725490196078436" blue="0.75294117647058822" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5Fq-dl-pgx">
                     <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                     <subviews>
@@ -61,8 +79,12 @@ time entries will appear here.</string>
                 <constraint firstItem="pTb-lb-7NH" firstAttribute="leading" secondItem="2" secondAttribute="leading" id="CoZ-mh-DTd"/>
                 <constraint firstItem="5Fq-dl-pgx" firstAttribute="height" secondItem="pTb-lb-7NH" secondAttribute="height" id="D9W-Lf-qjN"/>
                 <constraint firstItem="5Fq-dl-pgx" firstAttribute="width" secondItem="pTb-lb-7NH" secondAttribute="width" id="HoS-va-29Q"/>
+                <constraint firstItem="vCi-z5-UyG" firstAttribute="centerX" secondItem="2" secondAttribute="centerX" id="K15-8B-nFz"/>
+                <constraint firstItem="vCi-z5-UyG" firstAttribute="top" secondItem="2" secondAttribute="top" constant="250" id="QQn-FZ-pgN"/>
                 <constraint firstItem="5Fq-dl-pgx" firstAttribute="centerY" secondItem="pTb-lb-7NH" secondAttribute="centerY" id="gQf-rS-o9K"/>
                 <constraint firstAttribute="trailing" secondItem="pTb-lb-7NH" secondAttribute="trailing" id="mNR-TR-LxZ"/>
+                <constraint firstItem="RDB-9s-6ng" firstAttribute="centerX" secondItem="vCi-z5-UyG" secondAttribute="centerX" id="qgK-xs-gVa"/>
+                <constraint firstItem="RDB-9s-6ng" firstAttribute="top" secondItem="vCi-z5-UyG" secondAttribute="bottom" constant="12" id="wbh-Qx-35D"/>
                 <constraint firstItem="5Fq-dl-pgx" firstAttribute="centerX" secondItem="pTb-lb-7NH" secondAttribute="centerX" id="y7z-UJ-IaV"/>
             </constraints>
         </view>

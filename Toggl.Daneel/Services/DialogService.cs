@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Toggl.Foundation.MvvmCross.Services;
+using Toggl.Multivac;
 using UIKit;
 using static Toggl.Multivac.Extensions.FunctionalExtensions;
 
@@ -8,10 +9,19 @@ namespace Toggl.Daneel.Services
 {
     public sealed class DialogService : IDialogService
     {
+        private ITopViewControllerProvider topViewControllerProvider;
+
+        public DialogService(ITopViewControllerProvider topViewControllerProvider)
+        {
+            Ensure.Argument.IsNotNull(topViewControllerProvider, nameof(topViewControllerProvider));
+            
+            this.topViewControllerProvider = topViewControllerProvider;
+        }
+
         public Task<bool> Confirm(
-            string title, 
-            string message, 
-            string confirmButtonText, 
+            string title,
+            string message,
+            string confirmButtonText,
             string dismissButtonText)
         {
             var tcs = new TaskCompletionSource<bool>();
@@ -24,7 +34,9 @@ namespace Toggl.Daneel.Services
             alert.AddAction(dismiss);
             alert.PreferredAction = confirm;
 
-            getPresentationController().PresentViewController(alert, true, null);
+            topViewControllerProvider
+                .TopViewController
+                .PresentViewController(alert, true, null);
 
             return tcs.Task;
         }
@@ -51,17 +63,11 @@ namespace Toggl.Daneel.Services
                         _ => tcs.SetResult(action.Text)))
                 .ForEach(actionSheet.AddAction);
 
-            getPresentationController().PresentViewController(actionSheet, true, null);
+            topViewControllerProvider
+                .TopViewController
+                .PresentViewController(actionSheet, true, null);
 
             return tcs.Task;
-        }
-
-        private UIViewController getPresentationController()
-        {
-            var current = UIApplication.SharedApplication.KeyWindow.RootViewController;
-            while (current.PresentedViewController != null)
-                current = current.PresentedViewController;
-            return current;
         }
     }
 }

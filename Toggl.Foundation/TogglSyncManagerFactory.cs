@@ -4,11 +4,9 @@ using Toggl.Foundation.Sync.States;
 using Toggl.PrimeRadiant;
 using Toggl.Ultrawave;
 using System.Reactive.Concurrency;
-using Toggl.Foundation.Tests.Sync.States;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant.Models;
 using Toggl.Foundation.DataSources;
-using Toggl.Foundation.Sync.States.Push;
 using System.Reactive.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
@@ -22,14 +20,17 @@ namespace Toggl.Foundation
             ITogglApi api,
             ITogglDataSource dataSource,
             ITimeService timeService,
+            TimeSpan? retryLimit,
             IScheduler scheduler)
         {
+            var random = new Random();
             var queue = new SyncStateQueue();
             var entryPoints = new StateMachineEntryPoints();
             var transitions = new TransitionHandlerProvider();
+            var apiDelay = new RetryDelayService(random, retryLimit);
             var delayCancellation = new Subject<Unit>();
             var delayCancellationObservable = delayCancellation.AsObservable().Replay();
-            ConfigureTransitions(transitions, database, api, dataSource, scheduler, timeService, entryPoints, delayCancellationObservable);
+            ConfigureTransitions(transitions, database, api, dataSource, apiDelay, scheduler, timeService, entryPoints, delayCancellationObservable);
             var stateMachine = new StateMachine(transitions, scheduler, delayCancellation);
             var orchestrator = new StateMachineOrchestrator(stateMachine, entryPoints);
 
@@ -41,13 +42,14 @@ namespace Toggl.Foundation
             ITogglDatabase database,
             ITogglApi api,
             ITogglDataSource dataSource,
+            IRetryDelayService apiDelay,
             IScheduler scheduler,
             ITimeService timeService,
             StateMachineEntryPoints entryPoints,
             IObservable<Unit> delayCancellation)
         {
             configurePullTransitions(transitions, database, api, dataSource, timeService, entryPoints.StartPullSync);
-            configurePushTransitions(transitions, database, api, dataSource, scheduler, entryPoints.StartPushSync, delayCancellation);
+            configurePushTransitions(transitions, database, api, dataSource, apiDelay, scheduler, entryPoints.StartPushSync, delayCancellation);
         }
 
         private static void configurePullTransitions(
@@ -82,6 +84,7 @@ namespace Toggl.Foundation
             ITogglDatabase database,
             ITogglApi api,
             ITogglDataSource dataSource,
+            IRetryDelayService apiDelay,
             IScheduler scheduler,
             StateResult entryPoint,
             IObservable<Unit> delayCancellation)
@@ -90,7 +93,7 @@ namespace Toggl.Foundation
             var pushingTagsFinished = configurePushTransitionsForTags(transitions, database, api, scheduler, pushingUsersFinished, delayCancellation);
             var pushingClientsFinished = configurePushTransitionsForClients(transitions, database, api, scheduler, pushingTagsFinished, delayCancellation);
             var pushingProjectsFinished = configurePushTransitionsForProjects(transitions, database, api, scheduler, pushingClientsFinished, delayCancellation);
-            configurePushTransitionsForTimeEntries(transitions, database, api, dataSource, scheduler, pushingProjectsFinished, delayCancellation);
+            configurePushTransitionsForTimeEntries(transitions, database, api, dataSource, apiDelay, scheduler, pushingProjectsFinished, delayCancellation);
         }
 
         private static IStateResult configurePushTransitionsForTimeEntries(
@@ -98,12 +101,12 @@ namespace Toggl.Foundation
             ITogglDatabase database,
             ITogglApi api,
             ITogglDataSource dataSource,
+            IRetryDelayService apiDelay,
             IScheduler scheduler,
             IStateResult entryPoint,
             IObservable<Unit> delayCancellation)
         {
             var rnd = new Random();
-            var apiDelay = new RetryDelayService(rnd);
             var statusDelay = new RetryDelayService(rnd);
 
             var push = new PushTimeEntriesState(database.TimeEntries);

@@ -1,5 +1,6 @@
 ﻿using System;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Sync.States;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 

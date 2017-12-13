@@ -29,6 +29,92 @@ namespace Toggl.Foundation.Tests.Sync
         }
 
         [Property]
+        public void ThrowsWhenTheSlowDelayExceedsTheLimit(byte limitsInSeconds)
+        {
+            if (limitsInSeconds == 0)
+                return;
+
+            var limit = TimeSpan.FromSeconds(limitsInSeconds);
+            var delay = new RetryDelayService(new Random(), limit);
+            TimeSpan maxDelay = TimeSpan.Zero;
+
+            Action waitingTooLong = () =>
+            {
+                while (true)
+                {
+                    var nextDelay = delay.NextSlowDelay();
+                    maxDelay = maxDelay > nextDelay ? maxDelay : nextDelay;
+                }
+            };
+
+            waitingTooLong.ShouldThrow<TimeoutException>();
+            maxDelay.Should().BeLessOrEqualTo(limit);
+        }
+
+        [Property]
+        public void ThrowsWhenTheFastDelayExceedsTheLimit(byte limitsInSeconds)
+        {
+            if (limitsInSeconds == 0)
+                return;
+
+            var limit = TimeSpan.FromSeconds(limitsInSeconds);
+            var delay = new RetryDelayService(new Random(), limit);
+            TimeSpan maxDelay = TimeSpan.Zero;
+
+            Action waitingTooLong = () =>
+            {
+                while (true)
+                {
+                    var nextDelay = delay.NextFastDelay();
+                    maxDelay = maxDelay > nextDelay ? maxDelay : nextDelay;
+                }
+            };
+
+            waitingTooLong.ShouldThrow<TimeoutException>();
+            maxDelay.Should().BeLessOrEqualTo(limit);
+        }
+
+        [Property]
+        public void DoesNotThrowWhenUsingSlowDelayAndWhenThereIsNotLimit(byte limitsInSeconds)
+        {
+            var limit = TimeSpan.FromSeconds(limitsInSeconds);
+            var delay = new RetryDelayService(new Random(), null);
+            TimeSpan maxDelay = TimeSpan.Zero;
+
+            Action waitingTooLong = () =>
+            {
+                do
+                {
+                    var nextDelay = delay.NextSlowDelay();
+                    maxDelay = maxDelay > nextDelay ? maxDelay : nextDelay;
+                } while (maxDelay <= limit);
+            };
+
+            waitingTooLong.ShouldNotThrow();
+            maxDelay.Should().BeGreaterThan(limit);
+        }
+
+        [Property]
+        public void DoesNotThrowWhenUsingFastDelayAndWhenThereIsNotLimit(byte limitsInSeconds)
+        {
+            var limit = TimeSpan.FromSeconds(limitsInSeconds);
+            var delay = new RetryDelayService(new Random(), null);
+            TimeSpan maxDelay = TimeSpan.Zero;
+
+            Action waitingTooLong = () =>
+            {
+                do
+                {
+                    var nextDelay = delay.NextFastDelay();
+                    maxDelay = maxDelay > nextDelay ? maxDelay : nextDelay;
+                } while (maxDelay <= limit);
+            };
+
+            waitingTooLong.ShouldNotThrow();
+            maxDelay.Should().BeGreaterThan(limit);
+        }
+
+        [Property]
         public void TheResetMethodClearsAnyHistoryAndTheServiceReturnsTheDefaultValueForSlowDelay(int seed, bool[] slowOrFast)
         {
             var delay = new RetryDelayService(new Random(seed));

@@ -6,6 +6,8 @@ namespace Toggl.Foundation.Sync
     {
         private readonly Random random;
 
+        private readonly TimeSpan? delayLimit;
+
         private double? lastDelay;
 
         private const double defaultFastDelay = 10;
@@ -16,9 +18,10 @@ namespace Toggl.Foundation.Sync
 
         private double randomSlowFactor => getRandomNumberBetween(1.5, 2);
 
-        public RetryDelayService(Random random)
+        public RetryDelayService(Random random, TimeSpan? delayLimit = null)
         {
             this.random = random;
+            this.delayLimit = delayLimit;
             Reset();
         }
 
@@ -36,7 +39,12 @@ namespace Toggl.Foundation.Sync
                 ? defaultDelay
                 : Math.Max(Math.Min(lastDelay.Value * factor, TimeSpan.MaxValue.TotalSeconds), 0);
 
-            return TimeSpan.FromSeconds(lastDelay.Value);
+            var delay = TimeSpan.FromSeconds(lastDelay.Value);
+
+            if (delayLimit.HasValue && delay > delayLimit)
+                throw new TimeoutException($"Retry delay {delay.TotalSeconds}s exceeded the maximum delay limit {delayLimit.Value.TotalSeconds}s.");
+
+            return delay;
         }
 
         private double getRandomNumberBetween(double min, double max)

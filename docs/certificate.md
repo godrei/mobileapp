@@ -6,6 +6,12 @@ When testing the mobile app, one should always use the staging environment. Xama
 
 For integration tests we [disabled certificate checks entirely](https://github.com/toggl/mobileapp/blob/develop/Toggl.Ultrawave.Tests.Integration/Helper/User.cs#L22), since they are a controlled environment.
 
+## Android App :robot:
+
+1. Request the certificate link on #mobile-dev (it's pinned, but you can always ask if you can't find it).
+2. Open it, give it a name and click install. 
+3. There is no step 3. Android is simple.
+
 ## iOS App :iphone:
 
 1. Request the certificate link on #mobile-dev (it's pinned, but you can always ask if you can't find it).

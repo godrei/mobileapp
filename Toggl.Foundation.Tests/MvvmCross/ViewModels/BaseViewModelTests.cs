@@ -3,6 +3,7 @@ using NSubstitute;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
@@ -15,6 +16,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         protected ITimeService TimeService { get; } = Substitute.For<ITimeService>();
         protected ITogglDatabase Database { get; } = Substitute.For<ITogglDatabase>();
         protected ITogglDataSource DataSource { get; } = Substitute.For<ITogglDataSource>();
+
+        protected IOnboardingStorage OnboardingStorage { get; } = Substitute.For<IOnboardingStorage>();
 
         protected TViewModel ViewModel { get; private set; }
 

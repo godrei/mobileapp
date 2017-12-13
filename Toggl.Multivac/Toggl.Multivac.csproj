@@ -65,6 +65,7 @@
     <Compile Include="Models\Reports\IProjectSummary.cs" />
     <Compile Include="Models\Reports\IProjectsSummary.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="CalendarMonth.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

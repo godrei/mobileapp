@@ -28,7 +28,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected ISuggestionProviderContainer Container { get; } = Substitute.For<ISuggestionProviderContainer>();
 
             protected override SuggestionsViewModel CreateViewModel()
-                => new SuggestionsViewModel(DataSource, Container, TimeService);
+                => new SuggestionsViewModel(DataSource, OnboardingStorage, Container, TimeService);
 
             protected void SetProviders(params ISuggestionProvider[] providers)
             {
@@ -39,15 +39,19 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheConstructor : SuggestionsViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(ThreeParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useContainer, bool useTimeService)
+            [ClassData(typeof(FourParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, 
+                                                        bool useOnboardingStorage, 
+                                                        bool useContainer, 
+                                                        bool useTimeService)
             {
                 var container = useContainer ? Container : null;
                 var dataSource = useDataSource ? DataSource : null;
                 var timeService = useTimeService ? TimeService : null;
+                var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new SuggestionsViewModel(dataSource, container, timeService);
+                    () => new SuggestionsViewModel(dataSource, onboardingStorage, container, timeService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -155,7 +159,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public async void InitiatesPushSyncWhenStartingSucceeds()
+            public async Task InitiatesPushSyncWhenStartingSucceeds()
             {
                 var suggestion = createSuggestion();
 
@@ -165,7 +169,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public async void DoesNotInitiatePushSyncWhenStartingFails()
+            public async Task DoesNotInitiatePushSyncWhenStartingFails()
             {
                 var suggestion = createSuggestion();
                 DataSource.TimeEntries.Start(Arg.Any<StartTimeEntryDTO>())

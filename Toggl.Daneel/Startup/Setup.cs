@@ -21,6 +21,7 @@ using Toggl.Foundation.Sync;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Realm;
+using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave;
 using Toggl.Ultrawave.Network;
 using UIKit;
@@ -42,7 +43,7 @@ namespace Toggl.Daneel
         {
         }
 
-        public Setup(MvxApplicationDelegate applicationDelegate, IMvxIosViewPresenter presenter)
+        private Setup(MvxApplicationDelegate applicationDelegate, IMvxIosViewPresenter presenter)
             : base(applicationDelegate, presenter)
         {
         }
@@ -78,21 +79,22 @@ namespace Toggl.Daneel
 
             var googleService = new GoogleService();
             var apiFactory = new ApiFactory(environment, userAgent);
-            var accessRestrictionStorage = new UserDataAccessRestrictionStorage(Version.Parse(version.ToString()));
-            var apiErrorHandlingService = new ApiErrorHandlingService(navigationService, accessRestrictionStorage);
-
+            var userDefaultsStorage = new UserDefaultsStorage(timeService, Version.Parse(version.ToString()));
+            var deprecationHandlingService = new ApiErrorHandlingService(navigationService, userDefaultsStorage);
+            var apiErrorHandlingService = new ApiErrorHandlingService(navigationService, userDefaultsStorage);
+            var retryDelayLimit = TimeSpan.FromSeconds(60);
+            
             Func<ITogglDataSource, ISyncManager> createSyncManager(ITogglApi api)
-                => dataSource => TogglSyncManager.CreateSyncManager(database, api, dataSource, timeService, scheduler);
+                => dataSource => TogglSyncManager.CreateSyncManager(database, api, dataSource, timeService, retryDelayLimit, scheduler);
 
             ITogglDataSource createDataSource(ITogglApi api)
                 => new TogglDataSource(database, timeService, apiErrorHandlingService, createSyncManager(api));
 
-            var loginManager = new LoginManager(apiFactory, database, googleService, accessRestrictionStorage, createDataSource);
-
             Mvx.RegisterSingleton<ITimeService>(timeService);
-            Mvx.RegisterSingleton<IDialogService>(new DialogService());
-            Mvx.RegisterSingleton<IAccessRestrictionStorage>(accessRestrictionStorage);
             Mvx.RegisterSingleton<IBrowserService>(new BrowserService());
+            Mvx.RegisterSingleton<IOnboardingStorage>(userDefaultsStorage);
+            Mvx.RegisterSingleton<IAccessRestrictionStorage>(userDefaultsStorage);
+            Mvx.RegisterSingleton<IDialogService>(new DialogService((ITopViewControllerProvider)Presenter));
             Mvx.RegisterSingleton<ISuggestionProviderContainer>(
                 new SuggestionProviderContainer(
                     new MostUsedTimeEntrySuggestionProvider(database, timeService)
@@ -101,7 +103,8 @@ namespace Toggl.Daneel
             Mvx.RegisterSingleton<IApiErrorHandlingService>(apiErrorHandlingService);
 
             var togglApp = app as App;
-            togglApp.Initialize(loginManager, navigationService, accessRestrictionStorage);
+            var loginManager = new LoginManager(apiFactory, database, googleService, userDefaultsStorage, createDataSource);
+            togglApp.Initialize(loginManager, navigationService, userDefaultsStorage);
         }
     }
 }

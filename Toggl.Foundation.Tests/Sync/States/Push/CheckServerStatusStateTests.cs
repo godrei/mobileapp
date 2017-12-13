@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using FluentAssertions;
-using FsCheck.Xunit;
 using Microsoft.Reactive.Testing;
 using NSubstitute;
 using Toggl.Foundation.Sync;
-using Toggl.Foundation.Sync.States.Push;
+using Toggl.Foundation.Sync.States;
 using Toggl.Ultrawave;
 using Toggl.Ultrawave.Exceptions;
 using Toggl.Ultrawave.Network;
@@ -187,6 +184,20 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
             delayCancellation.OnNext(Unit.Default);
 
             transition.Result.Should().Be(state.ServerIsAvailable);
+        }
+
+        [Fact, LogIfTooSlow]
+        public void CompletesEvenThoughTheRetryDelayIsNotOverButTheCancellationObservableIsNotifiedOfNewValue()
+        {
+            api.Status.IsAvailable().Returns(Observable.Throw<Unit>(new InternalServerErrorException(request, response)));
+            apiDelay.NextSlowDelay().Returns(TimeSpan.FromSeconds(10));
+
+            ITransition transition = null;
+            state.Start().Subscribe(t => transition = t);
+            scheduler.AdvanceBy(TimeSpan.FromSeconds(1).Ticks);
+            delayCancellation.OnNext(Unit.Default);
+
+            transition.Result.Should().Be(state.Retry);
         }
 
         public static object[] ServerExceptionsOtherThanInternalServerErrorException()

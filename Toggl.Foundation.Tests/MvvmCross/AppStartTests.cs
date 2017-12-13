@@ -10,8 +10,8 @@ using Toggl.Foundation.MvvmCross;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
-using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
+using Toggl.PrimeRadiant.Settings;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross

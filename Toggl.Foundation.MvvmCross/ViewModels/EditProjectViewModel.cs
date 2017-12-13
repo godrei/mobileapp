@@ -147,7 +147,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task pickWorkspace()
         {
-            var parameters = WorkspaceParameters.Create(workspaceId, Resources.Workspaces, allowQuerying: true);
+            var parameters = WorkspaceParameters.Create(workspaceId, Resources.Workspaces, allowQuerying: false);
             var selectedWorkspaceId = 
                 await navigationService
                     .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(parameters);

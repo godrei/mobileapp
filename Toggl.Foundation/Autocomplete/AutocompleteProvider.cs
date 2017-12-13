@@ -22,36 +22,12 @@ namespace Toggl.Foundation.Autocomplete
         }
 
         public IObservable<IEnumerable<AutocompleteSuggestion>> Query(TextFieldInfo info)
-            => Query(ParseFieldInfo(info));
+            => Query(QueryInfo.ParseFieldInfo(info));
 
         public IObservable<IEnumerable<AutocompleteSuggestion>> Query(QueryInfo queryInfo)
         {
             var wordsToQuery = queryInfo.Text.Split(' ').Where(word => !string.IsNullOrEmpty(word)).Distinct();
             return querySuggestions(wordsToQuery, queryInfo.SuggestionType);
-        }
-
-        public QueryInfo ParseFieldInfo(TextFieldInfo info)
-        {
-            if (string.IsNullOrEmpty(info.Text))
-                return new QueryInfo(info.Text ?? "", AutocompleteSuggestionType.TimeEntries);
-
-            var querySymbols = info.ProjectId != null ? QuerySymbols.ProjectSelected : QuerySymbols.All;
-
-            var stringToSearch = info.Text.Substring(0, info.DescriptionCursorPosition);
-            var indexOfQuerySymbol = stringToSearch.LastIndexOfAny(querySymbols);
-            if (indexOfQuerySymbol >= 0)
-            {
-                var startingIndex = indexOfQuerySymbol + 1;
-                var stringLength = info.Text.Length - indexOfQuerySymbol - 1;
-                var suggestion = 
-                    stringToSearch[indexOfQuerySymbol] == QuerySymbols.Projects 
-                    ? AutocompleteSuggestionType.Projects
-                    : AutocompleteSuggestionType.Tags;
-
-                return new QueryInfo(info.Text.Substring(startingIndex, stringLength), suggestion);
-            }
-
-            return new QueryInfo(info.Text, AutocompleteSuggestionType.TimeEntries);
         }
 
         private IObservable<IEnumerable<AutocompleteSuggestion>> querySuggestions(

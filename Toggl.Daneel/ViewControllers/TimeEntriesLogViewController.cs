@@ -1,14 +1,11 @@
 ﻿using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.iOS.Views;
-using MvvmCross.Plugins.Color.iOS;
 using MvvmCross.Plugins.Visibility;
-using Toggl.Foundation;
-using Toggl.Foundation.MvvmCross.Helper;
-using Toggl.Foundation.MvvmCross.ViewModels;
-using Toggl.Daneel.ViewSources;
-using UIKit;
 using Toggl.Daneel.Presentation.Attributes;
+using Toggl.Daneel.ViewSources;
+using Toggl.Foundation.MvvmCross.ViewModels;
+using UIKit;
 
 namespace Toggl.Daneel.ViewControllers
 {

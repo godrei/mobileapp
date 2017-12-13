@@ -1,7 +1,5 @@
 ﻿using System;
-using CoreAnimation;
 using CoreGraphics;
-using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.iOS.Views;
@@ -16,6 +14,7 @@ using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
+using static Toggl.Foundation.MvvmCross.Helper.Animation;
 
 namespace Toggl.Daneel.ViewControllers
 {
@@ -23,12 +22,13 @@ namespace Toggl.Daneel.ViewControllers
     public partial class MainViewController : MvxViewController<MainViewModel>
     {
         private const float animationAngle = 0.1f;
+        private const float showCardDelay = 0.1f;
 
         private readonly UIButton reportsButton = new UIButton(new CGRect(0, 0, 40, 40));
         private readonly UIButton settingsButton = new UIButton(new CGRect(0, 0, 40, 40));
         private readonly UIImageView titleImage = new UIImageView(UIImage.FromBundle("togglLogo"));
 
-        private bool scrollViewInitialized;
+        private bool viewInitialized;
 
         public MainViewController()
             : base(nameof(MainViewController), null)
@@ -68,16 +68,6 @@ namespace Toggl.Daneel.ViewControllers
                       .To(vm => vm.EditTimeEntryCommand);
 
             //Visibility
-            bindingSet.Bind(CurrentTimeEntryCard)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.HasCurrentTimeEntry)
-                      .WithConversion(visibilityConverter);
-
-            bindingSet.Bind(StartTimeEntryButton)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.HasCurrentTimeEntry)
-                      .WithConversion(invertedVisibilityConverter);
-
             bindingSet.Bind(SpiderBroImageView)
                       .For(v => v.BindVisibility())
                       .To(vm => vm.SpiderIsVisible)
@@ -110,8 +100,22 @@ namespace Toggl.Daneel.ViewControllers
                                    v => v.CurrentTimeEntryTask,
                                    v => v.CurrentTimeEntryClient,
                                    v => v.CurrentTimeEntryProjectColor);
-            
+
             bindingSet.Apply();
+        }
+
+        internal void OnTimeEntryCardVisibilityChanged(bool visible)
+        {
+            if (!viewInitialized) return;
+
+            if (visible)
+            {
+                showTimeEntryCard();
+            }
+            else
+            {
+                hideTimeEntryCard();
+            }
         }
 
         public override void ViewWillAppear(bool animated)
@@ -133,9 +137,9 @@ namespace Toggl.Daneel.ViewControllers
         {
             base.ViewDidLayoutSubviews();
 
-            if (scrollViewInitialized) return;
+            if (viewInitialized) return;
 
-            scrollViewInitialized = true;
+            viewInitialized = true;
             MainPagedScrollView.SetContentOffset(new CGPoint(0, 0), false);
         }
 
@@ -148,15 +152,6 @@ namespace Toggl.Daneel.ViewControllers
                 return TimeEntriesLogContainer;
 
             throw new ArgumentOutOfRangeException(nameof(viewController), "Received unexpected ViewController type");
-        }
-
-        internal void AnimatePlayButton()
-        {
-            AnimationExtensions.Animate(
-                Animation.Timings.EnterTiming,
-                Animation.Curves.EaseOut,
-                () => StartTimeEntryButton.Transform = CGAffineTransform.MakeScale(1f, 1f)
-            );
         }
 
         private void prepareViews()
@@ -180,6 +175,10 @@ namespace Toggl.Daneel.ViewControllers
             CurrentTimeEntryCard.Layer.BorderColor = Color.TimeEntriesLog.ButtonBorder.ToNativeColor().CGColor;
             CurrentTimeEntryElapsedTimeLabel.Font = CurrentTimeEntryElapsedTimeLabel.Font.GetMonospacedDigitFont();
 
+            // Card animations
+            StopTimeEntryButton.Hidden = true;
+            CurrentTimeEntryCard.Hidden = true;
+
             //Hide play button for later animating it
             StartTimeEntryButton.Transform = CGAffineTransform.MakeScale(0.01f, 0.01f);
 
@@ -193,11 +192,46 @@ namespace Toggl.Daneel.ViewControllers
             ScrollViewTopConstraint.AdaptForIos10(NavigationController.NavigationBar);
         }
 
+        private void showTimeEntryCard()
+        {
+            StopTimeEntryButton.Hidden = false;
+            CurrentTimeEntryCard.Hidden = false;
+
+            AnimationExtensions.Animate(Timings.EnterTiming, showCardDelay, Curves.EaseOut,
+                () => StartTimeEntryButton.Transform = CGAffineTransform.MakeScale(0.01f, 0.01f),
+                () =>
+                {
+                    AnimationExtensions.Animate(Timings.LeaveTimingFaster, Curves.EaseIn,
+                        () => StopTimeEntryButton.Transform = CGAffineTransform.MakeScale(1.0f, 1.0f));
+
+                    AnimationExtensions.Animate(Timings.LeaveTiming, Curves.CardOutCurve,
+                        () => CurrentTimeEntryCard.Transform = CGAffineTransform.MakeTranslation(0, 0));
+                });
+        }
+
+        private void hideTimeEntryCard()
+        {
+            AnimationExtensions.Animate(Timings.LeaveTimingFaster, Curves.EaseIn,
+                () => StopTimeEntryButton.Transform = CGAffineTransform.MakeScale(0.01f, 0.01f),
+                () => StopTimeEntryButton.Hidden = true);
+
+            AnimationExtensions.Animate(Timings.LeaveTiming, Curves.CardOutCurve,
+                () => CurrentTimeEntryCard.Transform = CGAffineTransform.MakeTranslation(0, CurrentTimeEntryCard.Frame.Height),
+                () =>
+                {
+                    CurrentTimeEntryCard.Hidden = true;
+
+                    AnimationExtensions.Animate(Timings.EnterTiming, Curves.EaseOut,
+                        () => StartTimeEntryButton.Transform = CGAffineTransform.MakeScale(1f, 1f)
+                    );
+                });
+        }
+
         private void animateSpider()
         {
             SpiderBroImageView.Transform = CGAffineTransform.MakeRotation(-animationAngle);
 
-            UIView.Animate(Animation.Timings.SpiderBro, 0, UIViewAnimationOptions.Autoreverse | UIViewAnimationOptions.Repeat, 
+            UIView.Animate(Timings.SpiderBro, 0, UIViewAnimationOptions.Autoreverse | UIViewAnimationOptions.Repeat,
                 () => SpiderBroImageView.Transform = CGAffineTransform.MakeRotation(animationAngle), animateSpider);
         }
     }

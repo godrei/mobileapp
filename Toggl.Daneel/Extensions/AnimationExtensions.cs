@@ -15,17 +15,20 @@ namespace Toggl.Daneel.Extensions
             => new UICubicTimingParameters(
                 new CGPoint(self.P0, self.P1),
                 new CGPoint(self.P2, self.P3)
-            );
+        );
 
         public static void Animate(double duration, CubicBezierCurve curve, Action changes, Action completion = null)
+            => Animate(duration, 0.0f, curve, changes, completion);
+
+        public static void Animate(double duration, nfloat delay, CubicBezierCurve curve, Action changes, Action completion = null)
         {
-            var buttonAnimator = new UIViewPropertyAnimator(duration, curve.ToCubicTimingParameters());
-            buttonAnimator.AddAnimations(changes);
+            var propertyAnimator = new UIViewPropertyAnimator(duration, curve.ToCubicTimingParameters());
+            propertyAnimator.AddAnimations(changes, delay);
 
             if (completion != null)
-                buttonAnimator.AddCompletion(_ => completion());
-            
-            buttonAnimator.StartAnimation();
+                propertyAnimator.AddCompletion(_ => completion());
+
+            propertyAnimator.StartAnimation();
         }
     }
 }

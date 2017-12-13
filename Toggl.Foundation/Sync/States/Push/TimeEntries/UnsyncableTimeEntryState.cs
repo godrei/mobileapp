@@ -2,7 +2,7 @@
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
-namespace Toggl.Foundation.Tests.Sync.States
+namespace Toggl.Foundation.Sync.States
 {
     internal sealed class UnsyncableTimeEntryState : BaseUnsyncableEntityState<IDatabaseTimeEntry>
     {

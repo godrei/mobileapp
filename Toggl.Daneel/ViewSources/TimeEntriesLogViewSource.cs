@@ -14,6 +14,8 @@ namespace Toggl.Daneel.ViewSources
 {
     public sealed class TimeEntriesLogViewSource : GroupedCollectionTableViewSource<TimeEntryViewModel>
     {
+        private const int bottomPadding = 64;
+
         private const string cellIdentifier = nameof(TimeEntriesLogViewCell);
         private const string headerCellIdentifier = nameof(TimeEntriesLogHeaderViewCell);
         
@@ -25,6 +27,8 @@ namespace Toggl.Daneel.ViewSources
         public TimeEntriesLogViewSource(UITableView tableView)
             : base(tableView, cellIdentifier, headerCellIdentifier)
         {
+            tableView.TableFooterView = new UIView(new CGRect(0, 0, UIScreen.MainScreen.Bounds.Width, bottomPadding));
+            tableView.TableFooterView.BackgroundColor = Color.TimeEntriesLog.SectionFooter.ToNativeColor();
             tableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
             tableView.RegisterNibForCellReuse(TimeEntriesLogViewCell.Nib, cellIdentifier);
             tableView.RegisterNibForHeaderFooterViewReuse(TimeEntriesLogHeaderViewCell.Nib, headerCellIdentifier);

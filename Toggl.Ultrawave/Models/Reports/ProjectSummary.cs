@@ -1,7 +1,9 @@
-﻿using Toggl.Multivac.Models.Reports;
+﻿using Toggl.Multivac;
+using Toggl.Multivac.Models.Reports;
 
 namespace Toggl.Ultrawave.Models.Reports
 {
+    [Preserve(AllMembers = true)]
     internal sealed class ProjectSummary : IProjectSummary
     {
         public long UserId { get; set; }

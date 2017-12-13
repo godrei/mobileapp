@@ -9,5 +9,7 @@ namespace Toggl.Foundation.Helper
             "#F1C33F", "#E20505", "#4BC800", "#04BB9B", "#E19A86",
             "#3750B5", "#A01AA5", "#205500", "#000000"
         };
+
+        public static string NoProject { get; internal set; }
     }
 }

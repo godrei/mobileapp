@@ -89,6 +89,10 @@
     <Compile Include="ViewModels\TokenResetViewModel.cs" />
     <Compile Include="ViewModels\ReportsViewModel.cs" />
     <Compile Include="Parameters\DateRangeParameter.cs" />
+    <Compile Include="ViewModels\Hints\CardVisibilityHint.cs" />
+    <Compile Include="ViewModels\ReportsCalendarViewModel.cs" />
+    <Compile Include="ViewModels\CalendarDayViewModel.cs" />
+    <Compile Include="ViewModels\CalendarPageViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Interfaces">

@@ -1,7 +1,7 @@
 using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 
-namespace Toggl.Daneel.Tests.UI
+namespace Toggl.Tests.UI
 {
     public static class Configuration
     {

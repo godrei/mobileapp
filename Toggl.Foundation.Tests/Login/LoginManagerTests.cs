@@ -4,19 +4,20 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
+using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Login;
+using Toggl.Foundation.Tests.Generators;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
+using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
+using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave;
 using Toggl.Ultrawave.Network;
 using Xunit;
-using User = Toggl.Ultrawave.Models.User;
 using FoundationUser = Toggl.Foundation.Models.User;
-using Toggl.Foundation.Tests.Generators;
-using Toggl.Multivac.Models;
-using Toggl.Foundation.DataSources;
+using User = Toggl.Ultrawave.Models.User;
 
 namespace Toggl.Foundation.Tests.Login
 {

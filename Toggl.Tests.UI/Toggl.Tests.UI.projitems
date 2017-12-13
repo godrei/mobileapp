@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{9DC2721A-9A49-46FA-99A4-B004360A2008}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Toggl.Tests.UI</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)MainTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LoginTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StartTimeEntryTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OnboardingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\User.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\LoginExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MainExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\OnboardingExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\StartTimeEntryExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Helpers\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Extensions\" />
+  </ItemGroup>
+</Project>

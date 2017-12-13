@@ -14,6 +14,7 @@ using Toggl.Ultrawave.Network;
 using Xunit;
 using FsCheck;
 using FsCheck.Xunit;
+using Toggl.Foundation.Sync.States;
 
 namespace Toggl.Foundation.Tests.Sync.States
 {

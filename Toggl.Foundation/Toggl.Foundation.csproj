@@ -95,7 +95,7 @@
     <Compile Include="Sync\States\InvalidTransitionState.cs" />
     <Compile Include="Sync\States\Pull\PersistTasksState.cs" />
     <Compile Include="Sync\States\Pull\PersistWorkspaceFeaturesState.cs" />
-    <Compile Include="Sync\States\Push\CheckServerStatusState.cs" />
+    <Compile Include="Sync\States\CheckServerStatusState.cs" />
     <Compile Include="Sync\States\Pull\PersistTagsState.cs" />
     <Compile Include="Sync\States\Push\Projects\CreateProjectState.cs" />
     <Compile Include="Sync\States\Push\Projects\PushProjectsState.cs" />
@@ -179,6 +179,10 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="Login\IGoogleService.cs" />
     <Compile Include="Exceptions\GoogleLoginException.cs" />
+    <Compile Include="Reports\IReportsProvider.cs" />
+    <Compile Include="Reports\ReportsProvider.cs" />
+    <Compile Include="Reports\ChartSegment.cs" />
+    <Compile Include="Reports\ProjectSummaryReport.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

@@ -180,6 +180,7 @@
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="ClampExtensionTests.cs" />
     <Compile Include="Utilities\LogIfTooSlowAttribute.cs" />
+    <Compile Include="CalendarMonthTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Multivac\Toggl.Multivac.csproj">

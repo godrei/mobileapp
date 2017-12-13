@@ -3,7 +3,7 @@ using System.Reactive.Linq;
 using Toggl.PrimeRadiant;
 using Toggl.Ultrawave.Exceptions;
 
-namespace Toggl.Foundation.Sync.States.Push
+namespace Toggl.Foundation.Sync.States
 {
     public sealed class TryResolveClientErrorState<TModel>
         where TModel : class, IDatabaseSyncable

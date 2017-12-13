@@ -19,7 +19,7 @@ namespace Toggl.Ultrawave.Tests.Integration
     {
         public sealed class TheGetByWorkspaceMethod : AuthenticatedEndpointBaseTests<IProjectsSummary>
         {
-            [Fact, LogIfTooSlow]
+            [Fact, LogTestInfo]
             public async Task ReturnsEmptyListWhenTheUserHasNoTimeEntriesInTheSpecifiedRange()
             {
                 var (api, user) = await SetupTestUser();
@@ -31,7 +31,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 summary.ProjectsSummaries.Should().BeEmpty();
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact, LogTestInfo]
             public async Task UsesStartPlusSevenDaysWhenThereIsNoEndDateSpecified()
             {
                 var (api, user) = await SetupTestUser();
@@ -45,7 +45,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 summary.ProjectsSummaries.Should().HaveCount(1);
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact, LogTestInfo]
             public async Task DoesNotReturnTrackedBillableSecondsWhenWorkspaceIsNotPaid()
             {
                 var (api, user) = await SetupTestUser();
@@ -58,7 +58,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 summary.ProjectsSummaries.ForEach(project => project.BillableSeconds.Should().BeNull());
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact, LogTestInfo]
             public async Task ReturnsTheSumOfTrackedSecondsForTheGivenInterval()
             {
                 var (api, user) = await SetupTestUser();
@@ -74,7 +74,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 projectSummary.TrackedSeconds.Should().Be(30);
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact, LogTestInfo]
             public async Task ReturnsTheSumOfTrackedSecondsForTheGivenIntervalForEachProject()
             {
                 var (api, user) = await SetupTestUser();
@@ -95,7 +95,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 projectBSummary.TrackedSeconds.Should().Be(65);
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact, LogTestInfo]
             public async Task ReturnsTheSumOfBillableSecondsForTheGivenIntervalWhenTheWorkspaceIsPaid()
             {
                 var (api, user) = await SetupTestUser();
@@ -113,7 +113,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 projectSummary.BillableSeconds.Should().Be(20);
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact, LogTestInfo]
             public async Task DoesNotIncludeRunningTimeEntriesInTheReports()
             {
                 var (api, user) = await SetupTestUser();
@@ -129,7 +129,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 projectSummary.TrackedSeconds.Should().Be(30);
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact, LogTestInfo]
             public async Task IncludesSummariesForArchivedProjects()
             {
                 var (api, user) = await SetupTestUser();

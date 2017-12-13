@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -8,10 +6,9 @@ using MvvmCross.Core.ViewModels;
 using PropertyChanged;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DTOs;
-using Toggl.Foundation.Exceptions;
 using Toggl.Foundation.Suggestions;
 using Toggl.Multivac;
-using Toggl.PrimeRadiant.Models;
+using Toggl.PrimeRadiant.Settings;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -19,6 +16,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public sealed class SuggestionsViewModel : MvxViewModel
     {
         private readonly ITogglDataSource dataSource;
+        private readonly IOnboardingStorage onboardingStorage;
         private readonly ISuggestionProviderContainer suggestionProviders;
         private readonly ITimeService timeService;
 
@@ -27,23 +25,27 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public MvxObservableCollection<Suggestion> Suggestions { get; }
             = new MvxObservableCollection<Suggestion>();
 
-        [DependsOn(nameof(Suggestions))]
-        public bool IsEmpty => !Suggestions.Any();
+        public bool IsNewUser { get; private set; }
+
+        public bool ShowWelcomeBack => !IsNewUser && !Suggestions.Any();
 
         public IMvxAsyncCommand<Suggestion> StartTimeEntryCommand { get; set; }
 
         public SuggestionsViewModel(
             ITogglDataSource dataSource,
+            IOnboardingStorage onboardingStorage,
             ISuggestionProviderContainer suggestionProviders,
             ITimeService timeService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
-            Ensure.Argument.IsNotNull(suggestionProviders, nameof(suggestionProviders));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
+            Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
+            Ensure.Argument.IsNotNull(suggestionProviders, nameof(suggestionProviders));
 
             this.dataSource = dataSource;
-            this.suggestionProviders = suggestionProviders;
             this.timeService = timeService;
+            this.onboardingStorage = onboardingStorage;
+            this.suggestionProviders = suggestionProviders;
 
             StartTimeEntryCommand = new MvxAsyncCommand<Suggestion>(startTimeEntry);
         }
@@ -51,6 +53,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public async override Task Initialize()
         {
             await base.Initialize();
+
+            IsNewUser = onboardingStorage.IsNewUser();
 
             emptyDatabaseDisposable = dataSource.TimeEntries.IsEmpty
                 .DistinctUntilChanged()
@@ -73,7 +77,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void addSuggestions(Suggestion suggestions)
         {
             Suggestions.Add(suggestions);
-            RaisePropertyChanged(nameof(IsEmpty));
+            IsNewUser = false;
+
+            RaisePropertyChanged(nameof(IsNewUser));
+            RaisePropertyChanged(nameof(ShowWelcomeBack));
         }
 
         private async Task startTimeEntry(Suggestion suggestion)
