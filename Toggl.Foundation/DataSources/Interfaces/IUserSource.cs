@@ -6,7 +6,7 @@ namespace Toggl.Foundation.DataSources
 {
     public interface IUserSource
     {
-        IObservable<IDatabaseUser> Current();
+        IObservable<IDatabaseUser> Current { get; }
         IObservable<IDatabaseUser> UpdateWorkspace(long workspaceId);
     }
 }

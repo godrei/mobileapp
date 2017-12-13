@@ -331,7 +331,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             await setBillableValues(0);
 
-            var workspaceId = (await dataSource.User.Current()).DefaultWorkspaceId;
+            var workspaceId = (await dataSource.User.Current).DefaultWorkspaceId;
             if (!TextFieldInfo.WorkspaceId.HasValue)
                 TextFieldInfo = TextFieldInfo.WithWorkspace(workspaceId);
         }
@@ -432,7 +432,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task done()
         {
-            await dataSource.User.Current()
+            await dataSource.User.Current
                 .Select(user => new StartTimeEntryDTO
                 {
                     TaskId = TextFieldInfo.TaskId,

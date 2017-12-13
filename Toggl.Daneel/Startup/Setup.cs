@@ -80,7 +80,6 @@ namespace Toggl.Daneel
             var googleService = new GoogleService();
             var apiFactory = new ApiFactory(environment, userAgent);
             var userDefaultsStorage = new UserDefaultsStorage(timeService, Version.Parse(version.ToString()));
-            var deprecationHandlingService = new ApiErrorHandlingService(navigationService, userDefaultsStorage);
             var apiErrorHandlingService = new ApiErrorHandlingService(navigationService, userDefaultsStorage);
             var retryDelayLimit = TimeSpan.FromSeconds(60);
             

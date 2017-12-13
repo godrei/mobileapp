@@ -42,7 +42,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             await base.Initialize();
 
-            var beginningOfWeek = (await dataSource.User.Current()).BeginningOfWeek;
+            var beginningOfWeek = (await dataSource.User.Current).BeginningOfWeek;
             var monthIterator = CurrentMonth.AddMonths(-(monthsToShow - 1));
             for (int i = 0; i < 12; i++, monthIterator = monthIterator.Next())
                 Months.Add(new CalendarPageViewModel(monthIterator, beginningOfWeek));

@@ -66,7 +66,7 @@ namespace Toggl.Foundation.MvvmCross
 
             Mvx.RegisterSingleton(dataSource);
 
-            var user = dataSource.User.Current().Wait();
+            var user = dataSource.User.Current.Wait();
             if (accessRestrictionStorage.IsUnauthorized(user.ApiToken))
             {
                 navigationService.Navigate<TokenResetViewModel>();

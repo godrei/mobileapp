@@ -10,8 +10,6 @@ namespace Toggl.Foundation.DataSources
 {
     public sealed class UserDataSource : IUserSource
     {
-        private IDatabaseUser cachedUser;
-
         private readonly ISingleObjectStorage<IDatabaseUser> storage;
 
         public UserDataSource(ISingleObjectStorage<IDatabaseUser> storage)
@@ -21,13 +19,8 @@ namespace Toggl.Foundation.DataSources
             this.storage = storage;
         }
 
-        public IObservable<IDatabaseUser> Current() => Observable.Defer(() =>
-        {
-            if (cachedUser != null)
-                return Observable.Return(cachedUser);
-            
-            return storage.Single().Select(User.From).Do(user => cachedUser = user);
-        });
+        public IObservable<IDatabaseUser> Current
+            => storage.Single().Select(User.From);
 
         public IObservable<IDatabaseUser> UpdateWorkspace(long workspaceId)
             => storage

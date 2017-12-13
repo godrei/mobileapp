@@ -6,7 +6,7 @@ namespace Toggl.Foundation.Sync.States
 {
     internal sealed class ResetAPIDelayState
     {
-        public StateResult PushNext { get; } = new StateResult();
+        public StateResult Continue { get; } = new StateResult();
 
         private readonly IRetryDelayService delay;
 
@@ -16,7 +16,7 @@ namespace Toggl.Foundation.Sync.States
         }
 
         public IObservable<ITransition> Start()
-            => Observable.Return(PushNext.Transition())
+            => Observable.Return(Continue.Transition())
                 .Do(_ => delay.Reset());
     }
 }

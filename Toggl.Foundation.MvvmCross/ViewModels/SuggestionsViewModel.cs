@@ -86,7 +86,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task startTimeEntry(Suggestion suggestion)
         {
             await dataSource.User
-                .Current()
+                .Current
                 .Select(user => new StartTimeEntryDTO
                 {
                     UserId = user.Id,

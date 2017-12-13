@@ -48,7 +48,7 @@ namespace Toggl.Foundation
             StateMachineEntryPoints entryPoints,
             IObservable<Unit> delayCancellation)
         {
-            configurePullTransitions(transitions, database, api, dataSource, timeService, entryPoints.StartPullSync);
+            configurePullTransitions(transitions, database, api, dataSource, timeService, scheduler, entryPoints.StartPullSync, delayCancellation);
             configurePushTransitions(transitions, database, api, dataSource, apiDelay, scheduler, entryPoints.StartPushSync, delayCancellation);
         }
 
@@ -58,8 +58,14 @@ namespace Toggl.Foundation
             ITogglApi api,
             ITogglDataSource dataSource,
             ITimeService timeService,
-            StateResult entryPoint)
+            IScheduler scheduler,
+            StateResult entryPoint,
+            IObservable<Unit> delayCancellation)
         {
+            var rnd = new Random();
+            var apiDelay = new RetryDelayService(rnd);
+            var statusDelay = new RetryDelayService(rnd);
+
             var fetchAllSince = new FetchAllSinceState(database, api, timeService);
             var persistWorkspaces = new PersistWorkspacesState(database.Workspaces, database.SinceParameters);
             var persistWorkspaceFeatures = new PersistWorkspacesFeaturesState(database.WorkspaceFeatures, database.SinceParameters);
@@ -68,6 +74,8 @@ namespace Toggl.Foundation
             var persistProjects = new PersistProjectsState(database.Projects, database.SinceParameters);
             var persistTimeEntries = new PersistTimeEntriesState(dataSource.TimeEntries, database.SinceParameters, timeService);
             var persistTasks = new PersistTasksState(database.Tasks, database.SinceParameters);
+            var checkServerStatus = new CheckServerStatusState(api, scheduler, apiDelay, statusDelay, delayCancellation);
+            var finished = new ResetAPIDelayState(apiDelay);
 
             transitions.ConfigureTransition(entryPoint, fetchAllSince.Start);
             transitions.ConfigureTransition(fetchAllSince.FetchStarted, persistWorkspaces.Start);
@@ -77,6 +85,18 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(persistClients.FinishedPersisting, persistProjects.Start);
             transitions.ConfigureTransition(persistProjects.FinishedPersisting, persistTasks.Start);
             transitions.ConfigureTransition(persistTasks.FinishedPersisting, persistTimeEntries.Start);
+
+            transitions.ConfigureTransition(persistWorkspaces.Failed, checkServerStatus.Start);
+            transitions.ConfigureTransition(persistWorkspaceFeatures.Failed, checkServerStatus.Start);
+            transitions.ConfigureTransition(persistTags.Failed, checkServerStatus.Start);
+            transitions.ConfigureTransition(persistClients.Failed, checkServerStatus.Start);
+            transitions.ConfigureTransition(persistProjects.Failed, checkServerStatus.Start);
+            transitions.ConfigureTransition(persistTasks.Failed, checkServerStatus.Start);
+            transitions.ConfigureTransition(persistTimeEntries.Failed, checkServerStatus.Start);
+
+            transitions.ConfigureTransition(checkServerStatus.Retry, checkServerStatus.Start);
+            transitions.ConfigureTransition(checkServerStatus.ServerIsAvailable, finished.Start);
+            transitions.ConfigureTransition(finished.Continue, fetchAllSince.Start);
         }
         
         private static void configurePushTransitions(
@@ -261,7 +281,7 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(deleteLocal.Deleted, finished.Start);
             transitions.ConfigureTransition(deleteLocal.DeletingFailed, finished.Start);
 
-            transitions.ConfigureTransition(finished.PushNext, push.Start);
+            transitions.ConfigureTransition(finished.Continue, push.Start);
 
             return push.NothingToPush;
         }
@@ -298,7 +318,7 @@ namespace Toggl.Foundation
 
             transitions.ConfigureTransition(create.CreatingFinished, finished.Start);
 
-            transitions.ConfigureTransition(finished.PushNext, push.Start);
+            transitions.ConfigureTransition(finished.Continue, push.Start);
 
             return push.NothingToPush;
         }
@@ -335,7 +355,7 @@ namespace Toggl.Foundation
 
             transitions.ConfigureTransition(update.UpdatingSucceeded, finished.Start);
 
-            transitions.ConfigureTransition(finished.PushNext, push.Start);
+            transitions.ConfigureTransition(finished.Continue, push.Start);
 
             return push.NothingToPush;
         }

@@ -131,7 +131,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                 var dataSource = Substitute.For<ITogglDataSource>();
                 var userSource = Substitute.For<IUserSource>();
                 user.ApiToken.Returns(newApiToken);
-                userSource.Current().Returns(Observable.Return(user));
+                userSource.Current.Returns(Observable.Return(user));
                 dataSource.User.Returns(userSource);
                 LoginManager.GetDataSourceIfLoggedIn().Returns(dataSource);
                 AccessRestrictionStorage.IsUnauthorized(Arg.Is(oldApiToken)).Returns(true);

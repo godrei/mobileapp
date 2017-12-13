@@ -19,7 +19,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
 
                 var transition = state.Start().Wait();
 
-                transition.Result.Should().Be(state.PushNext);
+                transition.Result.Should().Be(state.Continue);
             }
 
             [Fact, LogIfTooSlow]

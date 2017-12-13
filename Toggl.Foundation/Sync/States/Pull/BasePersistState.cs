@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using Toggl.Foundation.Sync.ConflictResolution;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
+using Toggl.Ultrawave.Exceptions;
 
 namespace Toggl.Foundation.Sync.States
 {
@@ -20,6 +21,8 @@ namespace Toggl.Foundation.Sync.States
         private readonly IRivalsResolver<TDatabaseInterface> rivalsResolver;
 
         public StateResult<FetchObservables> FinishedPersisting { get; } = new StateResult<FetchObservables>();
+
+        public StateResult<Exception> Failed { get; } = new StateResult<Exception>();
 
         protected BasePersistState(
             IRepository<TDatabaseInterface> repository,
@@ -49,8 +52,17 @@ namespace Toggl.Foundation.Sync.States
                 .Select(lastUpdated => UpdateSinceParameters(since, lastUpdated))
                 .Do(sinceParameterRepository.Set)
                 .Select(sinceParameters => new FetchObservables(fetch, sinceParameters))
-                .Select(FinishedPersisting.Transition);
+                .Select(FinishedPersisting.Transition)
+                .Catch((Exception exception) => processError(exception));
         }
+
+        private IObservable<ITransition> processError(Exception exception)
+            => shouldRethrow(exception)
+                ? Observable.Throw<ITransition>(exception)
+                : Observable.Return(Failed.Transition(exception));
+
+        private bool shouldRethrow(Exception e)
+            => e is ApiException == false || e is ApiDeprecatedException || e is ClientDeprecatedException || e is UnauthorizedException;
 
         protected abstract long GetId(TDatabaseInterface entity);
 

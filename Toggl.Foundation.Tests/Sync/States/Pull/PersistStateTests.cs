@@ -7,9 +7,11 @@ using NSubstitute;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Sync.States;
+using Toggl.Foundation.Tests.Helpers;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
+using Toggl.Ultrawave.Exceptions;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.Sync.States
@@ -63,6 +65,22 @@ namespace Toggl.Foundation.Tests.Sync.States
         public void ThrowsWhenBatchUpdateThrows()
             => testHelper.ThrowsWhenBatchUpdateThrows();
 
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ClientExceptionsWhichAreNotReThrownInSyncStates), MemberType = typeof(ApiExceptions))]
+        public void ReturnsClientErrorTransitionWhenHttpFailsWithClientErrorException(ClientErrorException exception)
+            => testHelper.ReturnsFailedTransitionWhenHttpFailsWithClientErrorException(exception);
+
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ServerExceptions), MemberType = typeof(ApiExceptions))]
+        public void ReturnsServerErrorTransitionWhenHttpFailsWithServerErrorException(ServerErrorException reason)
+            => testHelper.ReturnsFailedTransitionWhenHttpFailsWithServerErrorException(reason);
+
+
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ExceptionsWhichCauseRethrow), MemberType = typeof(ApiExceptions))]
+        public void ThrowsWhenCertainExceptionsAreCaught(Exception exception)
+            => testHelper.ThrowsWhenCertainExceptionsAreCaught(exception);
+
         public interface ITheStartMethodHelper
         {
             void EmitsTransitionToPersistFinished();
@@ -84,6 +102,12 @@ namespace Toggl.Foundation.Tests.Sync.States
             void SinceDatesAreNotUpdatedWhenBatchUpdateThrows();
 
             void PassesTheNewSinceParametersThroughTheTransition();
+
+            void ReturnsFailedTransitionWhenHttpFailsWithClientErrorException(ClientErrorException exception);
+
+            void ReturnsFailedTransitionWhenHttpFailsWithServerErrorException(ServerErrorException exception);
+
+            void ThrowsWhenCertainExceptionsAreCaught(Exception exception);
         }
 
         internal abstract class TheStartMethod<TState, TInterface, TDatabaseInterface> : ITheStartMethodHelper
@@ -95,6 +119,7 @@ namespace Toggl.Foundation.Tests.Sync.States
             private readonly TState state;
 
             protected DateTimeOffset Now { get; } = new DateTimeOffset(2017, 04, 05, 12, 34, 56, TimeSpan.Zero);
+            protected DateTimeOffset at = new DateTimeOffset(2017, 09, 01, 12, 34, 56, TimeSpan.Zero);
 
             protected TheStartMethod()
             {
@@ -123,7 +148,6 @@ namespace Toggl.Foundation.Tests.Sync.States
 
             public void TriggersBatchUpdate()
             {
-                var at = new DateTimeOffset(2017, 09, 01, 12, 34, 56, TimeSpan.Zero);
                 var entities = CreateComplexListWhereTheLastUpdateEntityIsDeleted(at);
                 var observables = CreateObservables(null, entities);
 
@@ -144,7 +168,6 @@ namespace Toggl.Foundation.Tests.Sync.States
 
             public void DoesNotUpdateSinceParametersWhenNothingIsFetched()
             {
-                var at = new DateTimeOffset(2017, 09, 01, 12, 34, 56, TimeSpan.Zero);
                 var oldSinceParameters = new SinceParameters(
                     null,
                     workspaces: at,
@@ -196,7 +219,6 @@ namespace Toggl.Foundation.Tests.Sync.States
 
             public void SelectsTheLatestAtValue()
             {
-                var at = new DateTimeOffset(2017, 09, 01, 12, 34, 56, TimeSpan.Zero);
                 var oldSinceParameters = new SinceParameters(null);
                 var entities = CreateComplexListWhereTheLastUpdateEntityIsDeleted(at);
                 var observables = CreateObservables(oldSinceParameters, entities);
@@ -210,7 +232,6 @@ namespace Toggl.Foundation.Tests.Sync.States
 
             public void SinceDatesAreNotUpdatedWhenBatchUpdateThrows()
             {
-                var at = new DateTimeOffset(2017, 09, 01, 12, 34, 56, TimeSpan.Zero);
                 var oldSinceParameters = new SinceParameters(null, at);
                 var entities = CreateComplexListWhereTheLastUpdateEntityIsDeleted(at);
                 var observables = CreateObservables(oldSinceParameters, entities);
@@ -227,7 +248,6 @@ namespace Toggl.Foundation.Tests.Sync.States
 
             public void PassesTheNewSinceParametersThroughTheTransition()
             {
-                var at = new DateTimeOffset(2017, 09, 01, 12, 34, 56, TimeSpan.Zero);
                 var oldSinceParameters = new SinceParameters(null, at);
                 var entities = CreateComplexListWhereTheLastUpdateEntityIsDeleted(at);
                 var observables = CreateObservables(oldSinceParameters, entities);
@@ -237,6 +257,49 @@ namespace Toggl.Foundation.Tests.Sync.States
 
                 transition.Parameter.SinceParameters.Should()
                     .Match((ISinceParameters newSinceParameters) => OtherSinceDatesDidntChange(oldSinceParameters, newSinceParameters, at));
+            }
+
+            public void ReturnsFailedTransitionWhenHttpFailsWithClientErrorException(ClientErrorException exception)
+            {
+                var state = CreateState(repository, sinceParameterRepository);
+                var observables = createFetchObservablesWhichThrow(exception);
+
+                var transition = state.Start(observables).SingleAsync().Wait();
+                var reason = ((Transition<Exception>)transition).Parameter;
+
+                transition.Result.Should().Be(state.Failed);
+                reason.Should().BeAssignableTo<ClientErrorException>();
+            }
+
+            public void ReturnsFailedTransitionWhenHttpFailsWithServerErrorException(ServerErrorException exception)
+            {
+                var state = CreateState(repository, sinceParameterRepository);
+                var observables = createFetchObservablesWhichThrow(exception);
+
+                var transition = state.Start(observables).SingleAsync().Wait();
+                var reason = ((Transition<Exception>)transition).Parameter;
+
+                transition.Result.Should().Be(state.Failed);
+                reason.Should().BeAssignableTo<ServerErrorException>();
+            }
+
+            public void ThrowsWhenCertainExceptionsAreCaught(Exception exception)
+            {
+                var state = CreateState(repository, sinceParameterRepository);
+                Exception caughtException = null;
+                var observables = createFetchObservablesWhichThrow(exception);
+
+                try
+                {
+                    state.Start(observables).Wait();
+                }
+                catch (Exception e)
+                {
+                    caughtException = e;
+                }
+
+                caughtException.Should().NotBeNull();
+                caughtException.Should().BeAssignableTo(exception.GetType());
             }
 
             protected FetchObservables CreateFetchObservables(
@@ -295,6 +358,16 @@ namespace Toggl.Foundation.Tests.Sync.States
                     Arg.Any<Func<TDatabaseInterface, TDatabaseInterface, ConflictResolutionMode>>(),
                     Arg.Any<IRivalsResolver<TDatabaseInterface>>());
             }
+
+            private FetchObservables createFetchObservablesWhichThrow(Exception exception)
+                => CreateFetchObservables(null, new SinceParameters(null, at),
+                    Observable.Throw<List<IWorkspace>>(exception),
+                    Observable.Throw<List<IWorkspaceFeatureCollection>>(exception),
+                    Observable.Throw<List<IClient>>(exception),
+                    Observable.Throw<List<IProject>>(exception),
+                    Observable.Throw<List<ITimeEntry>>(exception),
+                    Observable.Throw<List<ITag>>(exception),
+                    Observable.Throw<List<ITask>>(exception));
         }
     }
 }

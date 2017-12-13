@@ -377,7 +377,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     long workspaceId = 100;
                     var user = Substitute.For<IDatabaseUser>();
                     user.DefaultWorkspaceId.Returns(workspaceId);
-                    DataSource.User.Current().Returns(Observable.Return(user));
+                    DataSource.User.Current.Returns(Observable.Return(user));
                     await ViewModel.Initialize();
 
                     await ViewModel.CreateCommand.ExecuteAsync();
@@ -761,7 +761,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     user.Id.Returns(userId);
                     user.DefaultWorkspaceId.Returns(defaultWorkspaceId);
-                    DataSource.User.Current()
+                    DataSource.User.Current
                         .Returns(Observable.Return(user));
 
                     project.Id.Returns(projectId);
@@ -1112,7 +1112,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     var user = Substitute.For<IDatabaseUser>();
                     user.DefaultWorkspaceId.Returns(100);
-                    DataSource.User.Current().Returns(Observable.Return(user));
+                    DataSource.User.Current.Returns(Observable.Return(user));
                     await ViewModel.Initialize();
 
                     ViewModel.SelectSuggestionCommand.Execute(Suggestion);
@@ -1130,7 +1130,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     var user = Substitute.For<IDatabaseUser>();
                     user.DefaultWorkspaceId.Returns(WorkspaceId);
-                    DataSource.User.Current().Returns(Observable.Return(user));
+                    DataSource.User.Current.Returns(Observable.Return(user));
                     await ViewModel.Initialize();
 
                     ViewModel.SelectSuggestionCommand.Execute(Suggestion);
@@ -1148,7 +1148,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     var user = Substitute.For<IDatabaseUser>();
                     user.DefaultWorkspaceId.Returns(100);
-                    DataSource.User.Current().Returns(Observable.Return(user));
+                    DataSource.User.Current.Returns(Observable.Return(user));
                     await ViewModel.Initialize();
                     Enumerable.Range(100, 10)
                         .Select(i =>

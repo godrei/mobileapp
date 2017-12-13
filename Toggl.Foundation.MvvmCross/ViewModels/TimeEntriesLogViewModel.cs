@@ -197,7 +197,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task continueTimeEntry(TimeEntryViewModel timeEntryViewModel)
         {
             await dataSource.User
-                .Current()
+                .Current
                 .Select(user => new StartTimeEntryDTO
                 {
                     UserId = user.Id,
