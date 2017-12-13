@@ -9,7 +9,7 @@ namespace Toggl.Foundation.Sync
 {
     internal sealed class StateMachine : IStateMachine
     {
-        private readonly TimeSpan stateTimeout = TimeSpan.FromMinutes(1);
+        private readonly TimeSpan stateTimeout;
 
         private readonly Subject<StateMachineEvent> stateTransitions = new Subject<StateMachineEvent>();
         public IObservable<StateMachineEvent> StateTransitions { get; }
@@ -21,7 +21,11 @@ namespace Toggl.Foundation.Sync
         private bool isRunning;
         private bool isFrozen;
 
-        public StateMachine(ITransitionHandlerProvider transitionHandlerProvider, IScheduler scheduler, ISubject<Unit> delayCancellation)
+        public StateMachine(
+            ITransitionHandlerProvider transitionHandlerProvider,
+            IScheduler scheduler,
+            ISubject<Unit> delayCancellation,
+            TimeSpan stateTimeout)
         {
             Ensure.Argument.IsNotNull(transitionHandlerProvider, nameof(transitionHandlerProvider));
             Ensure.Argument.IsNotNull(scheduler, nameof(scheduler));
@@ -30,6 +34,7 @@ namespace Toggl.Foundation.Sync
             this.transitionHandlerProvider = transitionHandlerProvider;
             this.scheduler = scheduler;
             this.delayCancellation = delayCancellation;
+            this.stateTimeout = stateTimeout;
 
             StateTransitions = stateTransitions.AsObservable();
             isFrozen = false;

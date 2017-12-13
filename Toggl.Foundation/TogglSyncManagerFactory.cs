@@ -21,6 +21,7 @@ namespace Toggl.Foundation
             ITogglDataSource dataSource,
             ITimeService timeService,
             TimeSpan? retryLimit,
+            TimeSpan stateTimeout,
             IScheduler scheduler)
         {
             var random = new Random();
@@ -31,7 +32,7 @@ namespace Toggl.Foundation
             var delayCancellation = new Subject<Unit>();
             var delayCancellationObservable = delayCancellation.AsObservable().Replay();
             ConfigureTransitions(transitions, database, api, dataSource, apiDelay, scheduler, timeService, entryPoints, delayCancellationObservable);
-            var stateMachine = new StateMachine(transitions, scheduler, delayCancellation);
+            var stateMachine = new StateMachine(transitions, scheduler, delayCancellation, stateTimeout);
             var orchestrator = new StateMachineOrchestrator(stateMachine, entryPoints);
 
             return new SyncManager(queue, orchestrator);
