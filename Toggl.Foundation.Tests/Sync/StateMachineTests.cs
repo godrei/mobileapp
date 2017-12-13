@@ -26,7 +26,7 @@ namespace Toggl.Foundation.Tests.Sync
                 var scheduler = useScheduler ? Substitute.For<IScheduler>() : null;
 
                 // ReSharper disable once ObjectCreationAsStatement
-                Action ctor = () => new StateMachine(handler, scheduler, Substitute.For<ISubject<Unit>>());
+                Action ctor = () => new StateMachine(handler, scheduler, Substitute.For<ISubject<Unit>>(), TimeSpan.Zero);
 
                 ctor.ShouldThrow<ArgumentNullException>();
             }
@@ -41,12 +41,13 @@ namespace Toggl.Foundation.Tests.Sync
             protected IStateMachine StateMachine { get; }
             protected List<StateMachineEvent> Events { get; } = new List<StateMachineEvent>();
             protected ISubject<Unit> DelayCancellation { get; } = new Subject<Unit>();
+            protected TimeSpan StateTimeout { get; } = TimeSpan.FromMinutes(5);
 
             protected StateMachineTestBase()
             {
                 SetTransitionHandler(Arg.Any<IStateResult>(), null);
 
-                StateMachine = new StateMachine(TransitionHandlers, Scheduler, DelayCancellation);
+                StateMachine = new StateMachine(TransitionHandlers, Scheduler, DelayCancellation, StateTimeout);
                 StateMachine.StateTransitions.Subscribe(e => Events.Add(e));
             }
 
@@ -187,14 +188,14 @@ namespace Toggl.Foundation.Tests.Sync
             }
 
             [Fact, LogIfTooSlow]
-            public void ReportsTransitionIfStateTakesLessThanOneMinute()
+            public void ReportsTransitionIfStateTakesLessThanStateTimeoutLimit()
             {
                 var stateSubject = new Subject<ITransition>();
                 var transition = MakeTransitionSubstitute(_ => stateSubject.AsObservable());
                 var transition2 = MakeTransitionSubstitute(_ => Observable.Never<ITransition>());
 
                 StateMachine.Start(transition);
-                Scheduler.AdvanceBy(TimeSpan.FromSeconds(55).Ticks);
+                Scheduler.AdvanceBy(StateTimeout.Subtract(TimeSpan.FromSeconds(5)).Ticks);
                 stateSubject.OnNext(transition2);
                 stateSubject.OnCompleted();
 
@@ -205,22 +206,23 @@ namespace Toggl.Foundation.Tests.Sync
             }
 
             [Fact, LogIfTooSlow]
-            public void DoesNotReportErrorIfMultipleStatesTogetherTakeLongerThanOneMinute()
+            public void DoesNotReportErrorIfMultipleStatesTogetherTakeLongerThanTheStateTimeoutLimit()
             {
                 var stateSubject = new Subject<ITransition>();
                 var stateSubject2 = new Subject<ITransition>();
                 var transition = MakeTransitionSubstitute(_ => stateSubject.AsObservable());
                 var transition2 = MakeTransitionSubstitute(_ => stateSubject2.AsObservable());
                 var transition3 = MakeTransitionSubstitute(_ => Observable.Never<ITransition>());
+                var moreThanHalfOfStateTimeoutLimit = (long)(StateTimeout.Ticks * 0.6);
 
                 StateMachine.Start(transition);
-                Scheduler.AdvanceBy(TimeSpan.FromSeconds(40).Ticks);
+                Scheduler.AdvanceBy(moreThanHalfOfStateTimeoutLimit);
                 stateSubject.OnNext(transition2);
                 stateSubject.OnCompleted();
-                Scheduler.AdvanceBy(TimeSpan.FromSeconds(40).Ticks);
+                Scheduler.AdvanceBy(moreThanHalfOfStateTimeoutLimit);
                 stateSubject2.OnNext(transition3);
                 stateSubject2.OnCompleted();
-                Scheduler.AdvanceBy(TimeSpan.FromSeconds(40).Ticks);
+                Scheduler.AdvanceBy(moreThanHalfOfStateTimeoutLimit);
 
                 Events.ShouldBeSameEventsAs(
                     Transition(transition),
@@ -230,14 +232,14 @@ namespace Toggl.Foundation.Tests.Sync
             }
 
             [Fact, LogIfTooSlow]
-            public void ReportsErrorIfStateTakesMoreThanOneMinute()
+            public void ReportsErrorIfStateTakesMoreThanStateTimeoutLimit()
             {
                 var stateSubject = new Subject<ITransition>();
                 var transition = MakeTransitionSubstitute(_ => stateSubject.AsObservable());
                 var transition2 = MakeTransitionSubstitute(_ => Observable.Never<ITransition>());
 
                 StateMachine.Start(transition);
-                Scheduler.AdvanceBy(TimeSpan.FromSeconds(65).Ticks);
+                Scheduler.AdvanceBy(StateTimeout.Add(TimeSpan.FromSeconds(5)).Ticks);
                 stateSubject.OnNext(transition2);
                 stateSubject.OnCompleted();
 
