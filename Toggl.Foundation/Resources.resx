@@ -225,4 +225,52 @@ time entries will appear here.</value>
     <data name="ThisWeek">
         <value>This week</value>
     </data>
+    <data name="January">
+        <value>January</value>
+    </data>
+    <data name="February">
+        <value>February</value>
+    </data>
+    <data name="March">
+        <value>March</value>
+    </data>
+    <data name="April">
+        <value>April</value>
+    </data>
+    <data name="May">
+        <value>May</value>
+    </data>
+    <data name="June">
+        <value>June</value>
+    </data>
+    <data name="July">
+        <value>July</value>
+    </data>
+    <data name="August">
+        <value>August</value>
+    </data>
+    <data name="September">
+        <value>September</value>
+    </data>
+    <data name="October">
+        <value>October</value>
+    </data>
+    <data name="November">
+        <value>November</value>
+    </data>
+    <data name="December">
+        <value>December</value>
+    </data>
+    <data name="LastWeek">
+        <value>Last week</value>
+    </data>
+    <data name="ThisMonth">
+        <value>This month</value>
+    </data>
+    <data name="LastMonth">
+        <value>Last month</value>
+    </data>
+    <data name="ThisYear">
+        <value>This year</value>
+    </data>
 </root>
