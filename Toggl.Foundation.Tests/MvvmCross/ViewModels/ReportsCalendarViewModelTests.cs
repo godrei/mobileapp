@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck.Xunit;
 using NSubstitute;
-using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Foundation.MvvmCross.ViewModels.Calendar;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.Multivac;
 using Xunit;

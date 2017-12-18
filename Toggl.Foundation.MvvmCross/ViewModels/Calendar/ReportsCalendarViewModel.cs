@@ -100,16 +100,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
             startOfSelection = null;
         }
 
+        public override void Prepare()
+        {
+            base.Prepare();
+
+            var now = timeService.CurrentDateTime;
+            initialMonth = new CalendarMonth(now.Year, now.Month).AddMonths(-(monthsToShow - 1));
+        }
+
         public async override Task Initialize()
         {
             await base.Initialize();
 
             beginningOfWeek = (await dataSource.User.Current()).BeginningOfWeek;
 
-            var now = timeService.CurrentDateTime;
-            var monthIterator
-                = initialMonth
-                = new CalendarMonth(now.Year, now.Month).AddMonths(-(monthsToShow - 1));
+            var monthIterator = initialMonth;
             for (int i = 0; i < 12; i++, monthIterator = monthIterator.Next())
                 Months.Add(new CalendarPageViewModel(monthIterator, beginningOfWeek));
             
