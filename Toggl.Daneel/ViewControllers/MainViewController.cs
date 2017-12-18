@@ -139,15 +139,15 @@ namespace Toggl.Daneel.ViewControllers
             MainPagedScrollView.SetContentOffset(new CGPoint(0, 0), false);
         }
 
-        internal UIView GetContainerFor(UIViewController viewController)
+        internal UIView GetContainerFor(Type viewControllerType)
         {
-            if (viewController is SuggestionsViewController)
+            if (viewControllerType == typeof(SuggestionsViewController))
                 return SuggestionsContainer;
 
-            if (viewController is TimeEntriesLogViewController)
+            if (viewControllerType == typeof(TimeEntriesLogViewController))
                 return TimeEntriesLogContainer;
-
-            throw new ArgumentOutOfRangeException(nameof(viewController), "Received unexpected ViewController type");
+            
+            throw new ArgumentOutOfRangeException(nameof(viewControllerType), "Received unexpected ViewController type");
         }
 
         internal void AnimatePlayButton()

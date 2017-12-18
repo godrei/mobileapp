@@ -13,6 +13,12 @@ namespace Toggl.Daneel.ViewControllers
 	partial class ReportsViewController
 	{
 		[Outlet]
+		UIKit.NSLayoutConstraint CalendarContainerHeightConstraint { get; set; }
+
+		[Outlet]
+		UIKit.UIView CalendarContainerView { get; set; }
+
+		[Outlet]
 		UIKit.UIView EmptyStateView { get; set; }
 
 		[Outlet]
@@ -26,6 +32,11 @@ namespace Toggl.Daneel.ViewControllers
 		
 		void ReleaseDesignerOutlets ()
 		{
+			if (CalendarContainerView != null) {
+				CalendarContainerView.Dispose ();
+				CalendarContainerView = null;
+			}
+
 			if (EmptyStateView != null) {
 				EmptyStateView.Dispose ();
 				EmptyStateView = null;
@@ -44,6 +55,11 @@ namespace Toggl.Daneel.ViewControllers
 			if (TotalDurationLabel != null) {
 				TotalDurationLabel.Dispose ();
 				TotalDurationLabel = null;
+			}
+
+			if (CalendarContainerHeightConstraint != null) {
+				CalendarContainerHeightConstraint.Dispose ();
+				CalendarContainerHeightConstraint = null;
 			}
 		}
 	}

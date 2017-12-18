@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using CoreAnimation;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Core.Views;
@@ -20,6 +22,8 @@ namespace Toggl.Daneel.Presentation
     {
         private ModalTransitionDelegate modalTransitionDelegate = new ModalTransitionDelegate();
 
+        private readonly Dictionary<Type, INestedPresentationInfo> nestedPresentationInfo;
+
         private CATransition FadeAnimation = new CATransition
         {
             Duration = Animation.Timings.EnterTiming,
@@ -31,6 +35,7 @@ namespace Toggl.Daneel.Presentation
         public TogglPresenter(IUIApplicationDelegate applicationDelegate, UIWindow window)
             : base(applicationDelegate, window)
         {
+            nestedPresentationInfo = createNestedPresentationInfo();
         }
 
         protected override void RegisterAttributeTypes()
@@ -44,14 +49,21 @@ namespace Toggl.Daneel.Presentation
 
         private void showNestedViewController(UIViewController viewController, MvxBasePresentationAttribute attribute, MvxViewModelRequest request)
         {
-            var mainViewController = MasterNavigationController.ViewControllers.OfType<MainViewController>().Single();
-            mainViewController.AddChildViewController(viewController);
+            var presentationInfo = nestedPresentationInfo[viewController.GetType()];
+            var parentViewController = presentationInfo.ViewController;
+            var containerView = presentationInfo.Container;
 
-            var container = mainViewController.GetContainerFor(viewController);
-            viewController.View.Frame = new CoreGraphics.CGRect(0, 0, container.Frame.Width, container.Frame.Height);
-            container.AddSubview(viewController.View);
+            parentViewController.AddChildViewController(viewController);
+            containerView.AddSubview(viewController.View);
 
-            viewController.DidMoveToParentViewController(mainViewController);
+            viewController.View.TopAnchor.ConstraintEqualTo(containerView.TopAnchor).Active = true;
+            viewController.View.BottomAnchor.ConstraintEqualTo(containerView.BottomAnchor).Active = true;
+            viewController.View.LeftAnchor.ConstraintEqualTo(containerView.LeftAnchor).Active = true;
+            viewController.View.RightAnchor.ConstraintEqualTo(containerView.RightAnchor).Active = true;
+
+            viewController.View.TranslatesAutoresizingMaskIntoConstraints = false;
+
+            viewController.DidMoveToParentViewController(parentViewController);
         }
 
         private void showModalCardViewController(UIViewController viewController, MvxBasePresentationAttribute attribute, MvxViewModelRequest request)
@@ -133,5 +145,33 @@ namespace Toggl.Daneel.Presentation
             => currentViewController.PresentedViewController != null 
              ? getCurrentControllerForPresenting(currentViewController.PresentedViewController)
              : currentViewController;
+
+        private T findViewController<T>()
+            => MasterNavigationController.ViewControllers.OfType<T>().Single();
+
+        private Dictionary<Type, INestedPresentationInfo> createNestedPresentationInfo()
+            => new Dictionary<Type, INestedPresentationInfo>
+            {
+                {
+                    typeof(ReportsCalendarViewController),
+                    new NestedPresentationInfo<ReportsViewController>(
+                        () => findViewController<ReportsViewController>(),
+                        reportsController => reportsController.CalendarContainer)
+                },
+                {
+                    typeof(SuggestionsViewController),
+                    new NestedPresentationInfo<MainViewController>(
+                        () => findViewController<MainViewController>(),
+                        mainController => mainController
+                            .GetContainerFor(typeof(SuggestionsViewController)))
+                },
+                {
+                    typeof(TimeEntriesLogViewController),
+                    new NestedPresentationInfo<MainViewController>(
+                        () => findViewController<MainViewController>(),
+                        mainController => mainController
+                            .GetContainerFor(typeof(TimeEntriesLogViewController)))
+                }
+            };
     }
 }

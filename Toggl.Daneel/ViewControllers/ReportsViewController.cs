@@ -1,8 +1,10 @@
-﻿using Foundation;
+﻿using System;
+using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.iOS.Views;
 using MvvmCross.Plugins.Visibility;
+using Toggl.Daneel.Extensions;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 using static Toggl.Daneel.Extensions.LayoutConstraintExtensions;
@@ -11,6 +13,8 @@ namespace Toggl.Daneel.ViewControllers
 {
     public sealed partial class ReportsViewController : MvxViewController<ReportsViewModel>
     {
+        public UIView CalendarContainer => CalendarContainerView;
+
         public ReportsViewController() : base(nameof(ReportsViewController), null)
         {
         }
@@ -22,6 +26,7 @@ namespace Toggl.Daneel.ViewControllers
             prepareViews();
 
             var invertedVisibilityConverter = new MvxInvertedVisibilityValueConverter();
+            var converter = new Foundation.MvvmCross.Converters.BoolToConstantValueConverter<nfloat>(338, 0);
 
             var bindingSet = this.CreateBindingSet<ReportsViewController, ReportsViewModel>();
 
@@ -35,6 +40,7 @@ namespace Toggl.Daneel.ViewControllers
                       .For(v => v.BindVisibility())
                       .To(vm => vm.HasData)
                       .WithConversion(invertedVisibilityConverter);
+            
 
             bindingSet.Apply();
         }
