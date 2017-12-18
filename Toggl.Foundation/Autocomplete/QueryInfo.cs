@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Tracing;
 using Toggl.Foundation.Autocomplete.Suggestions;
 
 namespace Toggl.Foundation.Autocomplete
@@ -32,10 +31,14 @@ namespace Toggl.Foundation.Autocomplete
 
         private static QueryInfo? searchByQuerySymbols(TextFieldInfo info)
         {
-            QueryInfo? query = null;
-            var stringToSearch = info.Text.Substring(0, info.DescriptionCursorPosition);
+            int indexOfQuerySymbol = info.DescriptionCursorPosition;
+            string stringToSearch;
+            do
+            {
+                stringToSearch = info.Text.Substring(0, indexOfQuerySymbol);
+                indexOfQuerySymbol = stringToSearch.LastIndexOfAny(getQuerySymbols(info));
+            } while (indexOfQuerySymbol > 0 && Char.IsWhiteSpace(stringToSearch[indexOfQuerySymbol - 1]) == false);
 
-            int indexOfQuerySymbol = stringToSearch.LastIndexOfAny(getQuerySymbols(info));
             if (indexOfQuerySymbol >= 0)
             {
                 var startingIndex = indexOfQuerySymbol + 1;
@@ -43,10 +46,10 @@ namespace Toggl.Foundation.Autocomplete
                 var type = getSuggestionType(stringToSearch[indexOfQuerySymbol]);
                 var text = info.Text.Substring(startingIndex, stringLength);
 
-                query = new QueryInfo(text, type);
+                return new QueryInfo(text, type);
             }
 
-            return query;
+            return null;
         }
 
         private static QueryInfo getDefaultQueryInfo(string text)
