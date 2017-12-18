@@ -354,8 +354,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
-            var newText = TextFieldInfo.Text.Insert(TextFieldInfo.CursorPosition, QuerySymbols.TagsString);
-            TextFieldInfo = TextFieldInfo.WithTextAndCursor(newText, TextFieldInfo.CursorPosition + 1);
+            appendSymbol(QuerySymbols.TagsString);
         }
 
         private void toggleProjectSuggestions()
@@ -374,8 +373,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
-            var newText = TextFieldInfo.Text.Insert(TextFieldInfo.CursorPosition, QuerySymbols.ProjectsString);
-            TextFieldInfo = TextFieldInfo.WithTextAndCursor(newText, TextFieldInfo.CursorPosition + 1);
+            appendSymbol(QuerySymbols.ProjectsString);
+        }
+
+        private void appendSymbol(string symbol)
+        {
+            var shouldAddWhitespace = TextFieldInfo.CursorPosition > 0 && Char.IsWhiteSpace(TextFieldInfo.Text[TextFieldInfo.CursorPosition - 1]) == false;
+            var textToInsert = shouldAddWhitespace ? $" {symbol}" : symbol;
+            var newText = TextFieldInfo.Text.Insert(TextFieldInfo.CursorPosition, textToInsert);
+            TextFieldInfo = TextFieldInfo.WithTextAndCursor(newText, TextFieldInfo.CursorPosition + textToInsert.Length);            
         }
 
         private void toggleTaskSuggestions(ProjectSuggestion projectSuggestion)
