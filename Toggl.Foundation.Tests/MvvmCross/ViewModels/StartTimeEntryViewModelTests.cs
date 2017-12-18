@@ -672,7 +672,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("Testing Toggl Apps #", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps #somequery", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps #some query", "Testing Toggl Apps ")]
-            [InlineData("Testing Toggl Apps #some query #query", "Testing Toggl Apps #some query")]
+            [InlineData("Testing Toggl Apps #some query #query", "Testing Toggl Apps #some query ")]
             public void RemovesTheHashtagSymbolFromTheDescriptionTextIfAlreadyInTagSuggestionMode(
                 string description, string expected)
             {

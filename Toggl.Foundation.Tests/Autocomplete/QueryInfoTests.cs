@@ -187,17 +187,17 @@ namespace Toggl.Foundation.Tests.Autocomplete
                 [InlineData("#", "")]
                 [InlineData("###", "##")]
                 [InlineData("#abc#def", "abc#def")]
-                [InlineData("abcde ##fgh", "@fgh")]
+                [InlineData("abcde ##fgh", "#fgh")]
                 [InlineData("abcde #fgh #ijk", "ijk")]
                 [InlineData("meeting with #meetings with someone@gmail.com", "meetings with someone@gmail.com")]
-                public void ExtractTheTagtNameFromTheFirstAtSymbolWithPreceededWithAWhiteSpaceOrAtTheVeryBeginningOfTheText(string text, string expectedProjectName)
+                public void ExtractTheTagtNameFromTheFirstHashSymbolWithPreceededWithAWhiteSpaceOrAtTheVeryBeginningOfTheText(string text, string expectedTagName)
                 {
                     var textFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(text, text.Length);
 
                     var parsed = QueryInfo.ParseFieldInfo(textFieldInfo);
 
-                    parsed.SuggestionType.Should().Be(AutocompleteSuggestionType.Projects);
-                    parsed.Text.Should().Be(expectedProjectName);
+                    parsed.SuggestionType.Should().Be(AutocompleteSuggestionType.Tags);
+                    parsed.Text.Should().Be(expectedTagName);
                 }
             }
         }
