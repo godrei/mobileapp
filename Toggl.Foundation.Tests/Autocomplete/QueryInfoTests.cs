@@ -127,6 +127,24 @@ namespace Toggl.Foundation.Tests.Autocomplete
                     parsed.SuggestionType.Should().Be(AutocompleteSuggestionType.Projects);
                     parsed.Text.Should().Be(expectedProjectName);
                 }
+
+                [Theory, LogIfTooSlow]
+                [InlineData("@", "")]
+                [InlineData("@@@", "@@")]
+                [InlineData("@abc@def", "abc@def")]
+                [InlineData("abcde @@fgh", "@fgh")]
+                [InlineData("abcde @fgh @ijk", "ijk")]
+                [InlineData("abcde @fgh#ijk", "fgh#ijk")]
+                [InlineData("meeting with @meetings with someone@gmail.com", "meetings with someone@gmail.com")]
+                public void ExtractTheProjectNameFromTheFirstAtSymbolWithPreceededWithAWhiteSpaceOrAtTheVeryBeginningOfTheText(string text, string expectedProjectName)
+                {
+                    var textFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(text, text.Length);
+
+                    var parsed = QueryInfo.ParseFieldInfo(textFieldInfo);
+
+                    parsed.SuggestionType.Should().Be(AutocompleteSuggestionType.Projects);
+                    parsed.Text.Should().Be(expectedProjectName);
+                }
             }
 
             public sealed class Tags : AutocompleteProviderTests.AutocompleteProviderTest
@@ -163,6 +181,23 @@ namespace Toggl.Foundation.Tests.Autocomplete
 
                     parsed.SuggestionType.Should().Be(AutocompleteSuggestionType.Tags);
                     parsed.Text.Should().Be(expectedTagName);
+                }
+
+                [Theory, LogIfTooSlow]
+                [InlineData("#", "")]
+                [InlineData("###", "##")]
+                [InlineData("#abc#def", "abc#def")]
+                [InlineData("abcde ##fgh", "@fgh")]
+                [InlineData("abcde #fgh #ijk", "ijk")]
+                [InlineData("meeting with #meetings with someone@gmail.com", "meetings with someone@gmail.com")]
+                public void ExtractTheTagtNameFromTheFirstAtSymbolWithPreceededWithAWhiteSpaceOrAtTheVeryBeginningOfTheText(string text, string expectedProjectName)
+                {
+                    var textFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(text, text.Length);
+
+                    var parsed = QueryInfo.ParseFieldInfo(textFieldInfo);
+
+                    parsed.SuggestionType.Should().Be(AutocompleteSuggestionType.Projects);
+                    parsed.Text.Should().Be(expectedProjectName);
                 }
             }
         }

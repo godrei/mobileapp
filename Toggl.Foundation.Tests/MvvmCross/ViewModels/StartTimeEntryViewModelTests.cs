@@ -560,7 +560,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void AddsAnAtSymbolAtTheEndOfTheQueryInOrderToStartProjectSuggestionMode()
             {
                 const string description = "Testing Toggl Apps";
-                var expected = $"{description}@";
+                var expected = $"{description} @";
                 ViewModel.Prepare(DateTimeOffset.UtcNow);
                 ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
 
@@ -577,11 +577,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("Testing Toggl Apps @")]
             [InlineData("Testing Toggl Apps @somequery")]
             [InlineData("Testing Toggl Apps @some query")]
-            [InlineData("Testing Toggl Apps @some query@query")]
-            [InlineData("Testing Toggl Apps@")]
-            [InlineData("Testing Toggl Apps@somequery")]
-            [InlineData("Testing Toggl Apps@some query")]
-            [InlineData("Testing Toggl Apps@some query@query")]
+            [InlineData("Testing Toggl Apps @some query @query")]
             public void SetsTheIsSuggestingProjectsPropertyToFalseIfAlreadyInProjectSuggestionMode(string description)
             {
                 ViewModel.Prepare(DateTimeOffset.UtcNow);
@@ -600,11 +596,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("Testing Toggl Apps @", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps @somequery", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps @some query", "Testing Toggl Apps ")]
-            [InlineData("Testing Toggl Apps @some query@query", "Testing Toggl Apps @some query")]
-            [InlineData("Testing Toggl Apps@", "Testing Toggl Apps")]
-            [InlineData("Testing Toggl Apps@somequery", "Testing Toggl Apps")]
-            [InlineData("Testing Toggl Apps@some query", "Testing Toggl Apps")]
-            [InlineData("Testing Toggl Apps@some query@query", "Testing Toggl Apps@some query")]
+            [InlineData("Testing Toggl Apps @some query @query", "Testing Toggl Apps @some query ")]
             public void RemovesTheAtSymbolFromTheDescriptionTextIfAlreadyInProjectSuggestionMode(
                 string description, string expected)
             {
@@ -644,7 +636,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void AddsHashtagSymbolAtTheEndOfTheQueryInOrderToTagSuggestionMode()
             {
                 const string description = "Testing Toggl Apps";
-                var expected = $"{description}#";
+                var expected = $"{description} #";
                 ViewModel.Prepare(DateTimeOffset.UtcNow);
                 ViewModel.TextFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(description, description.Length);
 
@@ -661,11 +653,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("Testing Toggl Apps #")]
             [InlineData("Testing Toggl Apps #somequery")]
             [InlineData("Testing Toggl Apps #some query")]
-            [InlineData("Testing Toggl Apps #some query#query")]
-            [InlineData("Testing Toggl Apps#")]
-            [InlineData("Testing Toggl Apps#somequery")]
-            [InlineData("Testing Toggl Apps#some query")]
-            [InlineData("Testing Toggl Apps#some query#query")]
+            [InlineData("Testing Toggl Apps #some query #query")]
             public void SetsTheIsSuggestingTagsPropertyToFalseIfAlreadyInTagSuggestionMode(string description)
             {
                 ViewModel.Prepare(DateTimeOffset.UtcNow);
@@ -684,11 +672,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("Testing Toggl Apps #", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps #somequery", "Testing Toggl Apps ")]
             [InlineData("Testing Toggl Apps #some query", "Testing Toggl Apps ")]
-            [InlineData("Testing Toggl Apps #some query#query", "Testing Toggl Apps #some query")]
-            [InlineData("Testing Toggl Apps#", "Testing Toggl Apps")]
-            [InlineData("Testing Toggl Apps#somequery", "Testing Toggl Apps")]
-            [InlineData("Testing Toggl Apps#some query", "Testing Toggl Apps")]
-            [InlineData("Testing Toggl Apps#some query@query", "Testing Toggl Apps")]
+            [InlineData("Testing Toggl Apps #some query #query", "Testing Toggl Apps #some query")]
             public void RemovesTheHashtagSymbolFromTheDescriptionTextIfAlreadyInTagSuggestionMode(
                 string description, string expected)
             {

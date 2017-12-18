@@ -247,7 +247,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                 [InlineData("Testing Toggl mobile apps")]
                 public async Task WhenTheAtSymbolIsTyped(string description)
                 {
-                    var actualDescription = $"{description}@{description}";
+                    var actualDescription = $"{description} @{description}";
                     var textFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(actualDescription, description.Length + 1);
 
                     await Provider.Query(textFieldInfo);
@@ -315,7 +315,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                 [InlineData("Testing Toggl mobile apps")]
                 public async Task WhenTheHashtagSymbolIsTyped(string description)
                 {
-                    var actualDescription = $"{description}#{description}";
+                    var actualDescription = $"{description} #{description}";
                     var textFieldInfo = TextFieldInfo.Empty.WithTextAndCursor(actualDescription, description.Length + 1);
 
                     await Provider.Query(textFieldInfo);
