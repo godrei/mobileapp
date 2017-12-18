@@ -112,7 +112,7 @@ namespace Toggl.Daneel.ViewControllers
 
             //Current Page
             bindingSet.Bind(ScrollView)
-                      .For(v => v.BindCurrentPage())
+                      .For(v => v.BindAnimatedCurrentPage())
                       .To(vm => vm.CurrentPage);
 
             bindingSet.Bind(PageControl)

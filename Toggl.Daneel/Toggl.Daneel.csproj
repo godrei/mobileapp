@@ -20,7 +20,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\Toggl.ruleset</CodeAnalysisRuleSet>
-    <CodesignKey>iPhone Developer</CodesignKey>
+    <CodesignKey>iPhone Developer: Artūrs Eimanis (H7QQ87FRDS)</CodesignKey>
     <DeviceSpecificBuild>false</DeviceSpecificBuild>
     <MtouchDebug>true</MtouchDebug>
     <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
@@ -89,7 +89,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.TestFlight|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release.TestFlight</OutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <WarningLevel>4</WarningLevel>
     <CodesignKey>iPhone Distribution: Toggl OU (B227VTMZ94)</CodesignKey>
     <MtouchNoSymbolStrip>false</MtouchNoSymbolStrip>
@@ -440,6 +441,9 @@
     <InterfaceDefinition Include="Views\EntityCreation\CreateEntityViewCell.xib" />
     <InterfaceDefinition Include="Views\EntityCreation\SelectableTagViewCell.xib" />
     <InterfaceDefinition Include="Views\EntityCreation\WorkspaceViewCell.xib" />
+    <InterfaceDefinition Include="ViewControllers\ReportsCalendarViewController.xib" />
+    <InterfaceDefinition Include="Views\Reports\ReportsCalendarViewCell.xib" />
+    <InterfaceDefinition Include="Views\Reports\ReportsCalendarQuickSelectViewCell.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -466,7 +470,7 @@
       <DependentUpon>ViewBindingExtensions.tt</DependentUpon>
     </Compile>
     <Compile Include="Extensions\AnimationExtensions.cs" />
-    <Compile Include="Binding\ScrollViewCurrentPageTargetBinding.cs" />
+    <Compile Include="Binding\ScrollViewAnimatedCurrentPageTargetBinding.cs" />
     <Compile Include="ViewControllers\OnboardingViewController.cs" />
     <Compile Include="ViewControllers\OnboardingViewController.designer.cs">
       <DependentUpon>OnboardingViewController.cs</DependentUpon>
@@ -688,6 +692,27 @@
       <DependentUpon>WorkspaceViewCell.cs</DependentUpon>
     </Compile>
     <Compile Include="ViewControllers\KeyboardAwareViewController.cs" />
+    <Compile Include="ViewControllers\ReportsCalendarViewController.cs" />
+    <Compile Include="ViewControllers\ReportsCalendarViewController.designer.cs">
+      <DependentUpon>ReportsCalendarViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewSources\ReportsCalendarCollectionViewSource.cs" />
+    <Compile Include="ReportsCalendarCollectionViewLayout.cs" />
+    <Compile Include="Binding\ScrollViewCurrentPageTargetBinding.cs" />
+    <Compile Include="Binding\LayoutConstraintAnimatedConstantTargetBinding.cs" />
+    <Compile Include="Converters\CalendarRowCountToCalendarHeightConverter.cs" />
+    <Compile Include="Presentation\NestedPresentationInfo.cs" />
+    <Compile Include="Views\Reports\ReportsCalendarViewCell.cs" />
+    <Compile Include="Views\Reports\ReportsCalendarViewCell.designer.cs">
+      <DependentUpon>ReportsCalendarViewCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewSources\ReportsCalendarQuickSelectCollectionViewSource.cs" />
+    <Compile Include="Views\Reports\ReportsCalendarQuickSelectViewCell.cs" />
+    <Compile Include="Views\Reports\ReportsCalendarQuickSelectViewCell.designer.cs">
+      <DependentUpon>ReportsCalendarQuickSelectViewCell.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RoundedView.cs" />
+    <Compile Include="Combiners\CalendarCellTextColorValueCombiner.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">

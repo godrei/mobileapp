@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Toggl.Multivac;
 
-namespace Toggl.Foundation.MvvmCross.ViewModels
+namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
 {
     public sealed class CalendarPageViewModel
     {
@@ -12,16 +12,20 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public CalendarMonth CalendarMonth { get; }
 
+        public int RowCount { get; }
+
         public CalendarPageViewModel(
             CalendarMonth calendarMonth, BeginningOfWeek beginningOfWeek)
         {
-            CalendarMonth = calendarMonth;
-
             this.beginningOfWeek = beginningOfWeek;
+
+            CalendarMonth = calendarMonth;
 
             addDaysFromPreviousMonth();
             addDaysFromCurrentMonth();
             addDaysFromNextMonth();
+
+            RowCount = Days.Count / 7;
         }
 
         private void addDaysFromPreviousMonth()
@@ -35,14 +39,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var daysToAdd = ((int)firstDayOfMonth - (int)beginningOfWeek.ToDayOfWeekEnum() + 7) % 7;
 
             for (int i = daysToAdd - 1; i >= 0; i--)
-                Days.Add(new CalendarDayViewModel(daysInPreviousMonth - i, false));
+                Days.Add(new CalendarDayViewModel(daysInPreviousMonth - i, previousMonth, false));
         }
 
         private void addDaysFromCurrentMonth()
         {
             var daysInMonth = CalendarMonth.DaysInMonth;
             for (int i = 0; i < daysInMonth; i++)
-                Days.Add(new CalendarDayViewModel(i + 1, true));
+                Days.Add(new CalendarDayViewModel(i + 1, CalendarMonth, true));
         }
 
         private void addDaysFromNextMonth()
@@ -50,11 +54,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var lastDayOfWeekInTargetMonth = (int)CalendarMonth
                 .DayOfWeek(CalendarMonth.DaysInMonth);
 
+            var nextMonth = CalendarMonth.AddMonths(1);
             var lastDayOfWeek = ((int)beginningOfWeek + 6) % 7;
             var daysToAdd = (lastDayOfWeek - lastDayOfWeekInTargetMonth + 7) % 7;
 
             for (int i = 0; i < daysToAdd; i++)
-                Days.Add(new CalendarDayViewModel(i + 1, false));
+                Days.Add(new CalendarDayViewModel(i + 1, nextMonth, false));
         }
     }
 }

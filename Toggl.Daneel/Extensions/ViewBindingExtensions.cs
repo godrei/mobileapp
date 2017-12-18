@@ -16,8 +16,14 @@ namespace Toggl.Daneel.Extensions
         public static string BindDateTimeOffset(this UIDatePicker self)
             => DatePickerDateTimeOffsetTargetBinding.BindingName;
 
+        public static string BindAnimatedConstant(this NSLayoutConstraint self)
+            => LayoutConstraintAnimatedConstantTargetBinding.BindingName;
+
         public static string BindHidesBackButton(this UINavigationItem self)
             => NavigationItemHidesBackButtonTargetBinding.BindingName;
+
+        public static string BindAnimatedCurrentPage(this UIScrollView self)
+            => ScrollViewAnimatedCurrentPageTargetBinding.BindingName;
 
         public static string BindCurrentPage(this UIScrollView self)
             => ScrollViewCurrentPageTargetBinding.BindingName;

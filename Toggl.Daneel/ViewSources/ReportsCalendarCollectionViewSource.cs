@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using Foundation;
+using MvvmCross.Binding.iOS.Views;
+using MvvmCross.Core.ViewModels;
+using Toggl.Daneel.Views;
+using Toggl.Foundation.MvvmCross.ViewModels.Calendar;
+using UIKit;
+
+namespace Toggl.Daneel.ViewSources
+{
+    public sealed class ReportsCalendarCollectionViewSource : MvxCollectionViewSource
+    {
+        private const string cellIdentifier = nameof(ReportsCalendarViewCell);
+
+        private List<CalendarPageViewModel> months
+            => (List<CalendarPageViewModel>)ItemsSource;
+
+        public IMvxCommand<CalendarDayViewModel> CellTappedCommand { get; set; }
+
+        public ReportsCalendarCollectionViewSource(UICollectionView collectionView)
+            : base(collectionView)
+        {
+            collectionView.RegisterNibForCell(ReportsCalendarViewCell.Nib, cellIdentifier);
+        }
+
+        public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
+        {
+            var item = GetItemAt(indexPath);
+            var cell = GetOrCreateCellFor(collectionView, indexPath, item);
+
+            if (cell is ReportsCalendarViewCell calendarCell)
+            {
+                calendarCell.DataContext = item;
+                calendarCell.CellTappedCommand = CellTappedCommand;
+            }
+
+            return cell;
+        }
+
+        protected override UICollectionViewCell GetOrCreateCellFor(UICollectionView collectionView, NSIndexPath indexPath, object item)
+            => collectionView.DequeueReusableCell(cellIdentifier, indexPath) as UICollectionViewCell;
+
+        public override nint NumberOfSections(UICollectionView collectionView)
+            => months.Count;
+
+        public override nint GetItemsCount(UICollectionView collectionView, nint section)
+            => months[(int)section].Days.Count;
+
+        protected override object GetItemAt(NSIndexPath indexPath)
+            => months[indexPath.Section].Days[(int)indexPath.Item];
+    }
+}

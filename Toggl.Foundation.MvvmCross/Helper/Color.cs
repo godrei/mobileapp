@@ -157,8 +157,26 @@ namespace Toggl.Foundation.MvvmCross.Helper
         public static class Common
         {
             public static readonly MvxColor PlaceholderText = pinkishGrey;
+            public static readonly MvxColor Transparent = new MvxColor(rgb: 0, alpha: 0);
         }
-      
+
+        public sealed class Calendar
+        {
+            public sealed class QuickSelect
+            {
+                public static readonly MvxColor UnselectedBackground = new MvxColor(181, 188, 192, 30);
+                public static readonly MvxColor SelectedBackground = new MvxColor(181, 188, 192);
+
+                public static readonly MvxColor UnselectedTitle = new MvxColor(181, 188, 192);
+                public static readonly MvxColor SelectedTitle = new MvxColor(255, 255, 255);
+            }
+
+            public static readonly MvxColor SelectedDayBackgoundColor = new MvxColor(181, 188, 192);
+            public static readonly MvxColor CellTextColorInCurrentMonth = new MvxColor(0, 0, 0);
+            public static readonly MvxColor CellTextColorOutOfCurrentMonth = new MvxColor(163, 163, 163);
+            public static readonly MvxColor CellTextColorSelected = new MvxColor(255, 255, 255);
+        }
+
         public static readonly MvxColor[] DefaultProjectColors =
             Foundation.Helper.Color.DefaultProjectColors.Select(MvxColor.ParseHexString).ToArray();
     }

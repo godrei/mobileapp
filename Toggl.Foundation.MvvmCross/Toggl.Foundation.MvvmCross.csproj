@@ -89,9 +89,16 @@
     <Compile Include="ViewModels\TokenResetViewModel.cs" />
     <Compile Include="ViewModels\ReportsViewModel.cs" />
     <Compile Include="Parameters\DateRangeParameter.cs" />
-    <Compile Include="ViewModels\ReportsCalendarViewModel.cs" />
-    <Compile Include="ViewModels\CalendarDayViewModel.cs" />
-    <Compile Include="ViewModels\CalendarPageViewModel.cs" />
+    <Compile Include="Converters\IntToMonthNameConverter.cs" />
+    <Compile Include="ViewModels\Calendar\CalendarDayViewModel.cs" />
+    <Compile Include="ViewModels\Calendar\CalendarPageViewModel.cs" />
+    <Compile Include="ViewModels\Calendar\ReportsCalendarViewModel.cs" />
+    <Compile Include="ViewModels\Calendar\QuickSelectShortcuts\CalendarBaseQuickSelectShortcut.cs" />
+    <Compile Include="ViewModels\Calendar\QuickSelectShortcuts\CalendarThisWeekQuickSelectShortcut.cs" />
+    <Compile Include="ViewModels\Calendar\QuickSelectShortcuts\CalendarLastWeekQuickSelectShortcut.cs" />
+    <Compile Include="ViewModels\Calendar\QuickSelectShortcuts\CalendarThisMonthQuickSelectShortcut.cs" />
+    <Compile Include="ViewModels\Calendar\QuickSelectShortcuts\CalendarLastMonthQuickSelectShortcut.cs" />
+    <Compile Include="ViewModels\Calendar\QuickSelectShortcuts\CalendarThisYearQuickSelectShortcut.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Interfaces">
@@ -156,6 +163,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Extensions\" />
+    <Folder Include="ViewModels\Calendar\" />
+    <Folder Include="ViewModels\Calendar\QuickSelectShortcuts\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\packages\Fody.2.0.6\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\packages\Fody.2.0.6\build\portable-net+sl+win+wpa+wp\Fody.targets')" />

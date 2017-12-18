@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace Toggl.Foundation.MvvmCross.Parameters
 {
     public sealed class DateRangeParameter
@@ -7,8 +8,17 @@ namespace Toggl.Foundation.MvvmCross.Parameters
 
         public DateTimeOffset EndDate { get; set; }
 
-        public static DateRangeParameter WithStartAndEndDates(
-            DateTimeOffset startDate, DateTimeOffset endDate)
-            => new DateRangeParameter { StartDate = startDate, EndDate = endDate };
+        public static DateRangeParameter WithDates(
+            DateTimeOffset start, DateTimeOffset end)
+        {
+            if (start > end)
+            {
+                var tmp = start;
+                start = end;
+                end = tmp;
+            }
+
+            return new DateRangeParameter { StartDate = start, EndDate = end };
+        }
     }
 }
