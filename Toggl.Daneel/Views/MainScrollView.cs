@@ -153,6 +153,7 @@ namespace Toggl.Daneel.Views
                 case SyncProgress.Failed:
                     text = new NSAttributedString(Resources.SyncFailed);
                     backgroundColor = syncFailedColor;
+                    hideIndicator = false;
                     break;
 
                 default:
