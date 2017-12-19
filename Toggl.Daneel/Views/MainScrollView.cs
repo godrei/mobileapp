@@ -43,6 +43,8 @@ namespace Toggl.Daneel.Views
 
         public UILabel SyncStateLabel { get; set; }
 
+        public UIImageView DismissSyncBarImageView { get; set; }
+
         public IMvxCommand RefreshCommand { get; set; }
 
         public MainScrollView(IntPtr handle)
@@ -143,6 +145,7 @@ namespace Toggl.Daneel.Views
                     text = Resources.Offline.EndingWithRefreshIcon(SyncStateLabel.Font.CapHeight);
                     backgroundColor = offlineColor;
                     hideIndicator = false;
+                    DismissSyncBarImageView.Hidden = false;
                     break;
 
                 case SyncProgress.Synced:
@@ -153,6 +156,7 @@ namespace Toggl.Daneel.Views
                 case SyncProgress.Failed:
                     text = Resources.SyncFailed.EndingWithRefreshIcon(SyncStateLabel.Font.CapHeight);
                     backgroundColor = syncFailedColor;
+                    DismissSyncBarImageView.Hidden = false;
                     hideIndicator = false;
                     break;
 
@@ -177,6 +181,7 @@ namespace Toggl.Daneel.Views
         {
             await Task.Delay(Animation.Timings.HideSyncStateViewDelay);
             scrollToIfInFirstPage(CGPoint.Empty);
+            DismissSyncBarImageView.Hidden = true;
         }
 
         private void scrollToIfInFirstPage(CGPoint offset)
