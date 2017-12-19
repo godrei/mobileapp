@@ -40,10 +40,6 @@
             <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LRI-bO-uxe" userLabel="Background">
-                    <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                    <color key="backgroundColor" red="0.98039215686274506" green="0.98431372549019602" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                </view>
                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fyC-Me-BcE" customClass="MainScrollView">
                     <rect key="frame" x="0.0" y="32" width="375" height="635"/>
                     <subviews>
@@ -307,11 +303,7 @@ TO SEE THE LOG</string>
                 <constraint firstItem="Ddo-IW-xE3" firstAttribute="trailing" secondItem="vou-B4-go4" secondAttribute="trailing" id="RsZ-Od-g2H"/>
                 <constraint firstItem="Ddo-IW-xE3" firstAttribute="top" secondItem="vou-B4-go4" secondAttribute="top" id="Yfb-84-nZk"/>
                 <constraint firstAttribute="bottom" secondItem="vou-B4-go4" secondAttribute="bottom" constant="-8" id="eTc-gF-8yE"/>
-                <constraint firstItem="S4t-q9-ct9" firstAttribute="trailing" secondItem="LRI-bO-uxe" secondAttribute="trailing" id="f4m-kX-bhQ"/>
-                <constraint firstItem="LRI-bO-uxe" firstAttribute="leading" secondItem="S4t-q9-ct9" secondAttribute="leading" id="mcZ-ry-0zO"/>
-                <constraint firstItem="LRI-bO-uxe" firstAttribute="top" secondItem="2" secondAttribute="top" id="oxz-ie-1U9"/>
                 <constraint firstItem="vou-B4-go4" firstAttribute="leading" secondItem="2" secondAttribute="leading" id="q3O-7e-AfR"/>
-                <constraint firstItem="S4t-q9-ct9" firstAttribute="bottom" secondItem="LRI-bO-uxe" secondAttribute="bottom" id="reZ-iB-imv"/>
                 <constraint firstAttribute="bottom" secondItem="fyC-Me-BcE" secondAttribute="bottom" id="saN-1L-zHw"/>
             </constraints>
             <viewLayoutGuide key="safeArea" id="S4t-q9-ct9"/>
