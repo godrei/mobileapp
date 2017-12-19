@@ -474,12 +474,24 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             Suggestions.Clear();
 
-            var groupedSuggestions = groupSuggestions(suggestions).ToList();
+            var filteredSuggestions = filterSuggestions(suggestions);
+            var groupedSuggestions = groupSuggestions(filteredSuggestions).ToList();
 
             UseGrouping = groupedSuggestions.Count > 1;
             Suggestions.AddRange(groupedSuggestions);
 
             RaisePropertyChanged(nameof(SuggestCreation));
+        }
+
+        private IEnumerable<AutocompleteSuggestion> filterSuggestions(IEnumerable<AutocompleteSuggestion> suggestions)
+        {
+            if (TextFieldInfo.ProjectId.HasValue && !IsSuggestingProjects && !IsSuggestingTags)
+            {
+                return suggestions.OfType<TimeEntrySuggestion>()
+                    .Where(suggestion => suggestion.ProjectId == TextFieldInfo.ProjectId.Value);
+            }
+            
+            return suggestions;
         }
 
         private IEnumerable<WorkspaceGroupedCollection<AutocompleteSuggestion>> groupSuggestions(

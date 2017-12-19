@@ -1268,6 +1268,39 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.Suggestions.Should().HaveCount(0);
             }
+
+            [Fact, LogIfTooSlow]
+            public void DoesNotSuggestAnythingWhenAProjectIsAlreadySelected()
+            {
+                var description = "abc";
+                var projectA = Substitute.For<IDatabaseProject>();
+                projectA.Id.Returns(ProjectId);
+                var projectB = Substitute.For<IDatabaseProject>();
+                projectB.Id.Returns(ProjectId + 1);
+                var timeEntryA = Substitute.For<IDatabaseTimeEntry>();
+                timeEntryA.Description.Returns(description);
+                timeEntryA.Project.Returns(projectA);
+                var timeEntryB = Substitute.For<IDatabaseTimeEntry>();
+                timeEntryB.Description.Returns(description);
+                timeEntryB.Project.Returns(projectB);
+                var suggestions = Observable.Return(new AutocompleteSuggestion[]
+                    {
+                        new TimeEntrySuggestion(timeEntryA),
+                        new TimeEntrySuggestion(timeEntryB) 
+                    });
+                AutocompleteProvider.Query(Arg.Any<QueryInfo>()).Returns(suggestions);
+                ViewModel.Prepare(DateTimeOffset.Now);
+                ViewModel.TextFieldInfo =
+                    TextFieldInfo.Empty.WithProjectInfo(WorkspaceId, ProjectId, ProjectName, ProjectColor);
+
+                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor(description, description.Length);
+
+                ViewModel.Suggestions.Should().HaveCount(1);
+                ViewModel.Suggestions[0].Should().HaveCount(1);
+                var suggestion = ViewModel.Suggestions[0][0]; 
+                suggestion.Should().BeOfType<TimeEntrySuggestion>();
+                ((TimeEntrySuggestion)suggestion).ProjectId.Should().Be(ProjectId);
+            }
         }
 
         public sealed class TheTextFieldInfoProperty : StartTimeEntryViewModelTest

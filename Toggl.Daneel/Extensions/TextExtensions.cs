@@ -47,6 +47,7 @@ namespace Toggl.Daneel.Extensions
             icon.AddAttributes(attributes, range);
 
             var result = new NSMutableAttributedString(text);
+            result.Append(new NSAttributedString(" ")); // separate the text from the icon
             result.Append(icon);
 
             return result;
