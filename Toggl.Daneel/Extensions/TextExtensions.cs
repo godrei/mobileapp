@@ -36,7 +36,7 @@ namespace Toggl.Daneel.Extensions
 
         public static NSAttributedString EndingWithRefreshIcon(this string self, double fontHeight)
         {
-            var refresh = GetAttachmentString("icRefreshSmall", fontHeight);
+            var refresh = GetAttachmentString("icRefresh", fontHeight);
             return endingWithIcon(self, refresh);
         }
 
