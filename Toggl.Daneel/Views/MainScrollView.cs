@@ -140,7 +140,7 @@ namespace Toggl.Daneel.Views
                     break;
 
                 case SyncProgress.OfflineModeDetected:
-                    text = new NSAttributedString(Resources.Offline);
+                    text = Resources.Offline.EndingWithRefreshIcon(SyncStateLabel.Font.CapHeight);
                     backgroundColor = offlineColor;
                     hideIndicator = false;
                     break;
@@ -151,7 +151,7 @@ namespace Toggl.Daneel.Views
                     break;
 
                 case SyncProgress.Failed:
-                    text = new NSAttributedString(Resources.SyncFailed);
+                    text = Resources.SyncFailed.EndingWithRefreshIcon(SyncStateLabel.Font.CapHeight);
                     backgroundColor = syncFailedColor;
                     hideIndicator = false;
                     break;
