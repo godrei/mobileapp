@@ -40,13 +40,16 @@ namespace Toggl.Foundation.MvvmCross.Helper
 
         public static class Main
         {
+            private static readonly MvxColor lightGrey = new MvxColor(181, 188, 192);
+
             public static readonly MvxColor CardBorder = new MvxColor(232, 232, 232);
 
             public static readonly MvxColor CurrentTimeEntryClientColor = new MvxColor(94, 91, 91);
 
-            public static readonly MvxColor Syncing = new MvxColor(181, 188, 192);
-            public static readonly MvxColor Offline = Syncing;
-            public static readonly MvxColor SyncFailed = new MvxColor(247, 64, 73);
+            
+            public static readonly MvxColor Syncing = lightGrey;
+            public static readonly MvxColor Offline = lightGrey;
+            public static readonly MvxColor SyncFailed = lightGrey;
             public static readonly MvxColor SyncCompleted = lightishGreen;
         }
 
