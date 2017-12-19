@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -68,14 +68,23 @@
                                                 <constraint firstAttribute="height" constant="14" id="aJm-cH-vBO"/>
                                             </constraints>
                                         </imageView>
+                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" image="icClose" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dTX-sN-axY">
+                                            <rect key="frame" x="351" y="35" width="8" height="8"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="8" id="0dS-Jo-C2T"/>
+                                                <constraint firstAttribute="height" constant="8" id="qLE-Fq-igS"/>
+                                            </constraints>
+                                        </imageView>
                                     </subviews>
                                     <color key="backgroundColor" red="0.29803921570000003" green="0.85098039219999999" blue="0.3921568627" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="52" id="7wI-pZ-IYf"/>
                                         <constraint firstItem="rGt-Hu-Yo8" firstAttribute="centerY" secondItem="wzp-dn-kfL" secondAttribute="centerY" id="DiW-DU-yb0"/>
+                                        <constraint firstItem="dTX-sN-axY" firstAttribute="baseline" secondItem="wzp-dn-kfL" secondAttribute="baseline" id="G7Q-Vb-yHT"/>
                                         <constraint firstItem="rGt-Hu-Yo8" firstAttribute="leading" secondItem="wzp-dn-kfL" secondAttribute="trailing" constant="6" id="MX1-Dg-4nQ"/>
                                         <constraint firstAttribute="bottom" secondItem="wzp-dn-kfL" secondAttribute="bottom" constant="6" id="Zeu-BV-7Xr"/>
                                         <constraint firstItem="wzp-dn-kfL" firstAttribute="centerX" secondItem="lb6-Oz-TYx" secondAttribute="centerX" id="igS-0R-kyq"/>
+                                        <constraint firstAttribute="trailing" secondItem="dTX-sN-axY" secondAttribute="trailing" constant="16" id="tbr-hu-EW9"/>
                                     </constraints>
                                 </view>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EzU-Pd-V8e">
@@ -310,6 +319,7 @@ TO SEE THE LOG</string>
     <resources>
         <image name="ActivityIndicatorView" width="16" height="16"/>
         <image name="icArrowUp" width="10" height="6"/>
+        <image name="icClose" width="10" height="10"/>
         <image name="icIllustrationSpider" width="60" height="205"/>
         <image name="line" width="2" height="14"/>
         <image name="playIcon" width="50" height="50"/>
