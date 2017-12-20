@@ -187,6 +187,12 @@ namespace Toggl.Daneel.Presentation
             => new Dictionary<Type, INestedPresentationInfo>
             {
                 {
+                    typeof(ReportsCalendarViewController),
+                    new NestedPresentationInfo<ReportsViewController>(
+                        () => findViewController<ReportsViewController>(),
+                        reportsController => reportsController.CalendarContainerView)
+                },
+                {
                     typeof(SuggestionsViewController),
                     new NestedPresentationInfo<MainViewController>(
                         () => findViewController<MainViewController>(),
