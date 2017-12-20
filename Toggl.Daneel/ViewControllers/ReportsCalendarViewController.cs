@@ -12,9 +12,8 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewControllers
 {
-    //[NestedPresentation]
-    public partial class ReportsCalendarViewController
-        : MvxViewController<ReportsCalendarViewModel>, IUICollectionViewDelegate
+    [NestedPresentation]
+    public partial class ReportsCalendarViewController : MvxViewController<ReportsCalendarViewModel>, IUICollectionViewDelegate
     {
         private const int estimatedQuickSelectShortcutHeight = 32;
         private const int estimatedQuickSelectShortcutWidth = 90;

@@ -12,6 +12,8 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ReportsViewController">
             <connections>
+                <outlet property="CalendarContainer" destination="X3Z-yh-5bj" id="Ru0-0R-Od4"/>
+                <outlet property="CalendarHeightConstraint" destination="nnO-bE-oaB" id="ybv-si-Siw"/>
                 <outlet property="ReportsTableView" destination="2L8-Wo-D6t" id="XRh-uZ-odE"/>
                 <outlet property="TopConstraint" destination="cwr-Yc-SHB" id="n8F-4b-xeG"/>
                 <outlet property="view" destination="2" id="RRd-Eg-VrN"/>
@@ -26,13 +28,23 @@
                     <rect key="frame" x="0.0" y="20" width="320" height="548"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </tableView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="X3Z-yh-5bj">
+                    <rect key="frame" x="0.0" y="20" width="320" height="338"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="338" id="nnO-bE-oaB"/>
+                    </constraints>
+                </view>
             </subviews>
             <color key="backgroundColor" red="0.98039215686274506" green="0.98431372549019602" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
                 <constraint firstItem="FLH-vi-fXY" firstAttribute="trailing" secondItem="2L8-Wo-D6t" secondAttribute="trailing" id="2au-jd-8Pf"/>
                 <constraint firstItem="FLH-vi-fXY" firstAttribute="bottom" secondItem="2L8-Wo-D6t" secondAttribute="bottom" id="8Nf-bB-Kqw"/>
+                <constraint firstItem="X3Z-yh-5bj" firstAttribute="top" secondItem="FLH-vi-fXY" secondAttribute="top" id="FwJ-ct-uGI"/>
+                <constraint firstItem="X3Z-yh-5bj" firstAttribute="leading" secondItem="FLH-vi-fXY" secondAttribute="leading" id="PAA-hl-Dri"/>
                 <constraint firstItem="2L8-Wo-D6t" firstAttribute="leading" secondItem="FLH-vi-fXY" secondAttribute="leading" id="Z11-yA-OYF"/>
                 <constraint firstItem="2L8-Wo-D6t" firstAttribute="top" secondItem="FLH-vi-fXY" secondAttribute="top" id="cwr-Yc-SHB"/>
+                <constraint firstItem="FLH-vi-fXY" firstAttribute="trailing" secondItem="X3Z-yh-5bj" secondAttribute="trailing" id="oaU-zJ-q2P"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <viewLayoutGuide key="safeArea" id="FLH-vi-fXY"/>
