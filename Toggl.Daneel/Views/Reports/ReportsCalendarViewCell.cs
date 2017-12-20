@@ -26,7 +26,7 @@ namespace Toggl.Daneel.Views
 
         public IMvxCommand<CalendarDayViewModel> CellTappedCommand { get; set; }
 
-        protected ReportsCalendarViewCell(IntPtr handle) : base(handle)
+        public ReportsCalendarViewCell(IntPtr handle) : base(handle)
         {
             // Note: this .ctor should not contain any initialization logic.
         }

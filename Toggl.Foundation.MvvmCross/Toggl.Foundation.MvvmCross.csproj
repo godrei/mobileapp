@@ -93,6 +93,7 @@
     <Compile Include="ViewModels\Hints\CardVisibilityHint.cs" />
     <Compile Include="FoundationExtensions.cs" />
     <Compile Include="DataSourceExtensions.cs" />
+    <Compile Include="ViewModels\Hints\ToggleCalendarVisibilityHint.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Reactive.Interfaces">

@@ -9,6 +9,7 @@ using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels.Calendar;
+using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Foundation.Reports;
 using Toggl.Multivac;
 
@@ -43,8 +44,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public bool ShowEmptyState => !Segments.Any() && !IsLoading;
 
         public string CurrentDateRangeString { get; private set; }
-
-        public bool IsCalendarVisible { get; private set; } = false;
 
         public bool IsCurrentWeek
         {
@@ -139,12 +138,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void toggleCalendar()
         {
-            IsCalendarVisible = !IsCalendarVisible;
+            ChangePresentation(new ToggleCalendarVisibilityHint());
         }
 
         private void hideCalendar()
         {
-            IsCalendarVisible = false;
+            ChangePresentation(new ToggleCalendarVisibilityHint(forceHide: true));
         }
 
         private void changeDateRange(DateRangeParameter dateRange)

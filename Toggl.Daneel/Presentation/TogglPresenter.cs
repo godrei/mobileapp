@@ -160,12 +160,26 @@ namespace Toggl.Daneel.Presentation
 
         public override void ChangePresentation(MvxPresentationHint hint)
         {
-            if (hint is CardVisibilityHint visibilityHint )
+            switch (hint)
             {
-                if (MasterNavigationController.TopViewController is MainViewController mainViewController)
-                    mainViewController.OnTimeEntryCardVisibilityChanged(visibilityHint.Visible);
+                case CardVisibilityHint cardHint:
+                    if (MasterNavigationController.TopViewController is MainViewController mainViewController)
+                        mainViewController.OnTimeEntryCardVisibilityChanged(cardHint.Visible);
+                    return;
 
-                return;   
+                case ToggleCalendarVisibilityHint calendarHint:
+                    if (MasterNavigationController.TopViewController is ReportsViewController reportsViewController)
+                    {
+                        if (calendarHint.ForceHide || reportsViewController.CalendarIsVisible)
+                        {
+                            reportsViewController.HideCalendar();
+                        }
+                        else
+                        {
+                            reportsViewController.ShowCalendar();
+                        }
+                    }
+                    return;
             }
 
             base.ChangePresentation(hint);

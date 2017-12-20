@@ -57,6 +57,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
             this.timeService = timeService;
             this.dataSource = dataSource;
 
+            ShouldAlwaysRaiseInpcOnUserInterfaceThread(true);
+
             CalendarDayTappedCommand = new MvxCommand<CalendarDayViewModel>(calendarDayTapped);
             QuickSelectCommand = new MvxCommand<CalendarBaseQuickSelectShortcut>(quickSelect);
         }
