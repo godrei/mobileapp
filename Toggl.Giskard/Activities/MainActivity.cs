@@ -1,11 +1,13 @@
 using Android.App;
 using Android.OS;
+using MvvmCross.Droid.Support.V7.AppCompat;
 using MvvmCross.Droid.Views;
+using Toggl.Foundation.MvvmCross.ViewModels;
 
 namespace Toggl.Giskard.Activities
 {
-    [Activity(Label = "View for MainViewModel")]
-    public class MainActivity : MvxActivity
+    [Activity(Theme="@style/Theme.AppCompat.Light.NoActionBar")]
+    public class MainActivity : MvxAppCompatActivity<MainViewModel>
     {
         protected override void OnCreate(Bundle bundle)
         {

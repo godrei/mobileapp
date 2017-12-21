@@ -4,7 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Loading...." />
+        android:text="Loading...."
+        android:requiresFadingEdge="horizontal"
+        android:fadingEdge="horizontal"
+        android:fadingEdgeLength="50dp"
+        android:layout_marginRight="0.0dp"
+        android:fitsSystemWindows="true" />
 </LinearLayout>
