@@ -37,10 +37,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             private CalendarPageViewModel viewModel;
 
             private void prepare(
-                int year, int month, BeginningOfWeek beginningOfWeek)
+                int year, int month, BeginningOfWeek beginningOfWeek, DateTimeOffset? today = null)
             {
                 calendarMonth = new CalendarMonth(year, month);
-                viewModel = new CalendarPageViewModel(calendarMonth, beginningOfWeek, DateTimeOffset.Now);
+                viewModel = new CalendarPageViewModel(calendarMonth, beginningOfWeek, today ?? DateTimeOffset.Now);
             }
 
             [Theory]
@@ -104,6 +104,23 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     daysFromNextMonth
                         .Should()
                         .OnlyContain(day => !day.IsInCurrentMonth);
+            }
+            
+            [Property]
+            public void MarksTheCurrentDayAndNoOtherDayAsToday(
+                int year,
+                int month,
+                int today,
+                BeginningOfWeek beginningOfWeek)
+            {
+                year = Math.Abs(year % 25) + 2000;
+                month = Math.Abs(month % 12) + 1;
+                today = Math.Abs(today % DateTime.DaysInMonth(year, month)) + 1;
+                prepare(year, month, beginningOfWeek, new DateTimeOffset(year, month, today, 11, 22, 33, TimeSpan.Zero));
+
+                viewModel.Days.Should().OnlyContain(day =>
+                    ((day.CalendarMonth.Month != month || day.Day != today) && day.IsToday == false)
+                    || (day.CalendarMonth.Month == month && day.Day == today && day.IsToday));
             }
 
             [Property]
