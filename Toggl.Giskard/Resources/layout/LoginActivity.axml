@@ -26,7 +26,7 @@
         android:hint="@string/EmailAddress"
         android:textColorHint="#cecece"
         android:lines="1"
-        android:maxLines="2"
+        android:maxLines="1"
         android:singleLine="true"
         android:background="@android:color/transparent" />
     <EditText
@@ -42,10 +42,11 @@
         android:hint="Password"
         android:textColorHint="#cecece"
         android:lines="1"
-        android:maxLines="2"
+        android:maxLines="1"
         android:singleLine="true"
         android:layout_below="@id/LoginToolbar"
-        android:background="@android:color/transparent" />
+        android:background="@android:color/transparent"
+        android:layout_marginRight="50dp" />
     <TextView
         local:MvxBind="Text InfoText"
         android:textSize="12dp"
@@ -58,6 +59,19 @@
         android:textColor="#e20505"
         android:layout_below="@id/PasswordTextField"
         android:layout_marginRight="16dp" />
+    <TextView
+        android:text="Login with Google"
+        android:textSize="14sp"
+        android:textStyle="normal"
+        android:lineSpacingExtra="6sp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#ff757575"
+        android:gravity="bottom"
+        android:layout_marginBottom="17dp"
+        android:layout_marginLeft="16dp" />
     <android.support.design.widget.FloatingActionButton
         local:MvxBind="Click NextCommand; Enabled NextIsEnabled"
         android:layout_width="wrap_content"
@@ -70,4 +84,13 @@
         android:src="@drawable/next_light"
         android:scaleType="fitCenter"
         android:backgroundTint="#ff1ad180" />
+    <ProgressBar xmlns:tools="http://schemas.android.com/tools"
+        local:MvxBind="Visibility Visibility(IsLoading)"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/progressBar"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@id/PasswordTextField"
+        android:layout_marginRight="20dp" />
 </RelativeLayout>
