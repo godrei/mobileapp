@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
@@ -39,7 +40,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 int year, int month, BeginningOfWeek beginningOfWeek)
             {
                 calendarMonth = new CalendarMonth(year, month);
-                viewModel = new CalendarPageViewModel(calendarMonth, beginningOfWeek);
+                viewModel = new CalendarPageViewModel(calendarMonth, beginningOfWeek, DateTimeOffset.Now);
             }
 
             [Theory]
