@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -200,7 +201,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
             transition.Result.Should().Be(state.Retry);
         }
 
-        public static object[] ServerExceptionsOtherThanInternalServerErrorException()
+        public static IEnumerable<object[]> ServerExceptionsOtherThanInternalServerErrorException()
             => new[]
             {
                 new object[] { new BadGatewayException(request, response) },

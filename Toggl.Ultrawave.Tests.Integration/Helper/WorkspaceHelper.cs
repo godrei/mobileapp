@@ -44,8 +44,6 @@ namespace Toggl.Ultrawave.Tests.Integration.Helper
 
         private static async Task<string> makeRequest(string endpoint, HttpMethod method, IUser user, string json)
         {
-            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
-
             var requestMessage = AuthorizedRequestBuilder.CreateRequest(
                 Credentials.WithApiToken(user.ApiToken), endpoint, method);
 

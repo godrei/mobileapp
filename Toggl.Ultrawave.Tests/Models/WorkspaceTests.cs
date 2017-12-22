@@ -30,7 +30,7 @@ namespace Toggl.Ultrawave.Tests.Models
             }
 
             [Theory, LogIfTooSlow]
-            [MemberData("SerializationCases")]
+            [MemberData(nameof(SerializationCases))]
             public void CanBeSerialized(string validJson, object validObject)
             {
                 var validWorkspace = (Workspace)validObject;
@@ -38,7 +38,7 @@ namespace Toggl.Ultrawave.Tests.Models
             }
             
             [Theory, LogIfTooSlow]
-            [MemberData("DeserializationCases")]
+            [MemberData(nameof(DeserializationCases))]
             public void CanBeDeserialized(string validJson, object validObject)
             {
                 var validWorkspace = (Workspace)validObject;

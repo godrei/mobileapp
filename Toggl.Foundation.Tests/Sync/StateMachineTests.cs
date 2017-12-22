@@ -186,7 +186,7 @@ namespace Toggl.Foundation.Tests.Sync
                 );
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact(Skip="there is currently no timeout"), LogIfTooSlow]
             public void ReportsTransitionIfStateTakesLessThanOneMinute()
             {
                 var stateSubject = new Subject<ITransition>();
@@ -229,7 +229,7 @@ namespace Toggl.Foundation.Tests.Sync
                 );
             }
 
-            [Fact, LogIfTooSlow]
+            [Fact(Skip="there is currently no timeout"), LogIfTooSlow]
             public void ReportsErrorIfStateTakesMoreThanOneMinute()
             {
                 var stateSubject = new Subject<ITransition>();

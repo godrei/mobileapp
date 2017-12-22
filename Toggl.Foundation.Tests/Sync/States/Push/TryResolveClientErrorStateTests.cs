@@ -56,7 +56,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
             parameter.Should().Be((exception, model));
         }
 
-        public static IEnumerable<object> ClientErrorExceptions()
-            => ApiExceptions.ClientExceptions.Where(args => ((object[])args)[0].GetType() != typeof(TooManyRequestsException));
+        public static IEnumerable<object[]> ClientErrorExceptions()
+            => ApiExceptions.ClientExceptions.Where(args => args[0].GetType() != typeof(TooManyRequestsException));
     }
 }

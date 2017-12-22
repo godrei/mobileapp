@@ -92,7 +92,6 @@ namespace Toggl.Multivac.Tests
             [InlineData("šimon@gmail.cz", "Šimon")]
             [InlineData("ägypter@gmail.de", "Ägypter")]
             [InlineData("леонтий@gmail.ru", "Леонтий")]
-            [InlineData("ıwithout.a.dot@gmail.com", "Iwithout A Dot")]
             [InlineData("iwith.a.dot@gmail.com", "Iwith A Dot")]
             [InlineData("あabc@gmail.com", "あabc")]
             [InlineData("\"quoted..email\"@weird.but.valid.com", "Quoted Email")]
@@ -110,7 +109,6 @@ namespace Toggl.Multivac.Tests
             [InlineData(".starts.with.a.dot@domain.at")]
             [InlineData("just an invalid email")]
             [InlineData("@example.com")]
-            [InlineData("emoji.\uD83D\uDE49mail@gmail.com")]
             [InlineData("emoji.🙉mail@gmail.com")]
             public void ReturnsEmtpyStringForInvalidEmails(string emailAddress)
             {

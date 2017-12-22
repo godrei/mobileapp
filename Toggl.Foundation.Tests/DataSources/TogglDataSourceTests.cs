@@ -283,11 +283,11 @@ namespace Toggl.Foundation.Tests.DataSources
                 handling.ShouldThrow<ArgumentException>();
             }
 
-            public static IEnumerable<object> ApiExceptionsWhichAreNotThrowByTheProgressObservable()
+            public static IEnumerable<object[]> ApiExceptionsWhichAreNotThrowByTheProgressObservable()
                 => ApiExceptions.ClientExceptions
                     .Concat(ApiExceptions.ServerExceptions)
                     .Where(args => SyncManagerTests.TheProgressObservable.ExceptionsRethrownByProgressObservableOnError()
-                        .All(thrownByProgress => ((object[])args)[0].GetType() != thrownByProgress[0].GetType()));
+                        .All(thrownByProgress => args[0].GetType() != thrownByProgress[0].GetType()));
         }
     }
 }

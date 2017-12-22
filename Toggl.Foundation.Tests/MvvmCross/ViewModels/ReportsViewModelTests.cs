@@ -21,20 +21,26 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected IReportsProvider ReportsProvider { get; } = Substitute.For<IReportsProvider>();
 
             protected override ReportsViewModel CreateViewModel()
-                => new ReportsViewModel(ReportsProvider, TimeService);
+            {
+                DataSource.ReportsProvider.Returns(ReportsProvider);
+                return new ReportsViewModel(DataSource, TimeService, NavigationService);
+            }
         }
 
         public sealed class TheConstructor : ReportsViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(TwoParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useReportsProvider, bool useTimeService)
+            [ClassData(typeof(ThreeParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource,
+                                                        bool useTimeService,
+                                                        bool useNavigationService)
             {
-                var reportsProvider = useReportsProvider ? ReportsProvider : null;
                 var timeService = useTimeService ? TimeService : null;
+                var reportsProvider = useDataSource ? DataSource : null;
+                var navigationService = useNavigationService ? NavigationService : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new ReportsViewModel(reportsProvider, timeService);
+                    () => new ReportsViewModel(reportsProvider, timeService, navigationService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -124,7 +130,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 TimeService.CurrentDateTime.Returns(new DateTimeOffset(2017, 10, 10, 10, 10, 10, TimeSpan.Zero));
                 ViewModel.Prepare(WorkspaceId);
 
-                ViewModel.CurrentDateRangeString.Should().Be(Resources.ThisWeek);
+                ViewModel.CurrentDateRangeString.Should().Be($"{Resources.ThisWeek} ▾");
             }
 
             [Theory]
@@ -160,24 +166,24 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.ChangeDateRangeCommand.Execute(
                     DateRangeParameter.WithDates(start, end));
 
-                ViewModel.CurrentDateRangeString.Should().Be(Resources.ThisWeek);
+                ViewModel.CurrentDateRangeString.Should().Be($"{Resources.ThisWeek} ▾");
             }
 
             [Theory]
             [InlineData(
                  2017, 12, 15,
                  2017, 12, 25,
-                 "15 Dec - 25 Dec"
+                 "15 Dec - 25 Dec ▾"
             )]
             [InlineData(
                  2017, 1, 1,
                  2017, 12, 30,
-                 "1 Jan - 30 Dec"
+                 "1 Jan - 30 Dec ▾"
             )]
             [InlineData(
                 2017, 11, 13,
                 2018, 11, 13,
-                "13 Nov - 13 Nov"
+                "13 Nov - 13 Nov ▾"
             )]
             public void ReturnsSelectedDateRangeAsStringIfTheSelectedPeriodIsNotTheCurrentWeek(
                 int startYear, int startMonth, int startDay,

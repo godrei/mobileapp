@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using Toggl.Foundation.DataSources;
 using Toggl.Foundation.MvvmCross.Parameters;
+using Toggl.Foundation.MvvmCross.ViewModels.Calendar;
+using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Foundation.Reports;
 using Toggl.Multivac;
 
@@ -17,9 +22,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private readonly ITimeService timeService;
         private readonly IReportsProvider reportsProvider;
+        private readonly IMvxNavigationService navigationService;
+        private readonly ReportsCalendarViewModel calendarViewModel;
         private readonly Subject<Unit> reportSubject = new Subject<Unit>();
+        private readonly CompositeDisposable disposeBag = new CompositeDisposable();
 
-        private IDisposable reportDisposable;
         private DateTimeOffset startDate;
         private DateTimeOffset endDate;
         private long workspaceId;
@@ -51,16 +58,28 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
+        public IMvxCommand HideCalendarCommand { get; }
+
+        public IMvxCommand ToggleCalendarCommand { get; }
+
         public IMvxCommand<DateRangeParameter> ChangeDateRangeCommand { get; }
 
-        public ReportsViewModel(IReportsProvider reportsProvider, ITimeService timeService)
+        public ReportsViewModel(ITogglDataSource dataSource, 
+                                ITimeService timeService, 
+                                IMvxNavigationService navigationService)
         {
-            Ensure.Argument.IsNotNull(reportsProvider, nameof(reportsProvider));
+            Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
+            Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
 
             this.timeService = timeService;
-            this.reportsProvider = reportsProvider;
+            this.navigationService = navigationService;
+            reportsProvider = dataSource.ReportsProvider;
 
+            calendarViewModel = new ReportsCalendarViewModel(timeService, dataSource);
+
+            HideCalendarCommand = new MvxCommand(hideCalendar);
+            ToggleCalendarCommand = new MvxCommand(toggleCalendar);
             ChangeDateRangeCommand = new MvxCommand<DateRangeParameter>(changeDateRange);
         }
 
@@ -73,13 +92,26 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             endDate = startDate.AddDays(6);
             updateCurrentDateRangeString();
 
-            reportDisposable =
+            disposeBag.Add(
                 reportSubject
                     .StartWith(Unit.Default)
                     .AsObservable()
                     .Do(setLoadingState)
                     .SelectMany(_ => reportsProvider.GetProjectSummary(workspaceId, startDate, endDate))
-                    .Subscribe(onReport, onError);
+                    .Subscribe(onReport, onError)
+            );
+
+            disposeBag.Add(
+                calendarViewModel.SelectedDateRangeObservable.Subscribe(
+                    newDateRange => ChangeDateRangeCommand.Execute(newDateRange)
+                )
+            );
+        }
+
+        public override void ViewAppeared()
+        {
+            base.ViewAppeared();
+            navigationService.Navigate(calendarViewModel);
         }
 
         private void setLoadingState(Unit obj)
@@ -104,6 +136,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsLoading = false;
         }
 
+        private void toggleCalendar()
+        {
+            ChangePresentation(new ToggleCalendarVisibilityHint());
+        }
+
+        private void hideCalendar()
+        {
+            ChangePresentation(new ToggleCalendarVisibilityHint(forceHide: true));
+        }
+
         private void changeDateRange(DateRangeParameter dateRange)
         {
             startDate = dateRange.StartDate;
@@ -114,7 +156,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void updateCurrentDateRangeString()
             => CurrentDateRangeString = IsCurrentWeek
-                ? Resources.ThisWeek
-                : $"{startDate.ToString(dateFormat)} - {endDate.ToString(dateFormat)}";
+                ? $"{Resources.ThisWeek} ▾"
+                : $"{startDate.ToString(dateFormat)} - {endDate.ToString(dateFormat)} ▾";
     }
 }

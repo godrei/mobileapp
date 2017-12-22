@@ -127,9 +127,7 @@ namespace Toggl.Daneel.ViewControllers
             {
                 new UIBarButtonItem(UIBarButtonSystemItem.FixedSpace) { Width = -10 },
                 new UIBarButtonItem(settingsButton),
-                #if DEBUG
                 new UIBarButtonItem(reportsButton)
-                #endif
             };
         }
 

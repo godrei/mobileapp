@@ -9,7 +9,7 @@ namespace Toggl.Daneel
     public class ReportsCalendarCollectionViewLayout : UICollectionViewLayout
     {
         public const float CellHeight = 42;
-        private const float columnCount = 7;
+        private const int columnCount = 7;
         private nfloat cellWidth;
         private UICollectionViewLayoutAttributes[] attributes;
 

@@ -160,12 +160,26 @@ namespace Toggl.Daneel.Presentation
 
         public override void ChangePresentation(MvxPresentationHint hint)
         {
-            if (hint is CardVisibilityHint visibilityHint )
+            switch (hint)
             {
-                if (MasterNavigationController.TopViewController is MainViewController mainViewController)
-                    mainViewController.OnTimeEntryCardVisibilityChanged(visibilityHint.Visible);
+                case CardVisibilityHint cardHint:
+                    if (MasterNavigationController?.TopViewController is MainViewController mainViewController)
+                        mainViewController.OnTimeEntryCardVisibilityChanged(cardHint.Visible);
+                    return;
 
-                return;   
+                case ToggleCalendarVisibilityHint calendarHint:
+                    if (MasterNavigationController?.TopViewController is ReportsViewController reportsViewController)
+                    {
+                        if (calendarHint.ForceHide || reportsViewController.CalendarIsVisible)
+                        {
+                            reportsViewController.HideCalendar();
+                        }
+                        else
+                        {
+                            reportsViewController.ShowCalendar();
+                        }
+                    }
+                    return;
             }
 
             base.ChangePresentation(hint);
@@ -186,6 +200,12 @@ namespace Toggl.Daneel.Presentation
         private Dictionary<Type, INestedPresentationInfo> createNestedPresentationInfo()
             => new Dictionary<Type, INestedPresentationInfo>
             {
+                {
+                    typeof(ReportsCalendarViewController),
+                    new NestedPresentationInfo<ReportsViewController>(
+                        () => findViewController<ReportsViewController>(),
+                        reportsController => reportsController.CalendarContainerView)
+                },
                 {
                     typeof(SuggestionsViewController),
                     new NestedPresentationInfo<MainViewController>(

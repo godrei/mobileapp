@@ -110,6 +110,43 @@ namespace Toggl.Foundation.Tests.Reports
                         calledIds => ensureExpectedIdsAreReturned(calledIds, projectsInApi)));
             }
 
+            [Property(MaxTest = 10, StartSize = 10, EndSize = 20)]
+            public void ReturnsOnlyOneListIfItQueriesTheApi(NonEmptyArray<NonNegativeInt> projectIds)
+            {
+                var actualProjectIds = projectIds.Get.Select(i => (long)i.Get).Distinct().ToArray();
+                if (actualProjectIds.Length < 2) return;
+                
+                var projectsInDb = actualProjectIds.Where((i, id) => i % 2 == 0).ToArray();
+                var projectsInApi = actualProjectIds.Where((i, id) => i % 2 != 0).ToArray();
+                var summaries = getSummaryList(actualProjectIds);
+                apiProjectsSummary.ProjectsSummaries.Returns(summaries);
+                configureRepositoryToReturn(projectsInDb, projectsInApi);
+                configureApiToReturn(projectsInApi);
+
+                var lists = ReportsProvider.GetProjectSummary(workspaceId, DateTimeOffset.Now.AddDays(-7), DateTimeOffset.Now).ToList().Wait();
+
+                lists.Should().HaveCount(1);
+            }
+            
+            [Property(MaxTest = 10, StartSize = 10, EndSize = 20)]
+            public void ReturnsOnlyOneListIfItUsesTheMemoryCache(NonEmptyArray<NonNegativeInt> projectIds)
+            {
+                var actualProjectIds = projectIds.Get.Select(i => (long)i.Get).Distinct().ToArray();
+                if (actualProjectIds.Length < 2) return;
+                
+                var projectsInDb = actualProjectIds.Where((i, id) => i % 2 == 0).ToArray();
+                var projectsInApi = actualProjectIds.Where((i, id) => i % 2 != 0).ToArray();
+                var summaries = getSummaryList(actualProjectIds);
+                apiProjectsSummary.ProjectsSummaries.Returns(summaries);
+                configureRepositoryToReturn(projectsInDb, projectsInApi);
+                configureApiToReturn(projectsInApi);
+
+                ReportsProvider.GetProjectSummary(workspaceId, DateTimeOffset.Now.AddDays(-7), DateTimeOffset.Now).Wait();
+                var lists = ReportsProvider.GetProjectSummary(workspaceId, DateTimeOffset.Now.AddDays(-7), DateTimeOffset.Now).ToList().Wait();
+
+                lists.Should().HaveCount(1);
+            }
+
             [Property(MaxTest = 1)]
             public void CachesTheApiResultsInMemorySoTheApiIsNotCalledTwiceForTheSameProjects(
                 NonEmptyArray<NonNegativeInt> projectIds)

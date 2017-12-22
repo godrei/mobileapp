@@ -1,4 +1,5 @@
-﻿using NSubstitute;
+﻿using System.Collections.Generic;
+using NSubstitute;
 using Toggl.Ultrawave.Exceptions;
 using Toggl.Ultrawave.Network;
 
@@ -10,7 +11,7 @@ namespace Toggl.Foundation.Tests.Helpers
 
         private static IResponse response => Substitute.For<IResponse>();
 
-        public static object[] ClientExceptions
+        public static IEnumerable<object[]> ClientExceptions
             => new[]
             {
                 new object[] { new BadRequestException(request, response) },
@@ -24,7 +25,7 @@ namespace Toggl.Foundation.Tests.Helpers
                 new object[] { new TooManyRequestsException(request, response) }
             };
 
-        public static object[] ClientExceptionsWhichAreNotReThrownInSyncStates
+        public static IEnumerable<object[]> ClientExceptionsWhichAreNotReThrownInSyncStates
             => new[]
             {
                 new object[] { new BadRequestException(request, response) },
@@ -35,7 +36,7 @@ namespace Toggl.Foundation.Tests.Helpers
                 new object[] { new TooManyRequestsException(request, response) }
             };
 
-        public static object[] ExceptionsWhichCauseRethrow()
+        public static IEnumerable<object[]> ExceptionsWhichCauseRethrow()
             => new[]
             {
                 new object[] { new ClientDeprecatedException(Substitute.For<IRequest>(), Substitute.For<IResponse>()), },
@@ -44,7 +45,7 @@ namespace Toggl.Foundation.Tests.Helpers
                 new object[] { new OfflineException() }
             };
 
-        public static object[] ServerExceptions
+        public static IEnumerable<object[]> ServerExceptions
             => new[]
             {
                 new object[] { new InternalServerErrorException(request, response) },

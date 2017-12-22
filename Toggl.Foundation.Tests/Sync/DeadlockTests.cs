@@ -207,7 +207,7 @@ namespace Toggl.Foundation.Tests.Sync
                 secondStart.ShouldNotThrow<InvalidOperationException>();
             }
 
-            [Property]
+            [Property(Skip = "there is currently no timeout")]
             public void DoesNotGetStuckInADeadlockWhenSomeTransitionTimeOuts(byte n)
             {
                 Reset();

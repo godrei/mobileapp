@@ -79,10 +79,10 @@ namespace Toggl.Daneel.Views
 
         private void updateMaskingLayer()
         {
-            //Disable implicit animations
-            CATransaction.Begin();
-            CATransaction.DisableActions = true;
-            CATransaction.AnimationDuration = 0;
+            // iOS tries to animate things without our consent
+            // Trying to create a Core Animation context caused deadlocks
+            // which froze the app. Speeding it up fixes the problem.
+            maskingLayer.Speed = 999;
 
             if (!RoundLeft && !RoundRight)
             {
@@ -108,8 +108,6 @@ namespace Toggl.Daneel.Views
                 Width = Bounds.Width - CornerRadius,
                 Height = Bounds.Height
             };
-
-            CATransaction.Commit();
         }
     }
 }

@@ -363,27 +363,27 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation\Toggl.Foundation.csproj">
-      <Project>{7BFE4787-4B5E-4C04-A78E-FA89C187FC3A}</Project>
+      <Project>{09D75C0B-3367-4678-97EF-6EADE64AF09C}</Project>
       <Name>Toggl.Foundation</Name>
     </ProjectReference>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">
-      <Project>{B3FDFBF3-8D73-478F-B10E-9843C8613C87}</Project>
+      <Project>{CB2B0786-217F-455A-9349-0FC69468D3B6}</Project>
       <Name>Toggl.Foundation.MvvmCross</Name>
     </ProjectReference>
     <ProjectReference Include="..\Toggl.Multivac\Toggl.Multivac.csproj">
-      <Project>{4A9CF7CD-8EB4-435D-958B-98A9FFC14876}</Project>
+      <Project>{6AF7BE5E-AF9D-4EA7-AF7F-28D07B8DEF24}</Project>
       <Name>Toggl.Multivac</Name>
     </ProjectReference>
     <ProjectReference Include="..\Toggl.PrimeRadiant\Toggl.PrimeRadiant.csproj">
-      <Project>{84D4A3E2-A25F-4FEF-B4AA-332DFB2A842D}</Project>
+      <Project>{3A603451-31B2-4975-9366-3212BEA78F57}</Project>
       <Name>Toggl.PrimeRadiant</Name>
     </ProjectReference>
     <ProjectReference Include="..\Toggl.PrimeRadiant.Realm\Toggl.PrimeRadiant.Realm.csproj">
-      <Project>{64A8727E-5D39-4EFB-80FA-4510147796BB}</Project>
+      <Project>{7716BCE9-A3D4-4359-A02E-94380BDF83C7}</Project>
       <Name>Toggl.PrimeRadiant.Realm</Name>
     </ProjectReference>
     <ProjectReference Include="..\Toggl.Ultrawave\Toggl.Ultrawave.csproj">
-      <Project>{B4E4943F-0574-4BEF-9ADC-B19102458754}</Project>
+      <Project>{5ACEB155-9DD4-4309-BCC9-997A09950393}</Project>
       <Name>Toggl.Ultrawave</Name>
     </ProjectReference>
   </ItemGroup>

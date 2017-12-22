@@ -1,4 +1,4 @@
-#tool "nuget:?package=xunit.runner.console"
+#tool "nuget:?package=xunit.runner.console&version=2.2.0"
 #tool "nuget:?package=NUnit.Runners&version=2.6.3"
 
 public class TemporaryFileTransformation
@@ -11,17 +11,33 @@ public class TemporaryFileTransformation
 var target = Argument("target", "Default");
 var buildAll = Argument("buildall", Bitrise.IsRunningOnBitrise);
 
-private Action Test(string testFiles)
+private Action Test(string[] projectPaths)
 {
-    var testSettings = new XUnit2Settings
-    {
-        Parallelism = ParallelismOption.All,
-        HtmlReport = true,
-        NoAppDomain = true,
-        OutputDirectory = "./bin"
-    };
+    var settings = new DotNetCoreTestSettings { NoBuild = true };
 
-    return () => XUnit2(GetFiles(testFiles), testSettings);
+    return () => 
+    {
+        foreach (var projectPath in projectPaths)
+        {
+            DotNetCoreTest(projectPath, settings);
+        }
+    };
+}
+
+private Action UITest(string[] dllPaths)
+{
+    return () => 
+    {
+        foreach(var dllPath in dllPaths)
+        {
+            var args = $"tools/nunit.runners.2.6.3/NUnit.Runners/tools/nunit-console.exe {dllPath} -stoponerror";
+
+            var result = StartProcess("mono", new ProcessSettings { Arguments = args });
+            if (result == 0) continue;
+
+            throw new Exception($"Failed while running UI tests at {dllPath}");
+        }
+    };
 }
 
 private Action BuildSolution(string configuration, string platform = "", bool uploadSymbols = false)
@@ -137,6 +153,22 @@ var transformations = new List<TemporaryFileTransformation>
     GetIosInfoConfigurationTransformation()
 };
 
+private string[] GetUnitTestProjects() => new []
+{
+    "./Toggl.Multivac.Tests/Toggl.Multivac.Tests.csproj",
+    "./Toggl.Ultrawave.Tests/Toggl.Ultrawave.Tests.csproj",
+    "./Toggl.PrimeRadiant.Tests/Toggl.PrimeRadiant.Tests.csproj",
+    "./Toggl.Foundation.Tests/Toggl.Foundation.Tests.csproj",
+};
+
+private string[] GetUITestFiles() => new []
+{
+    "./bin/Debug/Toggl.Daneel.Tests.UI.dll"
+};
+
+private string[] GetIntegrationTestProjects()
+    => new [] { "./Toggl.Ultrawave.Tests.Integration/Toggl.Ultrawave.Tests.Integration.csproj" };
+
 Setup(context => transformations.ForEach(transformation => System.IO.File.WriteAllText(transformation.Path, transformation.Temporary)));
 Teardown(context =>
 {
@@ -183,7 +215,7 @@ Task("Build.Tests.Integration")
 
 Task("Build.Tests.UI")
     .IsDependentOn("Nuget")
-    .Does(BuildSolution("Debug", "iPhoneSimulator"));
+    .Does(BuildSolution("Debug"));
 
 //iOS Builds
 Task("Build.Release.iOS.AdHoc")
@@ -201,17 +233,17 @@ Task("Build.Release.iOS.AppStore")
 //Unit Tests
 Task("Tests.Unit")
     .IsDependentOn(buildAll ? "Build.Tests.All" : "Build.Tests.Unit")
-    .Does(Test("./bin/Debug/*.Tests.dll"));
+    .Does(Test(GetUnitTestProjects()));
 
 //Integration Tests
 Task("Tests.Integration")
     .IsDependentOn(buildAll ? "Build.Tests.All" : "Build.Tests.Integration")
-    .Does(Test("./bin/Debug/*.Tests.Integration.dll"));
+    .Does(Test(GetIntegrationTestProjects()));
 
 //UI Tests
 Task("Tests.UI")
     .IsDependentOn("Build.Tests.UI")
-    .Does(() => NUnit(GetFiles("./bin/Debug/*.Tests.UI.dll")));
+    .Does(UITest(GetUITestFiles()));
 
 // All Tests
 Task("Tests")

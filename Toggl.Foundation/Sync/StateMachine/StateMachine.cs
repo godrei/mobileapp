@@ -62,7 +62,6 @@ namespace Toggl.Foundation.Sync
 
             transitionHandler(transition)
                 .SingleAsync()
-                .Timeout(scheduler.Now + stateTimeout, scheduler)
                 .Subscribe(onTransition, onError);
         }
 

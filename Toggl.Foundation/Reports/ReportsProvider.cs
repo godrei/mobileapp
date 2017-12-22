@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using Toggl.Foundation.Helper;
+using Toggl.Foundation.Models;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.Multivac.Models;
@@ -84,11 +85,15 @@ namespace Toggl.Foundation.Reports
 
                 return notInDatabaseIds.Length == 0
                     ? databaseProjectsObservable
-                    : databaseProjectsObservable.Merge(searchMemoryAndApi(workspaceId, notInDatabaseIds));
+                    : databaseProjectsObservable
+                        .Merge(searchMemoryAndApi(workspaceId, notInDatabaseIds))
+                        .SelectMany(list => list)
+                        .ToList();
             });
 
         private IObservable<Either<long, IProject>> tryGetProjectFromDatabase(long id)
             => projectsRepository.GetById(id)
+                .Select(Project.From)
                 .Select(Either<long, IProject>.WithRight)
                 .Catch(Observable.Return(Either<long, IProject>.WithLeft(id)));
 
@@ -105,7 +110,10 @@ namespace Toggl.Foundation.Reports
 
                     return notInMemoryIds.Length == 0
                         ? memoryProjectsObservable
-                        : memoryProjectsObservable.Merge(projectsApi.Search(workspaceId, notInMemoryIds).Do(persistInMemoryCache));
+                        : memoryProjectsObservable
+                            .Merge(searchApi(workspaceId, notInMemoryIds))
+                            .SelectMany(list => list)
+                            .ToList();
                 }
             });
 
@@ -116,6 +124,10 @@ namespace Toggl.Foundation.Reports
                 ? Either<long, IProject>.WithLeft(id)
                 : Either<long, IProject>.WithRight(project);
         }
+
+        private IObservable<List<IProject>> searchApi(long workspaceId, long[] projectIds)
+            => projectsApi.Search(workspaceId, projectIds)
+                .Do(persistInMemoryCache);
 
         private void persistInMemoryCache(List<IProject> apiProjects)
         {
