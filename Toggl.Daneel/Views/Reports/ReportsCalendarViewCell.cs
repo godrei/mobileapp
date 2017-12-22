@@ -1,9 +1,11 @@
 ﻿using System;
 using Foundation;
 using MvvmCross.Binding.BindingContext;
+using MvvmCross.Binding.iOS;
 using MvvmCross.Binding.iOS.Views;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Plugins.Color.iOS;
+using MvvmCross.Plugins.Visibility;
 using Toggl.Daneel.Combiners;
 using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.Helper;
@@ -34,8 +36,8 @@ namespace Toggl.Daneel.Views
         public override void AwakeFromNib()
         {
             base.AwakeFromNib();
-
-            BackgroundView.CornerRadius = cornerRadius;
+            
+            prepareViews();
 
             this.DelayBind(() =>
             {
@@ -43,6 +45,8 @@ namespace Toggl.Daneel.Views
                     = new BoolToConstantValueConverter<UIColor>(
                         Color.Calendar.SelectedDayBackgoundColor.ToNativeColor(),
                         Color.Common.Transparent.ToNativeColor());
+
+                var todayVisibilityConverter = new MvxVisibilityValueConverter();
 
                 var bindingSet = this.CreateBindingSet<ReportsCalendarViewCell, CalendarDayViewModel>();
 
@@ -69,6 +73,12 @@ namespace Toggl.Daneel.Views
                 bindingSet.Bind(BackgroundView)
                           .For(v => v.RoundRight)
                           .To(vm => vm.IsEndOfSelectedPeriod);
+
+                //Today
+                bindingSet.Bind(TodayBackgroundView)
+                    .For(v => v.BindVisibility())
+                    .To(vm => vm.IsToday)
+                    .WithConversion(todayVisibilityConverter);
                 
                 bindingSet.Apply();
 
@@ -77,5 +87,18 @@ namespace Toggl.Daneel.Views
             AddGestureRecognizer(new UITapGestureRecognizer(
                 () => CellTappedCommand?.Execute((CalendarDayViewModel)DataContext)));
         }
+        
+        private void prepareViews()
+        {
+            //Background view
+            BackgroundView.CornerRadius = cornerRadius;
+            
+            //Today background indicator
+            TodayBackgroundView.CornerRadius = cornerRadius;
+            TodayBackgroundView.RoundLeft = true;
+            TodayBackgroundView.RoundRight = true;
+            TodayBackgroundView.BackgroundColor = Color.Calendar.Today.ToNativeColor();
+        }
+
     }
 }

@@ -111,7 +111,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
         {
             var monthIterator = initialMonth;
             for (int i = 0; i < 12; i++, monthIterator = monthIterator.Next())
-                Months.Add(new CalendarPageViewModel(monthIterator, beginningOfWeek));
+                Months.Add(new CalendarPageViewModel(monthIterator, beginningOfWeek, timeService.CurrentDateTime));
         }
 
         private List<CalendarBaseQuickSelectShortcut> createQuickSelectShortcuts()

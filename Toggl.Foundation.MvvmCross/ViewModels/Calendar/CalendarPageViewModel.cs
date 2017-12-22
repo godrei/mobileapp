@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using MvvmCross.Binding.Bindings.Target;
 using Toggl.Multivac;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
@@ -6,6 +8,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
     public sealed class CalendarPageViewModel
     {
         private readonly BeginningOfWeek beginningOfWeek;
+        private readonly DateTimeOffset today;
 
         public List<CalendarDayViewModel> Days { get; }
             = new List<CalendarDayViewModel>();
@@ -15,9 +18,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
         public int RowCount { get; }
 
         public CalendarPageViewModel(
-            CalendarMonth calendarMonth, BeginningOfWeek beginningOfWeek)
+            CalendarMonth calendarMonth, BeginningOfWeek beginningOfWeek, DateTimeOffset today)
         {
             this.beginningOfWeek = beginningOfWeek;
+            this.today = today;
 
             CalendarMonth = calendarMonth;
 
@@ -39,14 +43,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
             var daysToAdd = ((int)firstDayOfMonth - (int)beginningOfWeek.ToDayOfWeekEnum() + 7) % 7;
 
             for (int i = daysToAdd - 1; i >= 0; i--)
-                Days.Add(new CalendarDayViewModel(daysInPreviousMonth - i, previousMonth, false));
+                addDay(daysInPreviousMonth - i, previousMonth, false);
         }
 
         private void addDaysFromCurrentMonth()
         {
             var daysInMonth = CalendarMonth.DaysInMonth;
             for (int i = 0; i < daysInMonth; i++)
-                Days.Add(new CalendarDayViewModel(i + 1, CalendarMonth, true));
+                addDay(i + 1, CalendarMonth, true);
         }
 
         private void addDaysFromNextMonth()
@@ -59,7 +63,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
             var daysToAdd = (lastDayOfWeek - lastDayOfWeekInTargetMonth + 7) % 7;
 
             for (int i = 0; i < daysToAdd; i++)
-                Days.Add(new CalendarDayViewModel(i + 1, nextMonth, false));
+                addDay(i + 1, nextMonth, false);
+        }
+
+        private void addDay(int day, CalendarMonth month, bool isCurrentMonth)
+        {
+            var isToday = month.Year == today.Year && month.Month == today.Month && day == today.Day;
+            Days.Add(new CalendarDayViewModel(day, month, isCurrentMonth, isToday));
         }
     }
 }

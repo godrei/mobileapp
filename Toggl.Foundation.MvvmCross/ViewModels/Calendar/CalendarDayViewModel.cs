@@ -17,15 +17,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
 
         public bool Selected { get; set; }
 
+        public bool IsToday { get; set; }
+        
         public bool IsStartOfSelectedPeriod { get; set; }
 
         public bool IsEndOfSelectedPeriod { get; set; }
 
-        public CalendarDayViewModel(int day, CalendarMonth month, bool isInCurrentMonth)
+        public CalendarDayViewModel(int day, CalendarMonth month, bool isInCurrentMonth, bool isToday)
         {
             Day = day;
             CalendarMonth = month;
             IsInCurrentMonth = isInCurrentMonth;
+            IsToday = isToday;
         }
 
         public DateTimeOffset ToDateTimeOffset()

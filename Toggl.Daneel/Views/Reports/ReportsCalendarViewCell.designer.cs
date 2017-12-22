@@ -17,17 +17,25 @@ namespace Toggl.Daneel.Views
 
 		[Outlet]
 		UIKit.UILabel Text { get; set; }
+
+		[Outlet]
+		Toggl.Daneel.Views.RoundedView TodayBackgroundView { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (Text != null) {
-				Text.Dispose ();
-				Text = null;
-			}
-
 			if (BackgroundView != null) {
 				BackgroundView.Dispose ();
 				BackgroundView = null;
+			}
+
+			if (TodayBackgroundView != null) {
+				TodayBackgroundView.Dispose ();
+				TodayBackgroundView = null;
+			}
+
+			if (Text != null) {
+				Text.Dispose ();
+				Text = null;
 			}
 		}
 	}

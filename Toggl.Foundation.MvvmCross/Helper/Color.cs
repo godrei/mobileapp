@@ -172,6 +172,7 @@ namespace Toggl.Foundation.MvvmCross.Helper
             }
 
             public static readonly MvxColor SelectedDayBackgoundColor = new MvxColor(181, 188, 192);
+            public static readonly MvxColor Today = new MvxColor(SelectedDayBackgoundColor.ARGB, 30);
             public static readonly MvxColor CellTextColorInCurrentMonth = new MvxColor(0, 0, 0);
             public static readonly MvxColor CellTextColorOutOfCurrentMonth = new MvxColor(163, 163, 163);
             public static readonly MvxColor CellTextColorSelected = new MvxColor(255, 255, 255);
