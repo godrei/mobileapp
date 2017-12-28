@@ -9,7 +9,7 @@ using static Android.Support.V7.Widget.Toolbar;
 
 namespace Toggl.Giskard.Activities
 {  
-    [Activity(Theme="@style/Theme.AppCompat.Light.NoActionBar", WindowSoftInputMode=SoftInput.AdjustResize)]
+    [Activity(Theme = "@style/Theme.AppCompat.Light.NoActionBar", WindowSoftInputMode=SoftInput.AdjustResize)]
     [MvxActivityPresentation]
     public class LoginActivity : MvxAppCompatActivity<LoginViewModel>
     {
@@ -32,8 +32,7 @@ namespace Toggl.Giskard.Activities
            
         private void navigationClick(object sender, NavigationClickEventArgs args)
         {
-            if (ViewModel.IsLoading)
-                return;
+            if (ViewModel.IsLoading) return;
             
             ViewModel.BackCommand.Execute();
         }

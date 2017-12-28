@@ -177,6 +177,7 @@
     <Compile Include="Services\SharedPreferencesStorage.cs" />
     <Compile Include="Bootstrap\ColorPluginBootstrap.cs" />
     <Compile Include="Bootstrap\VisibilityPluginBootstrap.cs" />
+    <Compile Include="Activities\SettingsActivity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />
@@ -355,6 +356,8 @@
     <AndroidResource Include="Resources\drawable-xxxhdpi\timer_dark.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\timer_light.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\unsynced.png" />
+    <AndroidResource Include="Resources\values\Colors.xml" />
+    <AndroidResource Include="Resources\layout\SettingsActivity.axml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\drawable\" />

@@ -3054,44 +3054,44 @@ namespace Toggl.Giskard
 		public partial class Color
 		{
 			
-			// aapt resource value: 0x7f0d0047
-			public const int abc_background_cache_hint_selector_material_dark = 2131558471;
+			// aapt resource value: 0x7f0d004e
+			public const int abc_background_cache_hint_selector_material_dark = 2131558478;
 			
-			// aapt resource value: 0x7f0d0048
-			public const int abc_background_cache_hint_selector_material_light = 2131558472;
+			// aapt resource value: 0x7f0d004f
+			public const int abc_background_cache_hint_selector_material_light = 2131558479;
 			
-			// aapt resource value: 0x7f0d0049
-			public const int abc_btn_colored_borderless_text_material = 2131558473;
+			// aapt resource value: 0x7f0d0050
+			public const int abc_btn_colored_borderless_text_material = 2131558480;
 			
-			// aapt resource value: 0x7f0d004a
-			public const int abc_btn_colored_text_material = 2131558474;
+			// aapt resource value: 0x7f0d0051
+			public const int abc_btn_colored_text_material = 2131558481;
 			
-			// aapt resource value: 0x7f0d004b
-			public const int abc_color_highlight_material = 2131558475;
+			// aapt resource value: 0x7f0d0052
+			public const int abc_color_highlight_material = 2131558482;
 			
-			// aapt resource value: 0x7f0d004c
-			public const int abc_hint_foreground_material_dark = 2131558476;
+			// aapt resource value: 0x7f0d0053
+			public const int abc_hint_foreground_material_dark = 2131558483;
 			
-			// aapt resource value: 0x7f0d004d
-			public const int abc_hint_foreground_material_light = 2131558477;
+			// aapt resource value: 0x7f0d0054
+			public const int abc_hint_foreground_material_light = 2131558484;
 			
 			// aapt resource value: 0x7f0d0000
 			public const int abc_input_method_navigation_guard = 2131558400;
 			
-			// aapt resource value: 0x7f0d004e
-			public const int abc_primary_text_disable_only_material_dark = 2131558478;
+			// aapt resource value: 0x7f0d0055
+			public const int abc_primary_text_disable_only_material_dark = 2131558485;
 			
-			// aapt resource value: 0x7f0d004f
-			public const int abc_primary_text_disable_only_material_light = 2131558479;
+			// aapt resource value: 0x7f0d0056
+			public const int abc_primary_text_disable_only_material_light = 2131558486;
 			
-			// aapt resource value: 0x7f0d0050
-			public const int abc_primary_text_material_dark = 2131558480;
+			// aapt resource value: 0x7f0d0057
+			public const int abc_primary_text_material_dark = 2131558487;
 			
-			// aapt resource value: 0x7f0d0051
-			public const int abc_primary_text_material_light = 2131558481;
+			// aapt resource value: 0x7f0d0058
+			public const int abc_primary_text_material_light = 2131558488;
 			
-			// aapt resource value: 0x7f0d0052
-			public const int abc_search_url_text = 2131558482;
+			// aapt resource value: 0x7f0d0059
+			public const int abc_search_url_text = 2131558489;
 			
 			// aapt resource value: 0x7f0d0001
 			public const int abc_search_url_text_normal = 2131558401;
@@ -3102,29 +3102,29 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f0d0003
 			public const int abc_search_url_text_selected = 2131558403;
 			
-			// aapt resource value: 0x7f0d0053
-			public const int abc_secondary_text_material_dark = 2131558483;
-			
-			// aapt resource value: 0x7f0d0054
-			public const int abc_secondary_text_material_light = 2131558484;
-			
-			// aapt resource value: 0x7f0d0055
-			public const int abc_tint_btn_checkable = 2131558485;
-			
-			// aapt resource value: 0x7f0d0056
-			public const int abc_tint_default = 2131558486;
-			
-			// aapt resource value: 0x7f0d0057
-			public const int abc_tint_edittext = 2131558487;
-			
-			// aapt resource value: 0x7f0d0058
-			public const int abc_tint_seek_thumb = 2131558488;
-			
-			// aapt resource value: 0x7f0d0059
-			public const int abc_tint_spinner = 2131558489;
-			
 			// aapt resource value: 0x7f0d005a
-			public const int abc_tint_switch_track = 2131558490;
+			public const int abc_secondary_text_material_dark = 2131558490;
+			
+			// aapt resource value: 0x7f0d005b
+			public const int abc_secondary_text_material_light = 2131558491;
+			
+			// aapt resource value: 0x7f0d005c
+			public const int abc_tint_btn_checkable = 2131558492;
+			
+			// aapt resource value: 0x7f0d005d
+			public const int abc_tint_default = 2131558493;
+			
+			// aapt resource value: 0x7f0d005e
+			public const int abc_tint_edittext = 2131558494;
+			
+			// aapt resource value: 0x7f0d005f
+			public const int abc_tint_seek_thumb = 2131558495;
+			
+			// aapt resource value: 0x7f0d0060
+			public const int abc_tint_spinner = 2131558496;
+			
+			// aapt resource value: 0x7f0d0061
+			public const int abc_tint_switch_track = 2131558497;
 			
 			// aapt resource value: 0x7f0d0004
 			public const int accent_material_dark = 2131558404;
@@ -3168,11 +3168,26 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f0d0011
 			public const int button_material_light = 2131558417;
 			
+			// aapt resource value: 0x7f0d0047
+			public const int defaultBackground = 2131558471;
+			
+			// aapt resource value: 0x7f0d004c
+			public const int defaultEditText = 2131558476;
+			
+			// aapt resource value: 0x7f0d004d
+			public const int defaultFabBackground = 2131558477;
+			
+			// aapt resource value: 0x7f0d004b
+			public const int defaultIcon = 2131558475;
+			
+			// aapt resource value: 0x7f0d004a
+			public const int defaultText = 2131558474;
+			
 			// aapt resource value: 0x7f0d003c
 			public const int design_bottom_navigation_shadow_color = 2131558460;
 			
-			// aapt resource value: 0x7f0d005b
-			public const int design_error = 2131558491;
+			// aapt resource value: 0x7f0d0062
+			public const int design_error = 2131558498;
 			
 			// aapt resource value: 0x7f0d003d
 			public const int design_fab_shadow_end_color = 2131558461;
@@ -3198,8 +3213,8 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f0d0044
 			public const int design_snackbar_background_color = 2131558468;
 			
-			// aapt resource value: 0x7f0d005c
-			public const int design_tint_password_toggle = 2131558492;
+			// aapt resource value: 0x7f0d0063
+			public const int design_tint_password_toggle = 2131558499;
 			
 			// aapt resource value: 0x7f0d0012
 			public const int dim_foreground_disabled_material_dark = 2131558418;
@@ -3273,6 +3288,9 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f0d003b
 			public const int notification_material_background_media_default_color = 2131558459;
 			
+			// aapt resource value: 0x7f0d0049
+			public const int placeholderText = 2131558473;
+			
 			// aapt resource value: 0x7f0d0027
 			public const int primary_dark_material_dark = 2131558439;
 			
@@ -3321,17 +3339,20 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f0d0036
 			public const int switch_thumb_disabled_material_light = 2131558454;
 			
-			// aapt resource value: 0x7f0d005d
-			public const int switch_thumb_material_dark = 2131558493;
+			// aapt resource value: 0x7f0d0064
+			public const int switch_thumb_material_dark = 2131558500;
 			
-			// aapt resource value: 0x7f0d005e
-			public const int switch_thumb_material_light = 2131558494;
+			// aapt resource value: 0x7f0d0065
+			public const int switch_thumb_material_light = 2131558501;
 			
 			// aapt resource value: 0x7f0d0037
 			public const int switch_thumb_normal_material_dark = 2131558455;
 			
 			// aapt resource value: 0x7f0d0038
 			public const int switch_thumb_normal_material_light = 2131558456;
+			
+			// aapt resource value: 0x7f0d0048
+			public const int toolbarBackground = 2131558472;
 			
 			// aapt resource value: 0x7f0d0039
 			public const int tooltip_background_dark = 2131558457;
@@ -4281,11 +4302,17 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f090034
 			public const int CTRL = 2131296308;
 			
-			// aapt resource value: 0x7f09009b
-			public const int EmailTextField = 2131296411;
-			
 			// aapt resource value: 0x7f090035
 			public const int FUNCTION = 2131296309;
+			
+			// aapt resource value: 0x7f09009b
+			public const int LoginEmailTextField = 2131296411;
+			
+			// aapt resource value: 0x7f09009c
+			public const int LoginPasswordTextField = 2131296412;
+			
+			// aapt resource value: 0x7f09009d
+			public const int LoginProgressBar = 2131296413;
 			
 			// aapt resource value: 0x7f09009a
 			public const int LoginToolbar = 2131296410;
@@ -4293,20 +4320,26 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f090036
 			public const int META = 2131296310;
 			
+			// aapt resource value: 0x7f09009e
+			public const int MainTextView = 2131296414;
+			
 			// aapt resource value: 0x7f09001c
 			public const int MvvmCrossTagId = 2131296284;
 			
 			// aapt resource value: 0x7f09001d
 			public const int MvxBindingTagUnique = 2131296285;
 			
-			// aapt resource value: 0x7f09009c
-			public const int PasswordTextField = 2131296412;
-			
 			// aapt resource value: 0x7f090037
 			public const int SHIFT = 2131296311;
 			
 			// aapt resource value: 0x7f090038
 			public const int SYM = 2131296312;
+			
+			// aapt resource value: 0x7f0900b2
+			public const int SettingsBack = 2131296434;
+			
+			// aapt resource value: 0x7f0900b3
+			public const int SettingsLogout = 2131296435;
 			
 			// aapt resource value: 0x7f0900a2
 			public const int action0 = 2131296418;
@@ -4551,14 +4584,14 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f090062
 			public const int list_item = 2131296354;
 			
-			// aapt resource value: 0x7f0900b4
-			public const int masked = 2131296436;
+			// aapt resource value: 0x7f0900b6
+			public const int masked = 2131296438;
 			
 			// aapt resource value: 0x7f0900a5
 			public const int media_actions = 2131296421;
 			
-			// aapt resource value: 0x7f0900b2
-			public const int message = 2131296434;
+			// aapt resource value: 0x7f0900b4
+			public const int message = 2131296436;
 			
 			// aapt resource value: 0x7f090032
 			public const int middle = 2131296306;
@@ -4601,9 +4634,6 @@ namespace Toggl.Giskard
 			
 			// aapt resource value: 0x7f09004e
 			public const int pin = 2131296334;
-			
-			// aapt resource value: 0x7f09009d
-			public const int progressBar = 2131296413;
 			
 			// aapt resource value: 0x7f090006
 			public const int progress_circular = 2131296262;
@@ -4749,9 +4779,6 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f09006a
 			public const int textSpacerNoTitle = 2131296362;
 			
-			// aapt resource value: 0x7f09009e
-			public const int textView1 = 2131296414;
-			
 			// aapt resource value: 0x7f090099
 			public const int text_input_password_toggle = 2131296409;
 			
@@ -4809,8 +4836,8 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f090016
 			public const int view_offset_helper = 2131296278;
 			
-			// aapt resource value: 0x7f0900b3
-			public const int visible = 2131296435;
+			// aapt resource value: 0x7f0900b5
+			public const int visible = 2131296437;
 			
 			// aapt resource value: 0x7f09003d
 			public const int withText = 2131296317;
@@ -5061,13 +5088,16 @@ namespace Toggl.Giskard
 			public const int select_dialog_singlechoice_material = 2130968637;
 			
 			// aapt resource value: 0x7f04003e
-			public const int SplashScreen = 2130968638;
+			public const int SettingsActivity = 2130968638;
 			
 			// aapt resource value: 0x7f04003f
-			public const int support_simple_spinner_dropdown_item = 2130968639;
+			public const int SplashScreen = 2130968639;
 			
 			// aapt resource value: 0x7f040040
-			public const int tooltip = 2130968640;
+			public const int support_simple_spinner_dropdown_item = 2130968640;
+			
+			// aapt resource value: 0x7f040041
+			public const int tooltip = 2130968641;
 			
 			static Layout()
 			{

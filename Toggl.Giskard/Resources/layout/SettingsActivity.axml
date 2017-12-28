@@ -7,17 +7,27 @@
     android:paddingTop="50dp">
     <TextView
         android:id="@+id/MainTextView"
-        android:text="If you are here, that means that you have logged in."
+        android:text="Back or log out? Whatcha gonna do?!"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp" />
     <ImageView
-        local:MvxBind="Click OpenSettingsCommand"
-        android:src="@drawable/settings_dark"
+        android:id="@+id/SettingsBack"
+        local:MvxBind="Click BackCommand"
+        android:src="@drawable/arrow_back"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_centerHorizontal="true"
         android:layout_centerInParent="true" />
+    <ImageView
+        android:id="@+id/SettingsLogout"
+        local:MvxBind="Click LogoutCommand"
+        android:src="@drawable/close"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_below="@id/SettingsBack"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp" />
 </RelativeLayout>
