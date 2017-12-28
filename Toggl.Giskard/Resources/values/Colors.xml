@@ -1,7 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <resources>
     <color name="defaultBackground">#fafbfc</color>
-    <color name="toolbarBackground">#323232</color>
+    <color name="errorText">#e20505</color>
+    <color name="lightToolbarBackground">#ffffff</color>
+    <color name="darkToolbarBackground">#323232</color>
     <color name="placeholderText">#cecece</color>
     <color name="defaultText">#959595</color>
     <color name="defaultIcon">#959595</color>
