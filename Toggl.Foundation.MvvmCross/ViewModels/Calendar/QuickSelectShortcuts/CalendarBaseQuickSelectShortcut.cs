@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using MvvmCross.Core.ViewModels;
+﻿using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Multivac;
 
@@ -17,9 +16,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar.QuickSelectShortcuts
             ITimeService timeService, string title)
         {
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
+            Ensure.Argument.IsNotNull(title, nameof(title));
 
             TimeService = timeService;
-
             Title = title;
         }
 
