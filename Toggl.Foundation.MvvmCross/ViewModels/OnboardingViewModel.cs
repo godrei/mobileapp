@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform.UI;
@@ -6,6 +7,7 @@ using PropertyChanged;
 using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Multivac;
+using Toggl.PrimeRadiant.Settings;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -28,8 +30,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         };
 
         private readonly IMvxNavigationService navigationService;
+        private readonly IOnboardingStorage onboardingStorage;
 
-        private int currentPage = TrackPage;
+        private bool[] pagesVisited = new bool[PageInfo.Length];
+
+        private int currentPage;
         public int CurrentPage 
         { 
             get { return currentPage; } 
@@ -78,11 +83,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public int NumberOfPages => PageInfo.Length;
 
-        public OnboardingViewModel(IMvxNavigationService navigationService)
+        public OnboardingViewModel(
+            IMvxNavigationService navigationService,
+            IOnboardingStorage onboardingStorage)
         {
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
+            Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
 
             this.navigationService = navigationService;
+            this.onboardingStorage = onboardingStorage;
 
             SkipCommand = new MvxCommand(skip);
             NextCommand = new MvxCommand(next, nextCanExecute);
@@ -91,11 +100,27 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             PreviousCommand = new MvxCommand(previous, previousCanExecute);
         }
 
+        public override void Prepare()
+        {
+            base.Prepare();
+
+            CurrentPage = onboardingStorage.CompletedOnboarding()
+                ? LoginPage
+                : TrackPage;
+            OnCurrentPageChanged();
+        }
+
         private Task login()
-            => navigationService.Navigate<LoginViewModel, LoginType>(LoginType.Login);
+        {
+            setOnboardingCompletedIfNeeded();
+            return navigationService.Navigate<LoginViewModel, LoginType>(LoginType.Login);
+        }
 
         private Task signup()
-            => navigationService.Navigate<LoginViewModel, LoginType>(LoginType.SignUp);
+        {
+            setOnboardingCompletedIfNeeded();
+            return navigationService.Navigate<LoginViewModel, LoginType>(LoginType.SignUp);
+        }
 
         private void skip()
             => CurrentPage = PageInfo.Length - 1;
@@ -107,5 +132,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void next() => CurrentPage++;
 
         private void previous() => CurrentPage--;
+
+        private void OnCurrentPageChanged() => pagesVisited[CurrentPage] = true;
+
+        private void setOnboardingCompletedIfNeeded()
+        {
+            if (pagesVisited.All(visited => visited))
+                onboardingStorage.SetCompletedOnboarding();
+        }
     }
 }

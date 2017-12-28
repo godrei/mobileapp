@@ -4,6 +4,7 @@ using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Foundation.Tests.Generators;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
@@ -13,16 +14,21 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public abstract class OnboardingViewModelTest : BaseViewModelTests<OnboardingViewModel>
         {
             protected override OnboardingViewModel CreateViewModel()
-                => new OnboardingViewModel(NavigationService);
+                => new OnboardingViewModel(NavigationService, OnboardingStorage);
         }
 
-        public sealed class TheConstructor
+        public sealed class TheConstructor : OnboardingViewModelTest
         {
-            [Fact, LogIfTooSlow]
-            public void ThrowsIfTheArgumentsIsNull()
+            [Theory, LogIfTooSlow]
+            [ClassData(typeof(TwoParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(
+                bool useNavigationService, bool useOnboardingStorage)
             {
+                var navigationService = useNavigationService ? NavigationService : null;
+                var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
+
                 Action tryingToConstructWithEmptyParameters =
-                    () => new OnboardingViewModel(null);
+                    () => new OnboardingViewModel(navigationService, onboardingStorage);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -148,6 +154,33 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await NavigationService.Received()
                     .Navigate<LoginViewModel, LoginType>(Arg.Is(LoginType.Login));
             }
+
+            [Fact, LogIfTooSlow]
+            public void SetsTheComletedOnboardingFlagWhenUserViewsAllOnboardingPages()
+            {
+                ViewModel.Prepare();
+                while (ViewModel.NextCommand.CanExecute())
+                    ViewModel.NextCommand.Execute();
+
+                ViewModel.LoginCommand.Execute();
+
+                OnboardingStorage.Received().SetCompletedOnboarding();
+            }
+
+            [Theory]
+            [InlineData(1)]
+            [InlineData(2)]
+            public void DoesNotSetTheCompletedOnboardingFlagWhenUserSkipsAtLeastOnePage(int pagesViewed)
+            {
+                ViewModel.Prepare();
+                for (int i = 1; i < pagesViewed; i++)
+                    ViewModel.NextCommand.Execute();
+                ViewModel.SkipCommand.Execute();
+
+                ViewModel.LoginCommand.Execute();
+
+                OnboardingStorage.DidNotReceive().SetCompletedOnboarding();
+            }
         }
 
         public sealed class TheSignUpCommand : OnboardingViewModelTest
@@ -159,6 +192,54 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await NavigationService.Received()
                     .Navigate<LoginViewModel, LoginType>(Arg.Is(LoginType.SignUp));
+            }
+
+            [Fact, LogIfTooSlow]
+            public void SetsTheComletedOnboardingFlagWhenUserViewsAllOnboardingPages()
+            {
+                ViewModel.Prepare();
+                while (ViewModel.NextCommand.CanExecute())
+                    ViewModel.NextCommand.Execute();
+
+                ViewModel.SignUpCommand.Execute();
+
+                OnboardingStorage.Received().SetCompletedOnboarding();
+            }
+
+            [Theory]
+            [InlineData(1)]
+            [InlineData(2)]
+            public void DoesNotSetTheCompletedOnboardingFlagWhenUserSkipsAtLeastOnePage(int pagesViewed)
+            {
+                ViewModel.Prepare();
+                for (int i = 1; i < pagesViewed; i++)
+                    ViewModel.NextCommand.Execute();
+                ViewModel.SkipCommand.Execute();
+
+                ViewModel.SignUpCommand.Execute();
+
+                OnboardingStorage.DidNotReceive().SetCompletedOnboarding();
+            }
+        }
+
+        public sealed class ThePrepareMethod : OnboardingViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void InitializesCurrentPageToTrackPageIfUserHasNotCompletedOnboarding()
+            {
+                ViewModel.Prepare();
+
+                ViewModel.CurrentPage.Should().Be(OnboardingViewModel.TrackPage);
+            }
+
+            [Fact, LogIfTooSlow]
+            public void InitializesCurrentPageToTrackPageIfUserHasCompletedOnboarding()
+            {
+                OnboardingStorage.CompletedOnboarding().Returns(true);
+
+                ViewModel.Prepare();
+
+                ViewModel.CurrentPage.Should().Be(OnboardingViewModel.LoginPage);
             }
         }
     }
