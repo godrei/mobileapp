@@ -478,5 +478,13 @@ namespace Toggl.Foundation {
                 return ResourceManager.GetString("ThisYear", resourceCulture);
             }
         }
+
+        public static string NoTagsInfoMessage
+        {
+            get
+            {
+                return ResourceManager.GetString("NoTagsInfoMessage", resourceCulture);
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ using MvvmCross.Binding.ExtensionMethods;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Plugins.Color.iOS;
 using Toggl.Daneel.Views;
+using Toggl.Daneel.Views.StartTimeEntry;
 using Toggl.Foundation;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.MvvmCross.Helper;
@@ -19,11 +20,21 @@ namespace Toggl.Daneel.ViewSources
         private const string headerCellIdentifier = nameof(WorkspaceHeaderViewCell);
         private const string timeEntryCellIdentifier = nameof(StartTimeEntryViewCell);
         private const string projectCellIdentifier = nameof(ProjectSuggestionViewCell);
+        private const string noEntityInfoCellIdentifier = nameof(NoEntityInfoViewCell);
         private const string emptySuggestionIdentifier = nameof(StartTimeEntryEmptyViewCell);
+        private const string tagIconIdentifier = "icIllustrationTagsSmall";
+
+        private readonly NoEntityInfoMessage noTagsInfoMessage
+            = new NoEntityInfoMessage(
+                text: Resources.NoTagsInfoMessage,
+                imageResource: tagIconIdentifier,
+                imageResourceIndex: 39);
 
         public bool UseGrouping { get; set; }
 
         public bool IsSuggestingProjects { get; set; }
+
+        public bool ShouldShowNoTagsInfoMessage { get; set; }
 
         public IMvxCommand<ProjectSuggestion> ToggleTasksCommand { get; set; }
 
@@ -36,6 +47,7 @@ namespace Toggl.Daneel.ViewSources
             tableView.RegisterNibForCellReuse(TagSuggestionViewCell.Nib, tagCellIdentifier);
             tableView.RegisterNibForCellReuse(TaskSuggestionViewCell.Nib, taskCellIdentifier);
             tableView.RegisterNibForCellReuse(StartTimeEntryViewCell.Nib, timeEntryCellIdentifier);
+            tableView.RegisterNibForCellReuse(NoEntityInfoViewCell.Nib, noEntityInfoCellIdentifier);
             tableView.RegisterNibForCellReuse(ProjectSuggestionViewCell.Nib, projectCellIdentifier);
             tableView.RegisterNibForCellReuse(StartTimeEntryEmptyViewCell.Nib, emptySuggestionIdentifier);
             tableView.RegisterNibForHeaderFooterViewReuse(WorkspaceHeaderViewCell.Nib, headerCellIdentifier);
@@ -55,20 +67,26 @@ namespace Toggl.Daneel.ViewSources
             cell.SeparatorInset = UIEdgeInsets.Zero;
             cell.PreservesSuperviewLayoutMargins = false;
 
-            if (cell is ProjectSuggestionViewCell projectCell)
+            switch (cell)
             {
-                projectCell.ToggleTasksCommand = ToggleTasksCommand;
+                case ProjectSuggestionViewCell projectCell:
+                    projectCell.ToggleTasksCommand = ToggleTasksCommand;
 
-                var previousItemPath = NSIndexPath.FromItemSection(indexPath.Item - 1, indexPath.Section);
-                var previous = GetItemAt(previousItemPath);
-                var previousIsTask = previous is TaskSuggestion;
-                projectCell.TopSeparatorHidden = !previousIsTask;
+                    var previousItemPath = NSIndexPath.FromItemSection(indexPath.Item - 1, indexPath.Section);
+                    var previous = GetItemAt(previousItemPath);
+                    var previousIsTask = previous is TaskSuggestion;
+                    projectCell.TopSeparatorHidden = !previousIsTask;
 
-                var nextItemPath = NSIndexPath.FromItemSection(indexPath.Item + 1, indexPath.Section);
-                var next = GetItemAt(nextItemPath);
-                var isLastItemInSection = next == null;
-                var isLastSection = indexPath.Section == tableView.NumberOfSections() - 1;
-                projectCell.BottomSeparatorHidden = isLastItemInSection && !isLastSection;
+                    var nextItemPath = NSIndexPath.FromItemSection(indexPath.Item + 1, indexPath.Section);
+                    var next = GetItemAt(nextItemPath);
+                    var isLastItemInSection = next == null;
+                    var isLastSection = indexPath.Section == tableView.NumberOfSections() - 1;
+                    projectCell.BottomSeparatorHidden = isLastItemInSection && !isLastSection;
+                    break;
+
+                case NoEntityInfoViewCell noEntityCell:
+                    noEntityCell.NoEntityInfoMessage = noTagsInfoMessage;
+                    break;
             }
 
             return cell;
@@ -78,7 +96,9 @@ namespace Toggl.Daneel.ViewSources
         {
             if (UseGrouping) return base.RowsInSection(tableview, section);
 
-            return GetGroupAt(section).Count() + (SuggestCreation ? 1 : 0);
+            return GetGroupAt(section).Count()
+                + (SuggestCreation ? 1 : 0)
+                + (ShouldShowNoTagsInfoMessage ? 1 : 0);
         }
 
         public override nint NumberOfSections(UITableView tableView)
@@ -94,10 +114,13 @@ namespace Toggl.Daneel.ViewSources
             {
                 var index = (int)indexPath.Item - 1;
                 if (index < 0) return GetCreateSuggestionItem();
+                if (ShouldShowNoTagsInfoMessage) return noTagsInfoMessage;
 
                 var newIndexPath = NSIndexPath.FromRowSection(indexPath.Section, index);
                 return GroupedItems.ElementAtOrDefault(indexPath.Section)?.ElementAtOrDefault(index);
             }
+
+            if (ShouldShowNoTagsInfoMessage) return noTagsInfoMessage;
 
             return base.GetItemAt(indexPath);
         }
@@ -115,22 +138,29 @@ namespace Toggl.Daneel.ViewSources
 
         private string getIdentifier(object item)
         {
-            if (item is string)
-                return CreateEntityCellIdentifier;
+            switch (item)
+            {
+                case string _:
+                    return CreateEntityCellIdentifier;
 
-            if (item is ProjectSuggestion)
-                return projectCellIdentifier;
+                case ProjectSuggestion _:
+                    return projectCellIdentifier;
 
-            if (item is QuerySymbolSuggestion)
-                return emptySuggestionIdentifier;
+                case QuerySymbolSuggestion _:
+                    return emptySuggestionIdentifier;
 
-            if (item is TagSuggestion)
-                return tagCellIdentifier;
+                case TagSuggestion _:
+                    return tagCellIdentifier;
 
-            if (item is TaskSuggestion)
-                return taskCellIdentifier;
+                case TaskSuggestion _:
+                    return taskCellIdentifier;
 
-            return timeEntryCellIdentifier;
+                case NoEntityInfoMessage _:
+                    return noEntityInfoCellIdentifier;
+
+                default:
+                    return timeEntryCellIdentifier;
+            }
         }
 
         protected override object GetCreateSuggestionItem()

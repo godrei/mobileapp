@@ -31,6 +31,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly Subject<TextFieldInfo> infoSubject = new Subject<TextFieldInfo>();
         private readonly Subject<AutocompleteSuggestionType> queryByTypeSubject = new Subject<AutocompleteSuggestionType>();
 
+        private bool hasAnyTags;
         private long? lastProjectId;
         private IDisposable queryDisposable;
         private IDisposable elapsedTimeDisposable;
@@ -90,6 +91,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public bool IsEditingProjects { get; private set; } = false;
 
         public bool IsEditingTags { get; private set; } = false;
+
+        public bool ShouldShowNoTagsInfoMessage
+            => IsSuggestingTags && !hasAnyTags;
 
         public DateTimeOffset StartTime { get; private set; }
 
@@ -259,6 +263,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Create(CurrentQuery, TextFieldInfo.WorkspaceId.Value);
             var tagSuggestion = new TagSuggestion(createdTag);
             await SelectSuggestionCommand.ExecuteAsync(tagSuggestion);
+            hasAnyTags = true;
         }
 
         private void setProject(ProjectSuggestion projectSuggestion)
@@ -331,6 +336,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var workspaceId = (await dataSource.User.Current).DefaultWorkspaceId;
             if (!TextFieldInfo.WorkspaceId.HasValue)
                 TextFieldInfo = TextFieldInfo.WithWorkspace(workspaceId);
+            
+            hasAnyTags = (await dataSource.Tags.GetAll()).Any();
         }
 
         private async void OnTextFieldInfoChanged()
