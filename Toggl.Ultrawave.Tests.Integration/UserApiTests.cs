@@ -29,7 +29,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var api = TogglApiWith(credentials);
 
                 var user = await api.User.Get();
-                user.Email.Should().Be(email.ToString());
+                user.Email.Should().Be(email);
             }
 
             [Fact, LogTestInfo]
@@ -140,7 +140,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var (_, user) = await SetupTestUser();
                 var api = TogglApiWith(Credentials.None);
 
-                var instructions = await api.User.ResetPassword(user.Email.ToEmail());
+                var instructions = await api.User.ResetPassword(user.Email);
 
                 instructions.Should().Be("Please check your inbox for further instructions");
             }
@@ -158,7 +158,10 @@ namespace Toggl.Ultrawave.Tests.Integration
             [Fact, LogTestInfo]
             public void ThrowsIfTheEmailIsNotValid()
             {
-                Action signingUp = () => unauthenticatedTogglApi.User.SignUp(Email.Invalid, "dummyButValidPassword").Wait();
+                Action signingUp = () => unauthenticatedTogglApi
+                    .User
+                    .SignUp(Email.Invalid, "dummyButValidPassword".ToPassword())
+                    .Wait();
 
                 signingUp.ShouldThrow<ArgumentException>();
             }
@@ -173,7 +176,10 @@ namespace Toggl.Ultrawave.Tests.Integration
             [InlineData("so#close@yet%so.far")]
             public void FailsWhenAnInvalidEmailIsForcedToTheApi(string invalidEmail)
             {
-                Action signingUp = () => unauthenticatedTogglApi.User.SignUp(createInvalidEmail(invalidEmail), "dummyButValidPassword").Wait();
+                Action signingUp = () => unauthenticatedTogglApi
+                    .User
+                    .SignUp(createInvalidEmail(invalidEmail), "dummyButValidPassword".ToPassword())
+                    .Wait();
 
                 signingUp.ShouldThrow<BadRequestException>();
             }
@@ -191,7 +197,10 @@ namespace Toggl.Ultrawave.Tests.Integration
             [InlineData("1@bX_")]
             public void FailsWhenThePasswordIsTooShort(string empty)
             {
-                Action signingUp = () => unauthenticatedTogglApi.User.SignUp(Email.FromString("dummy@email.com"), empty).Wait();
+                Action signingUp = () => unauthenticatedTogglApi
+                    .User
+                    .SignUp(Email.FromString("dummy@email.com"), empty.ToPassword())
+                    .Wait();
 
                 signingUp.ShouldThrow<BadRequestException>();
             }
@@ -205,10 +214,12 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var email = Email.FromString($"{Guid.NewGuid().ToString()}@email.com");
 
-                var user = await unauthenticatedTogglApi.User.SignUp(email, seeminglyEmpty);
+                var user = await unauthenticatedTogglApi
+                    .User
+                    .SignUp(email, seeminglyEmpty.ToPassword());
 
                 user.Id.Should().BeGreaterThan(0);
-                user.Email.Should().Be(email.ToString());
+                user.Email.Should().Be(email);
             }
 
             [Fact, LogTestInfo]
@@ -216,18 +227,23 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var emailAddress = Email.FromString($"{Guid.NewGuid().ToString()}@address.com");
 
-                var user = await unauthenticatedTogglApi.User.SignUp(emailAddress, "somePassword");
+                var user = await unauthenticatedTogglApi
+                    .User
+                    .SignUp(emailAddress, "somePassword".ToPassword());
 
-                user.Email.Should().Be(emailAddress.ToString());
+                user.Email.Should().Be(emailAddress);
             }
 
             [Fact, LogTestInfo]
             public async Task FailsWhenTheEmailIsAlreadyTaken()
             {
                 var email = Email.FromString($"{Guid.NewGuid().ToString()}@address.com");
-                await unauthenticatedTogglApi.User.SignUp(email, "somePassword");
+                await unauthenticatedTogglApi.User.SignUp(email, "somePassword".ToPassword());
 
-                Action secondSigningUp = () => unauthenticatedTogglApi.User.SignUp(email, "thePasswordIsNotImportant").Wait();
+                Action secondSigningUp = () => unauthenticatedTogglApi
+                    .User
+                    .SignUp(email, "thePasswordIsNotImportant".ToPassword())
+                    .Wait();
 
                 secondSigningUp.ShouldThrow<BadRequestException>();
             }
@@ -236,7 +252,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task FailsWhenSigningUpWithTheSameEmailAndPasswordForTheSecondTime()
             {
                 var email = Email.FromString($"{Guid.NewGuid().ToString()}@address.com");
-                var password = "somePassword";
+                var password = "somePassword".ToPassword();
                 await unauthenticatedTogglApi.User.SignUp(email, password);
 
                 Action secondSigningUp = () => unauthenticatedTogglApi.User.SignUp(email, password).Wait();
@@ -248,7 +264,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task EnablesLoginForTheNewlyCreatedUserAccount()
             {
                 var emailAddress = Email.FromString($"{Guid.NewGuid().ToString()}@address.com");
-                var password = Guid.NewGuid().ToString();
+                var password = Guid.NewGuid().ToString().ToPassword();
 
                 var signedUpUser = await unauthenticatedTogglApi.User.SignUp(emailAddress, password);
                 var credentials = Credentials.WithPassword(emailAddress, password);
@@ -265,7 +281,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task CreatesADefaultWorkspaceWithCorrectName(string emailPrefix, string expectedWorkspaceName)
             {
                 var email = Email.FromString($"{emailPrefix}@{Guid.NewGuid().ToString()}.com");
-                var password = Guid.NewGuid().ToString();
+                var password = Guid.NewGuid().ToString().ToPassword();
 
                 var user = await unauthenticatedTogglApi.User.SignUp(email, password);
                 var credentials = Credentials.WithPassword(email, password);

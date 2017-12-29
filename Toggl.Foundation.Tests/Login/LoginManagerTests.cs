@@ -25,7 +25,7 @@ namespace Toggl.Foundation.Tests.Login
     {
         public abstract class LoginManagerTest
         {
-            protected const string Password = "theirobotmoviesucked123";
+            protected static readonly Password Password = "theirobotmoviesucked123".ToPassword();
             protected static readonly Email Email = "susancalvin@psychohistorian.museum".ToEmail();
 
             protected readonly IUser User = new User { Id = 10, ApiToken = "ABCDEFG" };
@@ -97,10 +97,11 @@ namespace Toggl.Foundation.Tests.Login
             [InlineData(null, "123456")]
             public void ThrowsIfYouPassInvalidParameters(string email, string password)
             {
-                var actualEmail = Email.FromString(email);
+                var actualEmail = email.ToEmail();
+                var actualPassword = password.ToPassword();
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => LoginManager.Login(actualEmail, password).Wait();
+                    () => LoginManager.Login(actualEmail, actualPassword).Wait();
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentException>();
@@ -231,10 +232,11 @@ namespace Toggl.Foundation.Tests.Login
             [InlineData(null, "123456")]
             public void ThrowsIfYouPassInvalidParameters(string email, string password)
             {
-                var actualEmail = Email.FromString(email);
+                var actualEmail = email.ToEmail();
+                var actualPassword = password.ToPassword();
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => LoginManager.SignUp(actualEmail, password).Wait();
+                    () => LoginManager.SignUp(actualEmail, actualPassword).Wait();
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentException>();
@@ -290,7 +292,7 @@ namespace Toggl.Foundation.Tests.Login
             public TheRefreshTokenMethod()
             {
                 var user = Substitute.For<IDatabaseUser>();
-                user.Email.Returns(Email.ToString());
+                user.Email.Returns(Email);
                 Database.User.Single().Returns(Observable.Return(user));
             }
  
@@ -301,7 +303,7 @@ namespace Toggl.Foundation.Tests.Login
             public void ThrowsIfYouPassInvalidParameters(string password)
             {
                 Action tryingToRefreshWithInvalidParameters =
-                    () => LoginManager.RefreshToken(password).Wait();
+                    () => LoginManager.RefreshToken(password.ToPassword()).Wait();
  
                 tryingToRefreshWithInvalidParameters
                     .ShouldThrow<ArgumentException>();

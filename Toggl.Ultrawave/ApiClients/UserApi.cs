@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Reactive.Linq;
+using Newtonsoft.Json;
 using Toggl.Multivac;
 using Toggl.Multivac.Models;
 using Toggl.Ultrawave.Helpers;
 using Toggl.Ultrawave.Models;
 using Toggl.Ultrawave.Network;
 using Toggl.Ultrawave.Serialization;
+using Toggl.Ultrawave.Serialization.Converters;
 
 namespace Toggl.Ultrawave.ApiClients
 {
@@ -38,14 +40,14 @@ namespace Toggl.Ultrawave.ApiClients
                 .Select(instructions => instructions.Trim('"'));
         }
 
-        public IObservable<IUser> SignUp(Email email, string password)
+        public IObservable<IUser> SignUp(Email email, Password password)
         {
             if (!email.IsValid)
                 throw new ArgumentException(nameof(email));
 
             var dto = new SignUpParameters
             {
-                Email = email.ToString(),
+                Email = email,
                 Password = password,
                 Workspace = new SignUpParameters.WorkspaceParameters
                 {
@@ -60,9 +62,11 @@ namespace Toggl.Ultrawave.ApiClients
         [Preserve(AllMembers = true)]
         private class SignUpParameters
         {
-            public string Email { get; set; }
+            [JsonConverter(typeof(EmailConverter))]
+            public Email Email { get; set; }
 
-            public string Password { get; set; }
+            [JsonConverter(typeof(PasswordConverter))]
+            public Password Password { get; set; }
 
             public WorkspaceParameters Workspace { get; set; }
 

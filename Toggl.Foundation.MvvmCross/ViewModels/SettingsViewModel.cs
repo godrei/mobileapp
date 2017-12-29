@@ -25,7 +25,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public string Title { get; private set; } = Resources.Settings;
 
-        public string Email { get; private set; } = "";
+        public Email Email { get; private set; }
 
         public string Version { get; private set; } = "";
 
