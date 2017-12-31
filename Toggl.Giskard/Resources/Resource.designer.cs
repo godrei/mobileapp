@@ -5149,9 +5149,6 @@ namespace Toggl.Giskard
 			// aapt resource value: 0x7f0a002a
 			public const int Login = 2131361834;
 			
-			// aapt resource value: 0x7f0a002d
-			public const int LoginTrouble = 2131361837;
-			
 			// aapt resource value: 0x7f0a0029
 			public const int SignUp = 2131361833;
 			

@@ -4,5 +4,4 @@
     <string name="Login">Log in</string>
     <string name="AppName">Toggl</string>
     <string name="EmailAddress">Email address</string>
-    <string name="LoginTrouble">Sorry, we\’re having trouble logging you in. Please try again.</string>
 </resources>
