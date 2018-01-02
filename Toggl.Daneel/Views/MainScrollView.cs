@@ -57,6 +57,7 @@ namespace Toggl.Daneel.Views
             Scrolled += onScrolled;
             DraggingEnded += onDragEnded;
             DecelerationEnded += onDecelerationEnded;
+            ShouldScrollToTop = shouldScrollToTop;
         }
 
         protected override void Dispose(bool disposing)
@@ -183,6 +184,12 @@ namespace Toggl.Daneel.Views
             if (ContentOffset.Y > 0) return;
 
             SetContentOffset(offset, true);
+        }
+
+        private bool shouldScrollToTop(UIScrollView scrollView)
+        {
+            scrollView.SetContentOffset(CGPoint.Empty, true);
+            return false;
         }
     }
 }

@@ -60,5 +60,11 @@ namespace Toggl.Daneel.ViewSources
         public override nfloat GetHeightForFooter(UITableView tableView, nint section) => 24;
 
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => 64;
+
+        public override bool ShouldScrollToTop(UIScrollView scrollView)
+        {
+            scrollView.SetContentOffset(CGPoint.Empty, false);
+            return false;
+        }
     }
 }
