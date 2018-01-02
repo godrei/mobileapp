@@ -12,6 +12,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public sealed class TimeEntryViewModel : MvxNotifyPropertyChanged
     {
         public long Id { get; }
+        
+        public long WorkspaceId { get; }
 
         public bool Billable { get; }
 
@@ -51,6 +53,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 throw new InvalidOperationException("It is not possible to show a running time entry in the log.");
 
             Id = timeEntry.Id;
+            WorkspaceId = timeEntry.WorkspaceId;
             Start = timeEntry.Start;
             Billable = timeEntry.Billable;
             TagIds = timeEntry.TagIds.ToArray();

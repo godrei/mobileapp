@@ -202,7 +202,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 {
                     UserId = user.Id,
                     TaskId = timeEntryViewModel.TaskId,
-                    WorkspaceId = user.DefaultWorkspaceId,
+                    WorkspaceId = timeEntryViewModel.WorkspaceId,
                     Billable = timeEntryViewModel.Billable,
                     StartTime = timeService.CurrentDateTime,
                     ProjectId = timeEntryViewModel.ProjectId,
